@@ -8,13 +8,13 @@
 #include <tag.h>
 #include <taglib.h>
 #include <fileref.h>
-#include <DebugLogger.h>
+//#include <DebugLogger.h>
 #include <vector>
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <time.h>
-#include "omp.h"
+//#include "omp.h"
 #include <cstdlib>
 #include "m3uEntry.h"
 #include "settingsClass.h"

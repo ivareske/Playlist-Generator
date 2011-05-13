@@ -216,9 +216,9 @@ QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log
             break;
         }
 
-        TagLib::DebugLogger::Instance()->clear();
+        //TagLib::DebugLogger::Instance()->clear();
         tmplist = processFile( &wasCanceled, fileInfo[i], s, hasTagRule, hasAudioRule, log, tags, &tagscopy );
-        std::vector<std::string> taglibDebug = TagLib::DebugLogger::Instance()->log();
+        /*std::vector<std::string> taglibDebug = TagLib::DebugLogger::Instance()->log();
         if( taglibDebug.size()!=0 && ShowTagLibDebug ){
             log->append( "\n" + fileInfo[i].absoluteFilePath() );
             for(unsigned j=0;j<taglibDebug.size();j++){
@@ -226,6 +226,8 @@ QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log
             }
             log->append( "\n" );
         }
+        */
+
         if (wasCanceled){
             break;
         }
@@ -290,12 +292,13 @@ QList<QFileInfo> playList::getDirContent( QString& aPath ){
 
 QList<m3uEntry>  playList::processFile( bool *wasCanceled, QFileInfo fileInfo, QStatusBar *s, bool hasTagRule, bool hasAudioRule, QString *log, QHash<QString,Tag> *tags, QHash<QString,Tag> *tagscopy ){
 
-   //QTime t; t.start();
+    //QTime t; t.start();
 
     QList<m3uEntry>  list;
 
     QString file = fileInfo.fileName();
     QString fullfile = fileInfo.absoluteFilePath();
+    //qDebug()<<"processing file "<<fullfile;
 
     Tag tag;
     if( hasTagRule || hasAudioRule || includeExtInf  ){
@@ -390,7 +393,7 @@ QList<m3uEntry>  playList::processFile( bool *wasCanceled, QFileInfo fileInfo, Q
         //}
     }
     //decide to include or not
-    m3uEntry e;
+    m3uEntry e;    
     if( (allRulesTrue && allOk) || (!allRulesTrue && anyOk) || scriptok ){
         //extinf info for m3u
         if( includeExtInf ){

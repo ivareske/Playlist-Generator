@@ -5,6 +5,8 @@
 settingsDialog::settingsDialog(QWidget *parent){
     setupUi(this); // this sets up GUI
  		
+    ShowTagLibDebug->hide();
+
     // signals/slots mechanism in action
     connect( okButton, SIGNAL( clicked() ), this, SLOT( accept() ) ); 
     connect( cancelButton, SIGNAL( clicked() ), this, SLOT( reject() ) ); 
