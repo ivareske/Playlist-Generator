@@ -18,8 +18,7 @@ class m3uEntry{
         void setFullFile( const QString &fullFile );
         void setOriginalFile( const QString &originalFile );
 
-	bool operator==(const m3uEntry &e1) const;
-	//uint qHash(const m3uEntry &key);
+	bool operator==(const m3uEntry &e1) const;	
 
 private:
         QString extInf_;

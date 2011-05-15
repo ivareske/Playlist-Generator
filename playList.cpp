@@ -20,6 +20,7 @@ playList::playList( QStringList defaultExtensions ){
 
 }
 
+/*
 void playList::getGuiSettings(){
 
     guiSettings = new QSettings("playListGenerator"+ext,QSettings::IniFormat,0);
@@ -38,10 +39,12 @@ void playList::getGuiSettings(){
     ShowTagLibDebug = guiSettings->value("ShowTagLibDebug",true).toBool();
 
 }
+*/
 
-bool playList::generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log, QHash<QString, Tag> *tags ){
+bool playList::generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log, QHash<QString, Tag> *tags, const settingsCLass &settings ){
 
-    getGuiSettings();
+    //getGuiSettings();
+    settings_ = settings;
 
     time_t Start_t, End_t;
     int totaltime;
@@ -615,4 +618,126 @@ void playList::checkRange( QVector<int> intvals, int tmp, bool *allOk, bool *any
 }
 
 
+
+
+QString playList::name() const{
+    return name_;
+}
+
+QVector<rule> playList::rules() const{
+    return rules_;
+}
+
+QStringList playList::folders() const{
+    return folders_;
+}
+
+QStringList playList::extensions() const{
+    return extensions_;
+}
+
+bool playList::randomize( bool  ) const{
+    return randomize_;
+}
+
+bool playList::includeSubFolders() const{
+    return includeSubFolders_;
+}
+
+bool playList::relativePath() const{
+    return relativePath_;
+}
+
+bool playList::allRulesTrue() const{
+    return allRulesTrue_;
+}
+
+bool playList::includeExtInf() const{
+    return includeExtInf_;
+}
+
+bool playList::makeUnique() const{
+    return makeUnique_;
+}
+
+int playList::uniqueId() const{
+    return uniqueId_;
+}
+
+QString playList::copyFilesToDir() const{
+    return copyFilesToDir_;
+}
+
+bool playList::copyFiles() const{
+    return copyFiles_;
+}
+
+QStringList playList::individualFiles() const{
+    return individualFiles_;
+}
+
+QString playList::script() const{
+    return script_;
+}
+
+
+void playList::setName( const QString &name ){
+    name_ = name;
+}
+
+void playList::setRules( const QVector<rule> &rules ){
+    rules_ = rules;
+}
+
+void playList::setFolders( const QStringList &folders ){
+    folders_ = folders;
+}
+
+void playList::setExtensions( const QStringList &extensions ){
+    extensions_ = extensions;
+}
+
+void playList::setRandomize( bool randomize ){
+    randomize_ = randomize;
+}
+
+void playList::setIncludeSubFolders( bool includeSubFolders ){
+    includeSubFolders_ = includeSubFolders;
+}
+
+void playList::setRelativePath( bool relativePath ){
+    relativePath_ = relativePath;
+}
+
+void playList::setAllRulesTrue( bool allRulesTrue ){
+    allRulesTrue_ = allRulesTrue;
+}
+
+void playList::setIncludeExtInf( bool includeExtInf ){
+    includeExtInf_ = includeExtInf;
+}
+
+void playList::setMakeUnique( bool makeUnique ){
+    makeUnique_ = makeUnique;
+}
+
+void playList::setUniqueId( int uniqueId ){
+    uniqueId_ = uniqueId;
+}
+
+void playList::setCopyFilesToDir( const QString &copyFilesToDir ){
+    copyFilesToDir_ = copyFilesToDir;
+}
+
+void playList::setCopyFiles( bool copyFiles ){
+    copyFiles_ = copyFiles;
+}
+
+void playList::setIndividualFiles( const QStringList &individualFiles ){
+    individualFiles_ = individualFiles;
+}
+
+void playList::setScript( const QString &script ){
+    script_ = script;
+}
 

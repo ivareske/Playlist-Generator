@@ -14,7 +14,7 @@ addFilesDialog::addFilesDialog(QWidget *parent){
 
 
 
-void addFilesDialog::setFiles( QStringList files ){
+void addFilesDialog::setFiles( const QStringList &files ){
 	fileList->addItems( files );	
 }
 
