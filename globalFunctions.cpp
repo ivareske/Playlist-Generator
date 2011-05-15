@@ -5,47 +5,47 @@ namespace Global{
 
 
     bool caseInsensitiveLessThan( const playList &s1, const playList &s2 ){
-	return s1.name.toLower() < s2.name.toLower();
+        return s1.name().toLower() < s2.name().toLower();
     }
 
-    QString getRuleName( ruleType type ){
+    QString getRuleName( const rule::ruleType &type ){
 
 	QString ans="";
-	if( type==FILENAME_CONTAINS ){
+        if( type==rule::FILENAME_CONTAINS ){
             ans = "File name contains";
-	}else if( type==FILENAME_EQUALS ){
+        }else if( type==rule::FILENAME_EQUALS ){
             ans = "File name equals";
-	}else if( type==TAG_TITLE_CONTAINS ){
+        }else if( type==rule::TAG_TITLE_CONTAINS ){
             ans = "Title tag contains";
-	}else if( type==TAG_TITLE_EQUALS ){
+        }else if( type==rule::TAG_TITLE_EQUALS ){
             ans = "Title tag equals";
-	}else if( type==TAG_ARTIST_CONTAINS ){
+        }else if( type==rule::TAG_ARTIST_CONTAINS ){
             ans = "Artist tag contains";
-	}else if( type==TAG_ARTIST_EQUALS ){
+        }else if( type==rule::TAG_ARTIST_EQUALS ){
             ans = "Artist tag equals";
-	}else if( type==TAG_ALBUM_CONTAINS ){
+        }else if( type==rule::TAG_ALBUM_CONTAINS ){
             ans = "Album tag contains";
-	}else if( type==TAG_ALBUM_EQUALS ){
+        }else if( type==rule::TAG_ALBUM_EQUALS ){
             ans = "Album tag equals";
-	}else if( type==TAG_YEAR_IS ){
+        }else if( type==rule::TAG_YEAR_IS ){
             ans = "Year tag is";
-	}else if( type==TAG_COMMENT_CONTAINS ){
+        }else if( type==rule::TAG_COMMENT_CONTAINS ){
             ans = "Comment tag contains";
-	}else if( type==TAG_COMMENT_EQUALS ){
+        }else if( type==rule::TAG_COMMENT_EQUALS ){
             ans = "Comment tag equals";
-	}else if( type==TAG_TRACK_IS ){
+        }else if( type==rule::TAG_TRACK_IS ){
             ans = "Track tag is";
-	}else if( type==TAG_GENRE_CONTAINS ){
+        }else if( type==rule::TAG_GENRE_CONTAINS ){
             ans = "Genre tag contains";
-	}else if( type==TAG_GENRE_EQUALS ){
+        }else if( type==rule::TAG_GENRE_EQUALS ){
             ans = "Genre tag equals";
-	}else if( type==AUDIO_BITRATE_IS ){
+        }else if( type==rule::AUDIO_BITRATE_IS ){
             ans = "Audio bitrate is";
-	}else if( type==AUDIO_SAMPLERATE_IS ){
+        }else if( type==rule::AUDIO_SAMPLERATE_IS ){
             ans = "Audio samplerate is";
-	}else if( type==AUDIO_CHANNELS_IS ){
+        }else if( type==rule::AUDIO_CHANNELS_IS ){
             ans = "Audio channels is";
-	}else if( type==AUDIO_LENGTH_IS ){
+        }else if( type==rule::AUDIO_LENGTH_IS ){
             ans = "Audio lenght is";
 	}
 	
@@ -54,33 +54,33 @@ namespace Global{
     }
 
 
-    QString getRuleExample( ruleType type ){
+    QString getRuleExample( const rule::ruleType &type ){
 
 
 	QString ans="";
-	if( type==FILENAME_CONTAINS || type==FILENAME_EQUALS ){
+        if( type==rule::FILENAME_CONTAINS || type==rule::FILENAME_EQUALS ){
             ans = "pantera";
-	}else if( type==TAG_TITLE_CONTAINS || type==TAG_TITLE_EQUALS ){
+        }else if( type==rule::TAG_TITLE_CONTAINS || type==rule::TAG_TITLE_EQUALS ){
             ans = "acdc";
-	}else if( type==TAG_ARTIST_CONTAINS || type==TAG_ARTIST_EQUALS ){
+        }else if( type==rule::TAG_ARTIST_CONTAINS || type==rule::TAG_ARTIST_EQUALS ){
             ans = "acdc";
-	}else if( type==TAG_ALBUM_CONTAINS || type==TAG_ALBUM_EQUALS ){
+        }else if( type==rule::TAG_ALBUM_CONTAINS || type==rule::TAG_ALBUM_EQUALS ){
             ans = "live";
-	}else if( type==TAG_YEAR_IS ){
+        }else if( type==rule::TAG_YEAR_IS ){
             ans = "Single nr.: '2001', or a range: '1990-1998'";
-	}else if( type==TAG_COMMENT_CONTAINS || type==TAG_COMMENT_EQUALS ){
+        }else if( type==rule::TAG_COMMENT_CONTAINS || type==rule::TAG_COMMENT_EQUALS ){
             ans = "whatever...";
-	}else if( type==TAG_TRACK_IS ){
+        }else if( type==rule::TAG_TRACK_IS ){
             ans = "Single nr.: '1', or a range: '7-12'";
-	}else if( type==TAG_GENRE_CONTAINS || type==TAG_GENRE_EQUALS ){
+        }else if( type==rule::TAG_GENRE_CONTAINS || type==rule::TAG_GENRE_EQUALS ){
             ans = "'rock'";
-	}else if( type==AUDIO_BITRATE_IS ){
+        }else if( type==rule::AUDIO_BITRATE_IS ){
             ans = "Single nr.: '128', or a range: '128-196'";
-	}else if( type==AUDIO_SAMPLERATE_IS ){
+        }else if( type==rule::AUDIO_SAMPLERATE_IS ){
             ans = "Single nr.: '44100', or a range: '44100-9999999'";
-	}else if( type==AUDIO_CHANNELS_IS ){
+        }else if( type==rule::AUDIO_CHANNELS_IS ){
             ans = "Single nr.: '2', or a range: '2-6'";
-	}else if( type==AUDIO_LENGTH_IS ){
+        }else if( type==rule::AUDIO_LENGTH_IS ){
             ans = "Single nr.: '300', or a range: '500-700' (use seconds) ";
 	}
 	
@@ -89,7 +89,7 @@ namespace Global{
     }
 
 
-    bool checkIntValue( QVector<int> *intvals, QString val ){
+    bool checkIntValue( QVector<int> *intvals, const QString &val ){
 	//val should be a single value (e.g. 500),
 	//or a range: 500-1000
 	bool ok; int tmp; int tmp1; int tmp2;

@@ -13,7 +13,7 @@ settingsClass::settingsClass(){
     trackEmpty_=false;
     yearEmpty_=false;
     defaultOutputFolder_= QDesktopServices::storageLocation(QDesktopServices::MusicLocation);
-    defaultExtensions_ = "*.mp3;*.wma;*.wav;*.ogg;*.aac;*.ac3";
+    defaultExtensions_ << "*.mp3"<<"*.wma"<<"*.wav"<<"*.ogg"<<"*.aac"<<"*.ac3";
     format_ = "%artist% - %title%";
     useScript_ = false;
     showLog_ = true;
@@ -131,11 +131,11 @@ void settingsClass::setShowLog( bool showLog ){
     showLog_ = showLog;
 }
 
-bool settingsClass::setUseCopyFilesToPath( bool useCopyFilesToPath ){
+void settingsClass::setUseCopyFilesToPath( bool useCopyFilesToPath ){
     useCopyFilesToPath_ = useCopyFilesToPath;
 }
 
-bool settingsClass::setKeepTags( bool keepTags ){
+void settingsClass::setKeepTags( bool keepTags ){
     keepTags_ = keepTags;
 }
 
@@ -164,12 +164,47 @@ void settingsClass::setTextViewerSize( const QSize &textViewerSize ){
 }
 
 
+settingsClass::operator QVariant () const{
+    return QVariant::fromValue(*this);
+}
 
 
+QDataStream &operator>>(QDataStream &in, settingsClass &s){
+    QString style;
+    bool artistEmpty;
+    bool titleEmpty;
+    bool albumEmpty;
+    bool commentEmpty;
+    bool genreEmpty;
+    bool trackEmpty;
+    bool yearEmpty;
+    QString defaultOutputFolder;
+    QStringList defaultExtensions;
+    QString format;
+    bool useScript;
+    bool showLog;
+    bool useCopyFilesToPath;
+    bool keepTags;
+    QString copyFilesToDir;
+    QSize textViewerSize;
+    in >> style >> artistEmpty >> titleEmpty >> albumEmpty >> commentEmpty >> genreEmpty >> trackEmpty;
+    in >> yearEmpty >> defaultOutputFolder >> defaultExtensions >> format >> useScript >> showLog >> useCopyFilesToPath;
+    in >> keepTags >> copyFilesToDir >> textViewerSize;
+    s = settingsClass();
+    s.setStyle(style); s.setArtistEmpty(artistEmpty); s.setTitleEmpty(titleEmpty); s.setAlbumEmpty(albumEmpty);
+    s.setCommentEmpty(commentEmpty); s.setGenreEmpty(genreEmpty); s.setTrackEmpty(trackEmpty); s.setYearEmpty(yearEmpty);
+    s.setDefaultOutputFolder(defaultOutputFolder); s.setDefaultExtensions(defaultExtensions); s.setFormat(format);
+    s.setUseScript(useScript); s.setShowLog(showLog); s.setUseCopyFilesToPath(useCopyFilesToPath); s.setKeepTags(keepTags);
+    s.setCopyFilesToDir(copyFilesToDir); s.setTextViewerSize(textViewerSize);
+    return in;
+}
 
-QDataStream &operator>>(QDataStream &in, settingsClass &s);
-QDataStream &operator<<(QDataStream &out, const settingsClass &s);
-
+QDataStream &operator<<(QDataStream &out, const settingsClass &s){
+    out << s.style() << s.artistEmpty() << s.titleEmpty() << s.albumEmpty() << s.commentEmpty() << s.genreEmpty();
+    out << s.trackEmpty() << s.yearEmpty() << s.defaultOutputFolder() << s.defaultExtensions() << s.format();
+    out << s.useScript() << s.showLog() << s.useCopyFilesToPath() << s.keepTags() << s.copyFilesToDir() << s.textViewerSize();
+    return out;
+}
 
 
 

@@ -2,17 +2,17 @@
 
 
 
-ruleDialog::ruleDialog(QWidget *parent, rule *r){
+ruleDialog::ruleDialog( rule *r, QWidget *parent ) : QDialog(parent){
     setupUi(this); // this sets up GUI
 
     //ShouldBeTrue->hide();
     setSettings();
     if(r){
-        value->setText(r->value);
-        valueLabel->setText( "Value (Ex: "+Global::getRuleExample(r->type)+")" );
-        ruleComboBox->setCurrentIndex( (int)r->type );
-        ShouldBeTrue->setChecked( r->shouldBeTrue );
-        CaseSensitive->setChecked( r->caseSensitive );
+        value->setText(r->value());
+        valueLabel->setText( "Value (Ex: "+Global::getRuleExample(r->type())+")" );
+        ruleComboBox->setCurrentIndex( r->type() );
+        ShouldBeTrue->setChecked( r->shouldBeTrue() );
+        CaseSensitive->setChecked( r->caseSensitive() );
     }
 
     // signals/slots mechanism in action
@@ -31,8 +31,9 @@ void ruleDialog::finito(){
         return;
     }
     int ind = ruleComboBox->currentIndex();
-    ruleType t = (ruleType)ind;
-    if( t==TAG_YEAR_IS || t==TAG_TRACK_IS || t==AUDIO_BITRATE_IS || t==AUDIO_SAMPLERATE_IS || t==AUDIO_CHANNELS_IS || t==AUDIO_LENGTH_IS ){
+    rule::ruleType t = static_cast<rule::ruleType>(ind);
+    if( t==rule::TAG_YEAR_IS || t==rule::TAG_TRACK_IS || t==rule::AUDIO_BITRATE_IS || \
+            t==rule::AUDIO_SAMPLERATE_IS || t==rule::AUDIO_CHANNELS_IS || t==rule::AUDIO_LENGTH_IS ){
         QVector<int> intvals;
         bool ok = Global::checkIntValue( &intvals, value->text() );
         if(!ok){
@@ -47,7 +48,7 @@ void ruleDialog::finito(){
 
 void ruleDialog::indexChanged( int ind ){
 
-    valueLabel->setText( "Value (Ex: "+Global::getRuleExample((ruleType)ind)+")" );
+    valueLabel->setText( "Value (Ex: "+Global::getRuleExample(static_cast<rule::ruleType>(ind))+")" );
 
 }
 
@@ -55,8 +56,8 @@ void ruleDialog::indexChanged( int ind ){
 void ruleDialog::setSettings(){
 
     QStringList list;
-    for(int i=0;i<NUMBEROFRULES;i++){
-        list.append( Global::getRuleName( (ruleType)i ) );
+    for(int i=0;i<rule::NUMBEROFRULES;i++){
+        list.append( Global::getRuleName( static_cast<rule::ruleType>(i) ) );
     }
     ruleComboBox->addItems( list );
     ShouldBeTrue->setChecked(true);
@@ -68,10 +69,10 @@ rule ruleDialog::getSettings(){
 
     rule r;
     int ind = ruleComboBox->currentIndex();
-    r.type = (ruleType)ind;
-    r.value = value->text();
-    r.shouldBeTrue = ShouldBeTrue->isChecked();
-    r.caseSensitive = CaseSensitive->isChecked();
+    r.setType(static_cast<rule::ruleType>(ind));
+    r.setValue(value->text());
+    r.setShouldBeTrue(ShouldBeTrue->isChecked());
+    r.setCaseSensitive(CaseSensitive->isChecked());
     return r;
 
 }

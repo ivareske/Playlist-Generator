@@ -1,42 +1,44 @@
 #ifndef SETTINGSDIALOG_H
 #define SETTINGSDIALOG_H
- 
+
 #include <QtGui>
 #include "structs.h"
 #include "rule.h"
 #include "playList.h"
 #include "globalFunctions.h"
 #include "ui_settingsDialog.h"
- 
- 
+
+
 class settingsDialog : public QDialog, private Ui::settingsDialog
 {
     Q_OBJECT
- 
+
 public:
 
-    settingsDialog(QWidget *parent = 0);
-	
-	
-//public slots:
+    settingsDialog( settingsClass *settings, QWidget *parent = 0);
 
 
-	
-	void getSettings();	
-	
+    //public slots:
+
+
+
+    //void getSettings();
+
 protected:
 
 private:
-	
-	void setSettings();
-	QString chooseDir();	
-	QSettings *settings;
+
+    void setSettings();
+    QString chooseDir();
+    //QSettings *settings;
+    settingsClass *settings_;
 private slots:
-	void setOutPutDir();
+    void onFinish( int result );
+    void setOutPutDir();
 
 };
- 
- 
+
+
 #endif
 
 

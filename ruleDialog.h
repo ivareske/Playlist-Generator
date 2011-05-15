@@ -15,7 +15,7 @@ class ruleDialog : public QDialog, private Ui::ruleDialog{
 public:
 
     //ruleDialog(QWidget *parent = 0, int index=0, QString val="");
-	ruleDialog(QWidget *parent = 0, rule *r=NULL);
+        ruleDialog( rule *r=0, QWidget *parent = 0 );
 	
 	
 public slots:

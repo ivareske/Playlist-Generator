@@ -17,7 +17,7 @@ public:
 	
 public slots:
 
-	void setFiles( QStringList files );
+        void setFiles( const QStringList &files );
         QStringList getFiles() const;
 	void chooseFiles();
 	void removeFiles();

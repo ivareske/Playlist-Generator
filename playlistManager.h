@@ -85,9 +85,14 @@ protected:
 	void closeEvent( QCloseEvent *event );
 	
 private:
-	QString style;
-	QFileInfo settingsFile;
-	QSettings *guiSettings;
+        QFileInfo settingsFile;
+        QSettings *guiSettings;
+        QSettings *playListSettings;
+        QList<playList> playLists_;
+        QHash<QString, Tag> tags_;
+        settingsClass settings_;
+        /*
+	QString style;		
 	bool artistEmpty;
 	bool titleEmpty;
 	bool albumEmpty;
@@ -101,14 +106,12 @@ private:
 	bool useScript;
 	//bool openmp;
 	bool showLog;
-	bool ShowTagLibDebug;
+        //bool ShowTagLibDebug;
 	bool useCopyFilesToPath;
 	bool keepTags;
-	QString copyFilesToDir;
-	QSettings *playListSettings;
-	QList<playList> playLists;	
-	QHash<QString, Tag> tags;
+	QString copyFilesToDir;		
 	QSize textViewerSize;
+        */
 };
  
  

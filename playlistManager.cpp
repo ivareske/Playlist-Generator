@@ -2,8 +2,18 @@
 #include "playlistManager.h"
 
 
-playlistManager::playlistManager(QWidget *parent){
+playlistManager::playlistManager(QWidget *parent) : QMainWindow(parent){
     setupUi(this); // this sets up GUI			
+
+    qRegisterMetaType<playList>("playList");
+    qRegisterMetaTypeStreamOperators<playList>("playList");
+    qRegisterMetaType<rule>("rule");
+    qRegisterMetaTypeStreamOperators<rule>("rule");
+    qRegisterMetaType<settingsClass>("settingsClass");
+    qRegisterMetaTypeStreamOperators<settingsClass>("settingsClass");
+
+
+
     createActions();
     /*qApp->addLibraryPath("U:/Programmering/c++/QT/qt-labs-qtscriptgenerator/plugins");
 	qApp->addLibraryPath("U:/Programmering/c++/QT/qt-labs-qtscriptgenerator/plugins/script");
@@ -94,7 +104,7 @@ void playlistManager::openStyleSheet(){
     }
     uncheckStyleActions();
     checkStyleAction( "Custom...", true );
-    style = fileName;
+    settings_.setStyle(fileName);
     //lastStyleSheetFolder = f.absolutePath();
 
 }
@@ -185,7 +195,7 @@ void playlistManager::createActions(){
 
 void playlistManager::clearTags(){
 
-    tags.clear();
+    tags_.clear();
     statusBar()->showMessage("Tags cleared", 8000);
 }
 
@@ -204,7 +214,7 @@ void playlistManager::getCopyDir(){
         copyFilesText->setText( d[0] );
         int ind = playListTable->currentRow();
         if(ind!=-1){
-            playLists[ind].copyFilesToDir = d[0];
+            playLists_[ind].setCopyFilesToDir(d[0]);
         }
     }
 }
@@ -219,8 +229,8 @@ void playlistManager::updateCopyFiles( const QString &text ){
                               QMessageBox::Ok);
         return;
     }
-    qDebug()<<"copy files dir set to "<<text<<" for "<<playLists[ind].name;
-    playLists[ind].copyFilesToDir = copyFilesText->text();
+    qDebug()<<"copy files dir set to "<<text<<" for "<<playLists_[ind].name();
+    playLists_[ind].setCopyFilesToDir( copyFilesText->text() );
 }
 
 void playlistManager::updateCopyTo( int state ){
@@ -233,8 +243,8 @@ void playlistManager::updateCopyTo( int state ){
                               QMessageBox::Ok);
         return;
     }
-    qDebug()<<"copy files set to "<<state<<" for "<<playLists[ind].name;
-    playLists[ind].copyFiles = copyFilesCheckBox->isChecked();
+    qDebug()<<"copy files set to "<<state<<" for "<<playLists_[ind].name();
+    playLists_[ind].setCopyFiles( copyFilesCheckBox->isChecked() );
 }
 
 void playlistManager::newCollection(){
@@ -293,7 +303,8 @@ void playlistManager::setGUIStyle( const QString &s ){
             qDebug()<<actions[i]->text();
             if( actions[i]->text()==s ){
                 QApplication::setStyle( QStyleFactory::create ( s ) );
-                uncheckStyleActions(); style = s;
+                uncheckStyleActions();
+                settings_.setStyle(s);
                 actions[i]->setChecked(true);
                 return;
             }
@@ -312,7 +323,7 @@ void playlistManager::setGUIStyle( const QString &s ){
     }else{
         uncheckStyleActions();
         checkStyleAction( "Custom...", true );
-        style = s;
+        settings_.setStyle(s);
     }
 
 }
@@ -325,6 +336,8 @@ void playlistManager::writeGUISettings(){
     guiSettings->setValue("pos", this->pos());
     guiSettings->endGroup();
     guiSettings->setValue("settingsFile", settingsFile.absoluteFilePath() );
+    guiSettings->setValue("settingsClass", settings_ );
+    /*
     guiSettings->setValue("style", style );
     guiSettings->setValue("artistEmpty",artistEmpty);
     guiSettings->setValue("titleEmpty",titleEmpty);
@@ -342,6 +355,7 @@ void playlistManager::writeGUISettings(){
     guiSettings->setValue("useScript",useScript);
     guiSettings->setValue("keepTags",keepTags);
     guiSettings->setValue("textViewerSize",textViewerSize);
+    */
     guiSettings->sync();
     //delete guiSettings;
 
@@ -356,6 +370,8 @@ void playlistManager::readGUISettings(){
     this->move(guiSettings->value("pos", QPoint(200, 200)).toPoint());
     guiSettings->endGroup();
     settingsFile = guiSettings->value("settingsFile","examples"+ext).toString();
+    settings_ = guiSettings->value("settingsClass",settingsClass()).value<settingsClass>();
+    /*
     style = guiSettings->value("style","WindowsXP").toString();
     artistEmpty = guiSettings->value("artistEmpty",true).toBool();
     titleEmpty = guiSettings->value("titleEmpty",true).toBool();
@@ -373,6 +389,7 @@ void playlistManager::readGUISettings(){
     useCopyFilesToPath = guiSettings->value("useCopyFilesToPath",true).toBool();
     keepTags = guiSettings->value("keepTags",true).toBool();
     textViewerSize = guiSettings->value("textViewerSize",QSize(760,350)).toSize();
+    */
 
 }
 
@@ -397,7 +414,7 @@ void playlistManager::open(){
 void playlistManager::initialize( QFileInfo file ){
 
     qDebug()<<"Initializing";
-    //playLists.clear();
+    //playLists_.clear();
     fileReadResult ok = readSettings( file );
     if(ok==NOTVALID){
         QMessageBox::critical(this, "",
@@ -414,8 +431,8 @@ void playlistManager::initialize( QFileInfo file ){
     }
     enableOptions( false );
     sortPlayLists();
-    setGUIStyle( style );
-    if( useScript ){
+    setGUIStyle( settings_.style() );
+    if( settings_.useScript() ){
         rulesFrame->hide();
         RuleScript->show();
         allRulesTrue->setEnabled(false);
@@ -430,8 +447,8 @@ void playlistManager::initialize( QFileInfo file ){
 
 void playlistManager::giveUniqueIds(){
 
-    for(int i=0;i<playLists.size();i++){
-        playLists[i].uniqueId = i;
+    for(int i=0;i<playLists_.size();i++){
+        playLists_[i].setUniqueId(i);
     }
 
 }
@@ -447,28 +464,28 @@ void playlistManager::sortPlayLists(){
     qDebug()<<"nowRow "<<nowRow;
 
     int id=-1;
-    if( nowRow>=0 && nowRow<playLists.size() ){
-        id = playLists[nowRow].uniqueId;
+    if( nowRow>=0 && nowRow<playLists_.size() ){
+        id = playLists_[nowRow].uniqueId();
     }
 
     //do sorting
-    qSort( playLists.begin(), playLists.end(), Global::caseInsensitiveLessThan );
+    qSort( playLists_.begin(), playLists_.end(), Global::caseInsensitiveLessThan );
     playListTable->clear();
-    for(int i=0;i<playLists.size();i++){
+    for(int i=0;i<playLists_.size();i++){
         QListWidgetItem *item = new QListWidgetItem();
-        item->setText( playLists[i].name );
+        item->setText( playLists_[i].name() );
         item->setFlags(item->flags () | Qt::ItemIsEditable);
         playListTable->addItem( item );
     }
 
     //find and select previously selected playlist
-    if( nowRow>=0 && nowRow<playLists.size() ){
+    if( nowRow>=0 && nowRow<playLists_.size() ){
         qDebug()<<"unique id of playlist is "<<id;
         int row=-1;
-        for(int i=0;i<playLists.size();i++){
-            if(playLists[i].uniqueId==id){
+        for(int i=0;i<playLists_.size();i++){
+            if(playLists_[i].uniqueId()==id){
                 row = i;
-                qDebug()<<"found playlist with id "<<id<<" at row "<<row<<": "<<playLists[row].name;
+                qDebug()<<"found playlist with id "<<id<<" at row "<<row<<": "<<playLists_[row].name();
                 break;
             }
         }
@@ -489,17 +506,17 @@ void playlistManager::addIndividualFiles(){
     }
 
     addFilesDialog d;
-    d.setFiles( playLists[ind].individualFiles );
+    d.setFiles( playLists_[ind].individualFiles() );
     if( d.exec()!=QDialog::Accepted ){
         return;
     }
     QStringList files = d.getFiles();
 
-    playLists[ind].individualFiles = files;
+    playLists_[ind].setIndividualFiles(files);
 
     //show bold text on "add individual files" if individual files exist
     QFont f = addFilesButton->font();
-    if( playLists[ind].individualFiles.size()>0 ){
+    if( playLists_[ind].individualFiles().size()>0 ){
         f.setBold(true);
     }else{
         f.setBold(false);
@@ -528,7 +545,7 @@ void playlistManager::updateRandomize( int state ){
                               QMessageBox::Ok);
         return;
     }
-    playLists[ind].randomize = randomize->isChecked();
+    playLists_[ind].setRandomize(randomize->isChecked());
 
 }
 
@@ -542,7 +559,7 @@ void playlistManager::updateAllRulesTrue( int state ){
                               QMessageBox::Ok);
         return;
     }
-    playLists[ind].allRulesTrue = allRulesTrue->isChecked();
+    playLists_[ind].setAllRulesTrue(allRulesTrue->isChecked());
 
 }
 
@@ -556,7 +573,7 @@ void playlistManager::updateSearchSubfolders( int state ){
                               QMessageBox::Ok);
         return;
     }
-    playLists[ind].includeSubFolders = searchSubFolders->isChecked();
+    playLists_[ind].setIncludeSubFolders(searchSubFolders->isChecked());
 
 }
 
@@ -570,7 +587,7 @@ void playlistManager::updateIncludeExtInf( int state ){
                               QMessageBox::Ok);
         return;
     }
-    playLists[ind].includeExtInf = includeExtInf->isChecked();
+    playLists_[ind].setIncludeExtInf(includeExtInf->isChecked());
 
 }
 
@@ -584,7 +601,7 @@ void playlistManager::updateUseRelativePath( int state ){
                               QMessageBox::Ok);
         return;
     }
-    playLists[ind].relativePath = relativePath->isChecked();
+    playLists_[ind].setRelativePath(relativePath->isChecked());
 
 }
 
@@ -598,7 +615,7 @@ void playlistManager::updateMakeUnique( int state ){
                               QMessageBox::Ok);
         return;
     }
-    playLists[ind].makeUnique = makeUnique->isChecked();
+    playLists_[ind].setMakeUnique(makeUnique->isChecked());
 
 }
 
@@ -612,7 +629,7 @@ void playlistManager::updateScript(){
                               QMessageBox::Ok);
         return;
     }
-    playLists[ind].script = RuleScript->toPlainText();
+    playLists_[ind].setScript(RuleScript->toPlainText());
 
 }
 
@@ -626,8 +643,7 @@ void playlistManager::updateExtensions( const QString & exts ){
                               QMessageBox::Ok);
         return;
     }
-    playLists[ind].extensions = exts.split(";");
-    qDebug()<<"setiings playlist"<<ind<<" extensions to "<<exts;
+    playLists_[ind].setExtensions(exts.split(";"));
 }
 
 void playlistManager::addFolder(){
@@ -658,7 +674,7 @@ void playlistManager::addFolder(){
     }
     QStringList d = dialog.selectedFiles();
 
-
+    QStringList folders = playLists_[ind].folders();
     for(int i=0;i<d.size();i++){
         if(i==0){
             QFileInfo f(d[i]);
@@ -669,15 +685,17 @@ void playlistManager::addFolder(){
         item->setText( d[i] );
         item->setFlags(item->flags () & ~Qt::ItemIsEditable);
         folderTable->addItem( item );
-        playLists[ind].folders.append(d[i]);
+        folders.append(d[i]);
     }
+    playLists_[ind].setFolders(folders);
 }
 
 void playlistManager::renameFolder(QListWidgetItem *item){
 
     int pind = playListTable->currentRow();
     int ind = folderTable->currentRow();
-    QString oldName = playLists[pind].folders[ind];
+    QStringList folders = playLists_[pind].folders();
+    QString oldName = folders[ind];
     QString newName = item->text();
     QDir d( newName );
     if( !d.exists() ){
@@ -695,7 +713,8 @@ void playlistManager::renameFolder(QListWidgetItem *item){
         item->setText( oldName );
         return;
     }
-    playLists[pind].folders[ind] = newName;
+    folders[ind] = newName;
+    playLists_[pind].setFolders(folders);
     qDebug()<<"renamed from "<<oldName<<" to "<<item->text();
 
 }
@@ -704,7 +723,8 @@ void playlistManager::changeFolder(QListWidgetItem *item){
 
     int pind = playListTable->currentRow();
     int ind = folderTable->currentRow();
-    QString oldName = playLists[pind].folders[ind];
+    QStringList folders = playLists_[pind].folders();
+    QString oldName = folders[ind];
     QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory"),
                                                     oldName,QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
@@ -712,18 +732,21 @@ void playlistManager::changeFolder(QListWidgetItem *item){
         return;
     }
     item->setText( dir );
-    playLists[pind].folders[ind] = dir;
+    folders[ind] = dir;
+    playLists_[pind].setFolders(folders);
 
 }
 
 void playlistManager::removeFolder(){
     int pind = playListTable->currentRow();
-    int ind = folderTable->currentRow();
+    int ind = folderTable->currentRow();    
     if(ind==-1){
         return;
     }
-    playLists[pind].folders.removeAt( ind );
+    QStringList folders = playLists_[pind].folders();
+    folders.removeAt( ind );
     delete folderTable->takeItem( ind );
+    playLists_[pind].setFolders(folders);
 }
 
 void playlistManager::closeEvent( QCloseEvent *event ){
@@ -779,33 +802,34 @@ void playlistManager::showRulesAndFolders(){
         enableOptions( false );
         return;
     }
-    qDebug()<<"c";
+
     enableOptions( true );
-    qDebug()<<"d";
+
     //folders
-    qDebug()<<"ind "<<ind<<"playLists.size() "<<playLists.size();
-    for(int i=0;i<playLists[ind].folders.size();i++){
-        QString t = playLists[ind].folders[i];
+    qDebug()<<"ind "<<ind<<"playLists_.size() "<<playLists_.size();
+    QStringList folders = playLists_[ind].folders();
+    for(int i=0;i<folders.size();i++){
+        QString t = folders[i];
         QListWidgetItem *item = new QListWidgetItem();
         item->setFlags(item->flags () & ~Qt::ItemIsEditable);
         item->setText( t );
         folderTable->addItem( item );
     }
-    qDebug()<<"e";
+
     //extensions & settings
-    extensions->setText( playLists[ind].extensions.join(";") );
-    randomize->setChecked( playLists[ind].randomize );
-    searchSubFolders->setChecked( playLists[ind].includeSubFolders );
-    allRulesTrue->setChecked( playLists[ind].allRulesTrue );
-    includeExtInf->setChecked( playLists[ind].includeExtInf );
-    relativePath->setChecked( playLists[ind].relativePath );
-    makeUnique->setChecked( playLists[ind].makeUnique );
-    copyFilesCheckBox->setChecked( playLists[ind].copyFiles );
-    copyFilesText->setText( playLists[ind].copyFilesToDir );
+    extensions->setText( playLists_[ind].extensions().join(";") );
+    randomize->setChecked( playLists_[ind].randomize() );
+    searchSubFolders->setChecked( playLists_[ind].includeSubFolders() );
+    allRulesTrue->setChecked( playLists_[ind].allRulesTrue() );
+    includeExtInf->setChecked( playLists_[ind].includeExtInf() );
+    relativePath->setChecked( playLists_[ind].relativePath() );
+    makeUnique->setChecked( playLists_[ind].makeUnique() );
+    copyFilesCheckBox->setChecked( playLists_[ind].copyFiles() );
+    copyFilesText->setText( playLists_[ind].copyFilesToDir() );
     qDebug()<<"f";
     //show bold text on "add individual files" if individual files exist
     QFont f = addFilesButton->font();
-    if( playLists[ind].individualFiles.size()>0 ){
+    if( playLists_[ind].individualFiles().size()>0 ){
         f.setBold(true);
     }else{
         f.setBold(false);
@@ -813,15 +837,16 @@ void playlistManager::showRulesAndFolders(){
     addFilesButton->setFont(f);
 
     //rules
-    RuleScript->setText( playLists[ind].script );
-    for(int i=0;i<playLists[ind].rules.size();i++){
-        ruleType t = playLists[ind].rules[i].type;
+    RuleScript->setText( playLists_[ind].script() );
+    QVector<rule> rules = playLists_[ind].rules();
+    for(int i=0;i<rules.size();i++){
+        rule::ruleType t = rules[i].type();
         QListWidgetItem *item = new QListWidgetItem();
-        if(!playLists[ind].rules[i].shouldBeTrue){
+        if(!rules[i].shouldBeTrue()){
             QFont f = item->font(); f.setItalic(true);
             item->setFont(f);
         }
-        item->setText( Global::getRuleName(t)+": "+playLists[ind].rules[i].value );
+        item->setText( Global::getRuleName(t)+": "+ rules[i].value() );
         rulesTable->addItem( item );
     }
 
@@ -830,8 +855,8 @@ void playlistManager::showRulesAndFolders(){
 void playlistManager::renamePlayList(QListWidgetItem *item){
 
     int ind = playListTable->currentRow(); //item->data( Qt::UserRole ).toInt();
-    qDebug()<<"index: "<<ind<<" playLists.size(): "<<playLists.size();
-    QString oldName = playLists[ind].name;
+    qDebug()<<"index: "<<ind<<" playLists_.size(): "<<playLists_.size();
+    QString oldName = playLists_[ind].name();
     QString newName = item->text();
     if(newName.isEmpty()){
         QMessageBox::critical(this, "",
@@ -841,7 +866,7 @@ void playlistManager::renamePlayList(QListWidgetItem *item){
         item->setText( oldName );
         return;
     }
-    playLists[ind].name = newName;
+    playLists_[ind].name() = newName;
     qDebug()<<"renamed from "<<oldName<<" to "<<item->text();
 
     sortPlayLists();
@@ -856,15 +881,23 @@ fileReadResult playlistManager::readSettings( QFileInfo file ){
     }
 
     playListSettings = new QSettings( file.absoluteFilePath(), QSettings::IniFormat, this );
-    bool valid = playListSettings->value( "playListGeneratorFile", false ).toBool(); //identifier
+    /*bool valid = playListSettings->value( "playListGeneratorFile", false ).toBool(); //identifier
     if(!valid){
         return NOTVALID;
     }
+    */
 
+    QStringList playListNames = playListSettings->allKeys();
+    for(int i=0;i<playListNames.size();i++){
+        playList p = playListSettings->value(playListNames[i]).value< playList >();
+        playLists_.append(p);
+    }
+
+/*
     QStringList plists = playListSettings->childGroups();
-    playLists.clear();
+    playLists_.clear();
     for(int i=0;i<plists.size();i++){
-        playList p( defaultExtensions );
+        playList p( settings_.defaultExtensions() );
         p.name = playListSettings->value( plists[i]+"/name", p.name ).toString();
         p.extensions = playListSettings->value( plists[i]+"/extensions", p.extensions ).toStringList();
         p.randomize = playListSettings->value( plists[i]+"/randomize", p.randomize ).toBool();
@@ -899,14 +932,14 @@ fileReadResult playlistManager::readSettings( QFileInfo file ){
         p.individualFiles = playListSettings->value( plists[i]+"/individualFiles", p.individualFiles ).toStringList();
         p.individualFiles.removeAll("");
 
-        playLists.append(p);
+        playLists_.append(p);
     }
+*/
 
-
-    for(int i=0;i<playLists.size();i++){
+    for(int i=0;i<playLists_.size();i++){
         //add playlists to table
         QListWidgetItem *item = new QListWidgetItem();
-        item->setText( playLists[i].name );
+        item->setText( playLists_[i].name() );
         item->setFlags(item->flags () | Qt::ItemIsEditable);
         playListTable->addItem( item );
     }
@@ -928,7 +961,7 @@ void playlistManager::saveSettingsAs(){
     }
     qDebug()<<"New filename: "<<fileName;
     QFileInfo file = QFileInfo( fileName );
-    //settings.saveSettings( settingsFile.absoluteFilePath(), playLists );
+    //settings.saveSettings( settingsFile.absoluteFilePath(), playLists_ );
     saveSettings( file );
     initialize( file );
     //statusBar()->showMessage("'"+settingsFile.baseName()+"' saved!", 4000);
@@ -946,12 +979,18 @@ void playlistManager::saveSettings( QFileInfo file ){
         return;
     }
 
+    playListSettings->clear();
+    for(int i=0;i<playLists_.size();i++){
+        playListSettings->setValue(playLists_[i].name(),playLists_[i]);
+    }
+
+    /*
     qDebug()<<"saving :"<<file.absoluteFilePath();
     playListSettings = new QSettings( file.absoluteFilePath(), QSettings::IniFormat, this );
     playListSettings->clear();
     playListSettings->setValue( "playListGeneratorFile", true ); //identifier
-    for(int i=0;i<playLists.size();i++){
-        playList p = playLists[i];
+    for(int i=0;i<playLists_.size();i++){
+        playList p = playLists_[i];
         playListSettings->beginGroup(QString::number(i));
         playListSettings->setValue( "name", p.name );
         playListSettings->setValue( "extensions", p.extensions );
@@ -972,6 +1011,7 @@ void playlistManager::saveSettings( QFileInfo file ){
         playListSettings->setValue( "individualFiles", p.individualFiles );
         playListSettings->endGroup();
     }
+    */
     playListSettings->sync();
 
     statusBar()->showMessage("'"+file.baseName()+"' saved!", 8000);
@@ -1001,14 +1041,14 @@ void playlistManager::generateSelectedPlayLists(){
 
 void playlistManager::generateAllPlayLists(){
 
-    if( playLists.size()==0 ){
+    if( playLists_.size()==0 ){
         QMessageBox::information(this, "",
                                  "Please select a playlist first",
                                  QMessageBox::Ok, QMessageBox::Ok);
         return;
     }
     QList<int> inds;
-    for(int i=0;i<playLists.size();i++){
+    for(int i=0;i<playLists_.size();i++){
         inds.append(i);
     }
 
@@ -1019,8 +1059,8 @@ void playlistManager::generateAllPlayLists(){
 
 void playlistManager::generatePlayLists( QList<int> inds ){
 
-    QDir d(defaultOutputFolder);
-    if( defaultOutputFolder.isEmpty() || !d.exists() ){
+    QDir d(settings_.defaultOutputFolder());
+    if( settings_.defaultOutputFolder().isEmpty() || !d.exists() ){
         QMessageBox::critical(this, "",
                               "Output folder is not a valid path",
                               QMessageBox::Ok, QMessageBox::Ok);
@@ -1034,31 +1074,31 @@ void playlistManager::generatePlayLists( QList<int> inds ){
     int totaltime; QStringList names;
     Start_t = time(NULL);
     for(int i=0;i<inds.size();i++){
-        names.append( playLists[inds[i]].name );
-        log.append("Info for generation of playlist '"+playLists[inds[i]].name+"'\n");
+        names.append( playLists_[inds[i]].name() );
+        log.append("Info for generation of playlist '"+playLists_[inds[i]].name()+"'\n");
 
         bool ok=true;
-        if( playLists[inds[i]].copyFiles ){
-            QDir c(playLists[inds[i]].copyFilesToDir);
+        if( playLists_[inds[i]].copyFiles() ){
+            QDir c(playLists_[inds[i]].copyFilesToDir());
             if( !c.exists() ){
                 QDir newDir;
-                ok = newDir.mkpath( playLists[inds[i]].copyFilesToDir );
+                ok = newDir.mkpath( playLists_[inds[i]].copyFilesToDir() );
                 if(ok){
-                    log.append("Created directory "+playLists[inds[i]].copyFilesToDir+"\n");
+                    log.append("Created directory "+playLists_[inds[i]].copyFilesToDir()+"\n");
                 }else{
-                    log.append("Could not create directory "+playLists[inds[i]].copyFilesToDir+", no copying performed\n");
+                    log.append("Could not create directory "+playLists_[inds[i]].copyFilesToDir()+", no copying performed\n");
                 }
             }
         }
 
         QList<m3uEntry> songs;
-        bool wasCanceled = playLists[inds[i]].generate( &songs, statusBar(), &log, &tags );
+        bool wasCanceled = playLists_[inds[i]].generate( &songs, statusBar(), &log, &tags_, settings_ );
         if(wasCanceled){
             log.append("\n\nAborted by user");
             break;
         }
-        if( playLists[inds[i]].copyFiles && ok ){
-            copyFiles( playLists[inds[i]], songs, &log );
+        if( playLists_[inds[i]].copyFiles() && ok ){
+            copyFiles( playLists_[inds[i]], songs, &log );
         }
         log.append("\n----------------------------------------------------------\n");
     }
@@ -1071,11 +1111,11 @@ void playlistManager::generatePlayLists( QList<int> inds ){
         totaltime = difftime(End_t, Start_t);
         log.append("\n\n Total time used: "+QString::number(totaltime)+" seconds\n");
     }
-    if(showLog){
+    if(settings_.showLog()){
         textViewer t(this, &log);
-        t.resize(textViewerSize);
+        t.resize(settings_.textViewerSize());
         t.exec();
-        textViewerSize=t.size();
+        settings_.setTextViewerSize(t.size());
     }
 }
 
@@ -1085,7 +1125,7 @@ void playlistManager::copyFiles( playList p, QList<m3uEntry> songs, QString *log
     int nCopied=0;
 
     qDebug()<<"starting to copy "<<songs.size()<<" files!";
-    QProgressDialog pr("Copying files for playlist "+p.name+" to "+p.copyFilesToDir, "Abort", 0, songs.size(), this);
+    QProgressDialog pr("Copying files for playlist "+p.name()+" to "+p.copyFilesToDir(), "Abort", 0, songs.size(), this);
     pr.setWindowModality(Qt::WindowModal);
     QPushButton *cancelButton = new QPushButton;
     pr.setCancelButton(cancelButton);
@@ -1097,15 +1137,15 @@ void playlistManager::copyFiles( playList p, QList<m3uEntry> songs, QString *log
             break;
         }
         QFile f( songs[j].originalFile() );
-        QString newname = p.copyFilesToDir + "/" + songs[j].file();
+        QString newname = p.copyFilesToDir() + "/" + songs[j].file();
         bool okf = f.copy( newname );
         //qDebug()<<"copy result of "<<songs[j].originalfile<<" -> "<<newname<<": "<<okf;
         if(!okf){
             QFile f2(newname);
             if( f2.exists() ){
-                log->append( songs[j].file() + " was not copied as it already exists in "+p.copyFilesToDir+"\n" );
+                log->append( songs[j].file() + " was not copied as it already exists in "+p.copyFilesToDir()+"\n" );
             }else{
-                log->append( songs[j].file() + " could not be copied to "+p.copyFilesToDir+"\n" );
+                log->append( songs[j].file() + " could not be copied to "+p.copyFilesToDir()+"\n" );
             }
         }else{
             nCopied++;
@@ -1113,7 +1153,7 @@ void playlistManager::copyFiles( playList p, QList<m3uEntry> songs, QString *log
     }
     pr.setValue(songs.size());
     pr.close();
-    log->append(QString::number(nCopied)+" of "+QString::number(songs.size())+" files copied to "+p.copyFilesToDir+"\n");
+    log->append(QString::number(nCopied)+" of "+QString::number(songs.size())+" files copied to "+p.copyFilesToDir()+"\n");
 
 }
 
@@ -1121,9 +1161,9 @@ void playlistManager::addPlayList(){
 
     QString name = "New playlist";
 
-    playList tmp( defaultExtensions );
-    tmp.name = name;
-    playLists.append(tmp);
+    playList tmp( settings_.defaultExtensions() );
+    tmp.name() = name;
+    playLists_.append(tmp);
     QListWidgetItem *item = new QListWidgetItem();
     item->setText( name );
     item->setFlags(item->flags () | Qt::ItemIsEditable);
@@ -1144,11 +1184,11 @@ void playlistManager::removePlayList(){
 
     qDebug()<<"indexes.size() "<<indexes.size();
     for(int i=indexes.size()-1;i>=0;i--){
-        qDebug()<<"playLists.size() "<<playLists.size();
-        qDebug()<<"removing playlist "<<playLists[indexes[i].row()].name;
+        qDebug()<<"playLists_.size() "<<playLists_.size();
+        qDebug()<<"removing playlist "<<playLists_[indexes[i].row()].name();
         qDebug()<<"deleting row "<<indexes[i].row();
         qDebug()<<"rowcount "<<playListTable->count();
-        playLists.removeAt( indexes[i].row() );
+        playLists_.removeAt( indexes[i].row() );
         playListTable->blockSignals(true);
         delete playListTable->takeItem( indexes[i].row() );
         playListTable->blockSignals(false);
@@ -1176,8 +1216,10 @@ void playlistManager::newRule(){
         return;
     }
     rule r = rd.getSettings();
+    QVector<rule> rules = playLists_[ind].rules();
+    rules.append( r );
+    playLists_[ind].setRules(rules);
 
-    playLists[ind].rules.append( r );
     showRulesAndFolders();
     //rulesTable->addItem( getRuleName( (ruleType)r.type )+": "+r.value );
     /*
@@ -1204,17 +1246,18 @@ void playlistManager::editRule(){
                                  QMessageBox::Ok, QMessageBox::Ok);
         return;
     }
-    rule r = playLists[pind].rules[rind];
-    ruleDialog rd( 0, &r );
+    QVector<rule> rules = playLists_[pind].rules();
+    rule r = rules[rind];
+    ruleDialog rd( &r, this );
 
     if( rd.exec()!=QDialog::Accepted ){
         return;
     }
     rule newr = rd.getSettings();
-
-    playLists[pind].rules[rind] = newr;
+    rules.append(newr);
+    playLists_[pind].setRules(rules);
     delete rulesTable->takeItem(rind);
-    rulesTable->insertItem( rind, Global::getRuleName( (ruleType)newr.type )+": "+newr.value );
+    rulesTable->insertItem( rind, Global::getRuleName( newr.type() )+": "+newr.value() );
     showRulesAndFolders();
 
 }
@@ -1230,16 +1273,36 @@ void playlistManager::removeRule(){
         return;
     }
     delete rulesTable->takeItem(rind);
-    playLists[pind].rules.remove(rind);
+    QVector<rule> rules = playLists_[pind].rules();
+    rules.remove(rind);
+    playLists_[pind].setRules(rules);
+
 }
 
 
 
 void playlistManager::showSettings(){
 
-    settingsDialog s;
-    guiSettings->sync();
+    settingsDialog s(&settings_);
+    //guiSettings->sync();
+    if( s.exec()==QDialog::Accepted ){
+        if( settings_.useScript() ){
+            rulesFrame->hide();
+            RuleScript->show();
+            allRulesTrue->setEnabled(false);
+        }else{
+            rulesFrame->show();
+            RuleScript->hide();
+            allRulesTrue->setEnabled(true);
+        }
+        if(!settings_.keepTags()){
+            tags_.clear();
+        }
+    }
 
+
+
+/*
     if( s.exec()==QDialog::Accepted ){
         s.getSettings();
 
@@ -1268,9 +1331,10 @@ void playlistManager::showSettings(){
         useCopyFilesToPath = guiSettings->value("useCopyFilesToPath",true).toBool();
         keepTags = guiSettings->value("keepTags",true).toBool();
         if(!keepTags){
-            tags.clear();
+            tags_.clear();
         }
     }
+    */
 
 
 

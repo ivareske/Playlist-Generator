@@ -10,9 +10,9 @@ class playList;
 
 namespace Global{
 
-    QString getRuleName( ruleType type );
-    QString getRuleExample( ruleType type );
-    bool checkIntValue( QVector<int> *intvals, QString val );
+    QString getRuleName( const rule::ruleType &type );
+    QString getRuleExample( const rule::ruleType &type );
+    bool checkIntValue( QVector<int> *intvals, const QString &val );
     bool caseInsensitiveLessThan(const playList &s1, const playList &s2);
 
 }

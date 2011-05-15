@@ -35,15 +35,15 @@ public:
     void setYearEmpty( bool yearEmpty );
     void setUseScript( bool useScript );
     void setShowLog( bool showLog );
-    bool setUseCopyFilesToPath( bool useCopyFilesToPath );
-    bool setKeepTags( bool keepTags );
+    void setUseCopyFilesToPath( bool useCopyFilesToPath );
+    void setKeepTags( bool keepTags );
     void setDefaultOutputFolder( const QString &defaultOutputFolder );
     void setDefaultExtensions( const QStringList &defaultExtensions );
     void setFormat( const QString &format );
     void setStyle( const QString &style );
     void setCopyFilesToDir( const QString &copyFilesToDir );
     void setTextViewerSize( const QSize &textViewerSize );
-
+    operator QVariant () const;
 private:
 
     QString style_;
@@ -67,6 +67,9 @@ private:
     //bool showTagLibDebug_;
 
 };
+
+Q_DECLARE_METATYPE(settingsClass);
+
 
 QDataStream &operator>>(QDataStream &in, settingsClass &s);
 QDataStream &operator<<(QDataStream &out, const settingsClass &s);

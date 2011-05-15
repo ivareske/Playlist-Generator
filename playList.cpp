@@ -2,21 +2,23 @@
 #include "playList.h"
 
 
-playList::playList( QStringList defaultExtensions ){
+playList::playList( const QStringList &defaultExtensions ){
 
-    name="";
-    extensions = defaultExtensions; //"*.mp3;*.wma;*.wav;*.ogg;*.aac;*.ac3";
-    randomize = false;
-    includeSubFolders = true;
-    relativePath = true;
-    allRulesTrue = false;
-    includeExtInf = true;
-    makeUnique = false;
-    copyFiles=false;
-    keepTags=true;
-    uniqueId = -1;
-    script="";
-    scriptvariables<<"ARTIST"<<"ALBUM"<<"TITLE"<<"GENRE"<<"TRACK"<<"YEAR"<<"COMMENT"<<"LENGTH"<<"SAMPLERATE"<<"BITRATE"<<"CHANNELS";
+    name_="";
+    extensions_ = defaultExtensions;
+    if( extensions_.size()==0 ){
+        extensions_<<"*.mp3"<<"*.wma"<<"*.wav"<<"*.ogg"<<"*.aac"<<"*.ac3";
+    }
+    randomize_ = false;
+    includeSubFolders_ = true;
+    relativePath_ = true;
+    allRulesTrue_ = false;
+    includeExtInf_ = true;
+    makeUnique_= false;
+    copyFiles_=false;
+    uniqueId_ = -1;
+    script_="";
+    scriptVariables_<<"ARTIST"<<"ALBUM"<<"TITLE"<<"GENRE"<<"TRACK"<<"YEAR"<<"COMMENT"<<"LENGTH"<<"SAMPLERATE"<<"BITRATE"<<"CHANNELS";
 
 }
 
@@ -31,9 +33,9 @@ void playList::getGuiSettings(){
     genreEmpty = guiSettings->value("genreEmpty",false).toBool();
     trackEmpty = guiSettings->value("trackEmpty",false).toBool();
     yearEmpty = guiSettings->value("yearEmpty",false).toBool();
-    outputfolder = guiSettings->value("defaultOutputFolder","").toString();
+    outPutFolder_ = guiSettings->value("defaultOutputFolder","").toString();
     format = guiSettings->value("format","%artist% - %title%").toString();
-    useScript = guiSettings->value("useScript",false).toBool();
+    useScript_ = guiSettings->value("useScript_",false).toBool();
     keepTags = guiSettings->value("keepTags",true).toBool();
     useCopyFilesToPath = guiSettings->value("useCopyFilesToPath",true).toBool();
     ShowTagLibDebug = guiSettings->value("ShowTagLibDebug",true).toBool();
@@ -41,7 +43,7 @@ void playList::getGuiSettings(){
 }
 */
 
-bool playList::generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log, QHash<QString, Tag> *tags, const settingsCLass &settings ){
+bool playList::generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log, QHash<QString, Tag> *tags, const settingsClass &settings ){
 
     //getGuiSettings();
     settings_ = settings;
@@ -60,7 +62,7 @@ bool playList::generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log,
 
     if(songs.isEmpty()){
         QMessageBox::information(0, "",
-                                 "No songs matching your criteria were found for playlist "+name,
+                                 "No songs matching your criteria were found for playlist "+name_,
                                  QMessageBox::Ok, QMessageBox::Ok);
         End_t = time(NULL);    //record time that task 1 ends
         totaltime = difftime(End_t, Start_t);    //compute elapsed time of task 1
@@ -70,22 +72,21 @@ bool playList::generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log,
 
     writeM3U( songs );
 
-    s->showMessage( "Generated playlist '"+name+"' with "+QString::number(songs.size())+" songs", 10000 );
-
+    s->showMessage( "Generated playlist '"+name_+"' with "+QString::number(songs.size())+" songs", 10000 );
     End_t = time(NULL);    //record time that task 1 ends
     totaltime = difftime(End_t, Start_t);    //compute elapsed time of task 1
     std::cout<<"time used: "<<totaltime<<std::endl;
 
-    log->append("\n Found "+QString::number(songs.size())+" songs for "+ name +". Time used: "+QString::number(totaltime)+" seconds\n");
+    log->append("\n Found "+QString::number(songs.size())+" songs for "+ name_ +". Time used: "+QString::number(totaltime)+" seconds\n");
     return canceled;
 }
 
 void playList::writeM3U( QList<m3uEntry> songs ){
 
-    if(outputfolder.right(1)!="\\" && outputfolder.right(1)!="/"){
-        outputfolder.append("/");
+    if(outPutFolder_.right(1)!="\\" && outPutFolder_.right(1)!="/"){
+        outPutFolder_.append("/");
     }
-    QString file = outputfolder + name + ".m3u";
+    QString file = outPutFolder_ + name_ + ".m3u";
 
     QFile f( file );
     if( !f.open( QIODevice::WriteOnly ) ){
@@ -95,11 +96,11 @@ void playList::writeM3U( QList<m3uEntry> songs ){
         return;
     }
     QTextStream ts( &f );
-    if( includeExtInf ){
+    if( includeExtInf_ ){
         ts << "#EXTM3U" <<endl;
     }
     for(int i=0;i<songs.size();i++){
-        if( includeExtInf ){
+        if( includeExtInf_ ){
             ts << songs[i].extInf() << endl;
         }
         ts << songs[i].fullFile() << endl;
@@ -113,26 +114,26 @@ QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log
 
     qDebug()<<"finding files...";
 
-    //the two first mandatory rules
+    //the two first mandatory rules_
     QList<m3uEntry> plist;
 
 
 
     bool hasTagRule = false;
     bool hasAudioRule = false;
-    if( useScript ){
-        for(int i=0;i<scriptvariables.size();i++){
-            if( script.contains(scriptvariables[i]) ){
+    if( settings_.useScript() ){
+        for(int i=0;i<scriptVariables_.size();i++){
+            if( script_.contains(scriptVariables_[i]) ){
                 hasAudioRule = true;
                 hasTagRule = true;
                 break;
             }
         }
     }else{
-        for(int i=0;i<rules.size();i++){
-            rule r = rules[i];
-            ruleType t = r.type;
-            if(t!=FILENAME_CONTAINS){
+        for(int i=0;i<rules_.size();i++){
+            rule r = rules_[i];
+            rule::ruleType t = r.type();
+            if(t!=rule::FILENAME_CONTAINS){
                 hasTagRule = true;
                 hasAudioRule = true;
                 break;
@@ -147,7 +148,7 @@ QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log
                         }
                         */
         }
-        if(includeExtInf){
+        if(includeExtInf_){
             hasAudioRule = true;
         }
         if(hasAudioRule){
@@ -155,14 +156,14 @@ QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log
         }
     }
 
-    if(folders.size()==0){
+    if(folders_.size()==0){
         QMessageBox::critical(0, "",
                               "You must specify at least one folder",
                               QMessageBox::Ok, QMessageBox::Ok);
         *canceled = true;
         return plist;
     }
-    if(extensions.size()==0){
+    if(extensions_.size()==0){
         QMessageBox::critical(0, "",
                               "Extensions can`t be empty",
                               QMessageBox::Ok, QMessageBox::Ok);
@@ -171,18 +172,18 @@ QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log
     }
 
     QList<QFileInfo> fileInfo;
-    for(int i=0;i<folders.size();i++){
-        QDir d(folders[i]);
+    for(int i=0;i<folders_.size();i++){
+        QDir d(folders_[i]);
         if( !d.exists() ){
             QMessageBox::critical(0, "",
-                                  "Folder"+folders[i]+" doesn`t exist",
+                                  "Folder"+folders_[i]+" doesn`t exist",
                                   QMessageBox::Ok, QMessageBox::Ok);
             *canceled = true;
             return plist;
         }
         if( !d.isAbsolute() ){
             QMessageBox::critical(0, "",
-                                  "Folder"+folders[i]+" is not an absolute path",
+                                  "Folder"+folders_[i]+" is not an absolute path",
                                   QMessageBox::Ok, QMessageBox::Ok);
             plist.clear();
             *canceled = true;
@@ -190,7 +191,7 @@ QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log
         }
 
         //get content from the specified folder(s)
-        fileInfo = fileInfo + getDirContent( folders[i] );
+        fileInfo = fileInfo + getDirContent( folders_[i] );
     }
     //make unique
     fileInfo = fileInfo.toSet().toList();
@@ -199,14 +200,14 @@ QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log
     QHash<QString,Tag> tagscopy = *tags;
 
     int n=fileInfo.size(); QList<m3uEntry> tmplist;
-    QProgressDialog p("Locating files for playlist "+name, "Abort", 0, n, 0);
+    QProgressDialog p("Locating files for playlist "+name_, "Abort", 0, n, 0);
     p.setWindowModality(Qt::WindowModal);
 
 
     QPushButton *cancelButton = new QPushButton;
     p.setCancelButton(cancelButton);
     p.setCancelButtonText("Cancel");
-    p.setLabelText("Locating files for "+name);
+    p.setLabelText("Locating files for "+name_);
     bool wasCanceled=false;
 
     qDebug()<<"found "<<n<<" files to process";
@@ -243,13 +244,13 @@ QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log
         return plist;
     }
 
-    if( randomize ){
+    if( randomize_ ){
         std::random_shuffle( plist.begin(),plist.end() );
     }
 
     qDebug()<<"finished finding files";
 
-    if(makeUnique){
+    if(makeUnique_){
         int size=plist.size();
         plist = plist.toSet().toList();
         if(plist.size()!=size){
@@ -269,7 +270,7 @@ QList<QFileInfo> playList::getDirContent( QString& aPath ){
 
     //decide to include subfolder or not
     QDirIterator::IteratorFlag subdirFlag;
-    if( includeSubFolders ){
+    if( includeSubFolders_ ){
         subdirFlag = QDirIterator::Subdirectories;
     }else{
         subdirFlag = QDirIterator::NoIteratorFlags;
@@ -277,7 +278,7 @@ QList<QFileInfo> playList::getDirContent( QString& aPath ){
 
     // set dir iterator
     QDirIterator *dirIterator = new QDirIterator(aPath,
-                                                 extensions,
+                                                 extensions_,
                                                  QDir::Files|QDir::NoSymLinks,
                                                  subdirFlag);
 
@@ -304,13 +305,13 @@ QList<m3uEntry>  playList::processFile( bool *wasCanceled, QFileInfo fileInfo, Q
     //qDebug()<<"processing file "<<fullfile;
 
     Tag tag;
-    if( hasTagRule || hasAudioRule || includeExtInf  ){
+    if( hasTagRule || hasAudioRule || includeExtInf_  ){
         //tag is extracted from local copy of qhash tags, delete it to increase lookup speed
         tag = tagscopy->take(fullfile);
         if( tag.fileName().isEmpty() ){
             tag = Tag(fullfile);
             tag.readTags();
-            if(keepTags){
+            if(settings_.keepTags()){
                 tags->insert(fullfile,tag);
             }
         }
@@ -323,7 +324,7 @@ QList<m3uEntry>  playList::processFile( bool *wasCanceled, QFileInfo fileInfo, Q
     //only these are needed
     bool anyOk;
     bool allOk;
-    if(rules.size()==0){
+    if(rules_.size()==0){
         anyOk = true;
         allOk = true;
     }else{
@@ -331,25 +332,25 @@ QList<m3uEntry>  playList::processFile( bool *wasCanceled, QFileInfo fileInfo, Q
         anyOk = false;
     }
     //loop list of individual files. If file matches one of the indiviudally specified files, it is
-    //added. All rules ignored.
+    //added. All rules_ ignored.
     bool skipRules = false;
-    if( useScript && script.isEmpty() ){
+    if( settings_.useScript() && script_.isEmpty() ){
         skipRules=true;
     }
-    for(int i=0;i<individualFiles.size();i++){
-        if( file == individualFiles[i] ){
+    for(int i=0;i<individualFiles_.size();i++){
+        if( file == individualFiles_[i] ){
             allOk = true;
             anyOk = true;
             skipRules = true;
             break;
         }
     }
-    bool scriptok = useScript;
+    bool scriptok = settings_.useScript();
     if( !skipRules ){
-        /*if(useScript){
+        /*if(useScript_){
                                 anyOk = false;
                                 allOk = false;
-                                //if script is empty result will be true/ok/include
+                                //if script_ is empty result will be true/ok/include
 
                                 QScriptEngine e;
                                 if( !e.importedExtensions().contains("qt.core") ){
@@ -358,21 +359,21 @@ QList<m3uEntry>  playList::processFile( bool *wasCanceled, QFileInfo fileInfo, Q
                                                 log->append("\n"+tmp.toString());
                                         }
                                 }
-                                QString tmpscript=script;
+                                QString tmpscript=script_;
                                 qDebug()<<"before: "<<tmpscript;
                                 QString definitons;
-                                for(int i=0;i<scriptvariables.size();i++){
-                                        if( tmpscript.contains(scriptvariables[i]) ){
-                                                QVariant tmp = tag.getTag( scriptvariables[i].toLower() );
+                                for(int i=0;i<scriptVariables_.size();i++){
+                                        if( tmpscript.contains(scriptVariables_[i]) ){
+                                                QVariant tmp = tag.getTag( scriptVariables_[i].toLower() );
                                                 QString var="";
                                                 if(tmp.canConvert(QVariant::String)){
                                                         var = tmp.toString();
                                                 }else if(tmp.canConvert(QVariant::Int)){
                                                         var = QString::number( tmp.toInt() );
                                                 }
-                                                definitons.append("var "+scriptvariables[i]+"="+"\""+var+"\"; ");
+                                                definitons.append("var "+scriptVariables_[i]+"="+"\""+var+"\"; ");
                                                 //definitons.append("var timer = new QTimer;");
-                                                //e.globalObject().setProperty( scriptvariables[i], var );
+                                                //e.globalObject().setProperty( scriptVariables_[i], var );
                                         }
                                 }
                                 tmpscript.prepend(definitons);
@@ -380,8 +381,8 @@ QList<m3uEntry>  playList::processFile( bool *wasCanceled, QFileInfo fileInfo, Q
                                 QScriptValue res = e.evaluate(tmpscript);
                                 if( e.hasUncaughtException() ){
                                         QString err = e.uncaughtException().toString();
-                                        qDebug() << "Error when evaluating script: \n"+tmpscript+"\n"+err;
-                                        log->append("\nError when evaluating script: \n"+tmpscript+"\n"+err);
+                                        qDebug() << "Error when evaluating script_: \n"+tmpscript+"\n"+err;
+                                        log->append("\nError when evaluating script_: \n"+tmpscript+"\n"+err);
                                         *wasCanceled=true;
                                         scriptok=false;
                                 }else{
@@ -390,38 +391,38 @@ QList<m3uEntry>  playList::processFile( bool *wasCanceled, QFileInfo fileInfo, Q
                                 qDebug()<<"SCRIPT RESULT: "<<scriptok;
                         }else{
                         */
-        //evaluate the set of specified rules
+        //evaluate the set of specified rules_
         evaluateRules( tag, file, &allOk, &anyOk );
         //qDebug()<<allOk<<anyOk;
         //}
     }
     //decide to include or not
     m3uEntry e;    
-    if( (allRulesTrue && allOk) || (!allRulesTrue && anyOk) || scriptok ){
+    if( (allRulesTrue_ && allOk) || (!allRulesTrue_ && anyOk) || scriptok ){
         //extinf info for m3u
-        if( includeExtInf ){
+        if( includeExtInf_ ){
             //e.extinf = createExtinfString( format, tag, ap, file );
             //e.extinf = createExtinfString( tag, ap, file, format );
-            e.setExtInf( createExtinfString( tag, file, format ) );
+            e.setExtInf( createExtinfString( tag, file, settings_.format() ) );
         }
         e.setOriginalFile( fullfile );
         static QDir tmp;
-        if( tmp.absolutePath()!=copyFilesToDir ){
-            tmp = QDir(copyFilesToDir);
+        if( tmp.absolutePath()!=settings_.copyFilesToDir() ){
+            tmp = QDir(settings_.copyFilesToDir());
         }
         static QDir d;
-        if( d.absolutePath()!=outputfolder ){
-            d = QDir(outputfolder);
+        if( d.absolutePath()!=outPutFolder_ ){
+            d = QDir(outPutFolder_);
         }
-        if( relativePath ){
-            if( useCopyFilesToPath && copyFiles && tmp.exists() ){
+        if( relativePath_ ){
+            if( settings_.useCopyFilesToPath() && copyFiles_ && tmp.exists() ){
                 QString tmpfullfile = tmp.absolutePath()+"/"+file;
                 e.setFullFile( d.relativeFilePath( tmpfullfile ) );
             }else{
                 e.setFullFile( d.relativeFilePath( fullfile ) );
             }
         }else{
-            if( useCopyFilesToPath && copyFiles && tmp.exists() ){
+            if( settings_.useCopyFilesToPath() && copyFiles_ && tmp.exists() ){
                 e.setFullFile( tmp.absolutePath()+"/"+file );
             }else{
                 e.setFullFile( fullfile );
@@ -446,77 +447,77 @@ QList<m3uEntry>  playList::processFile( bool *wasCanceled, QFileInfo fileInfo, Q
 void playList::evaluateRules( Tag tag, QString file, bool *allOk, bool* anyOk ){
 
     bool ok;
-    for(int i=0;i<rules.size();i++){
-        rule r = rules[i];
-        ruleType t = r.type;
-        bool shouldBeTrue = r.shouldBeTrue;
+    for(int i=0;i<rules_.size();i++){
+        rule r = rules_[i];
+        rule::ruleType t = r.type();
+        bool shouldBeTrue = r.shouldBeTrue();
         Qt::CaseSensitivity s = Qt::CaseInsensitive;
-        if(r.caseSensitive){
+        if(r.caseSensitive()){
             s = Qt::CaseSensitive;
         }
-        if( t==FILENAME_CONTAINS ){
-            checkRule( file.contains( r.value, s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==FILENAME_EQUALS ){
-            checkRule( file.compare( r.value, s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==TAG_TITLE_CONTAINS ){
+        if( t==rule::FILENAME_CONTAINS ){
+            checkRule( file.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
+        }else if( t==rule::FILENAME_EQUALS ){
+            checkRule( file.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
+        }else if( t==rule::TAG_TITLE_CONTAINS ){
             QString tmp = tag.getTag("title").toString();
-            checkRule( tmp.contains( r.value, s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==TAG_TITLE_EQUALS ){
+            checkRule( tmp.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
+        }else if( t==rule::TAG_TITLE_EQUALS ){
             QString tmp = tag.getTag("title").toString();
-            checkRule( tmp.compare( r.value, s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==TAG_ARTIST_CONTAINS ){
+            checkRule( tmp.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
+        }else if( t==rule::TAG_ARTIST_CONTAINS ){
             QString tmp = tag.getTag("artist").toString();
-            checkRule( tmp.contains( r.value, s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==TAG_ARTIST_EQUALS ){
+            checkRule( tmp.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
+        }else if( t==rule::TAG_ARTIST_EQUALS ){
             QString tmp = tag.getTag("artist").toString();
-            checkRule( tmp.compare( r.value, s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==TAG_ALBUM_CONTAINS ){
+            checkRule( tmp.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
+        }else if( t==rule::TAG_ALBUM_CONTAINS ){
             QString tmp = tag.getTag("album").toString();
-            checkRule( tmp.contains( r.value, s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==TAG_ALBUM_EQUALS ){
+            checkRule( tmp.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
+        }else if( t==rule::TAG_ALBUM_EQUALS ){
             QString tmp = tag.getTag("album").toString();
-            checkRule( tmp.compare( r.value, s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==TAG_COMMENT_CONTAINS ){
+            checkRule( tmp.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
+        }else if( t==rule::TAG_COMMENT_CONTAINS ){
             QString tmp = tag.getTag("comment").toString();
-            checkRule( tmp.contains( r.value, s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==TAG_COMMENT_EQUALS ){
+            checkRule( tmp.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
+        }else if( t==rule::TAG_COMMENT_EQUALS ){
             QString tmp = tag.getTag("comment").toString();
-            checkRule( tmp.compare( r.value, s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==TAG_GENRE_CONTAINS ){
+            checkRule( tmp.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
+        }else if( t==rule::TAG_GENRE_CONTAINS ){
             QString tmp = tag.getTag("genre").toString();
-            checkRule( tmp.contains( r.value, s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==TAG_GENRE_EQUALS ){
+            checkRule( tmp.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
+        }else if( t==rule::TAG_GENRE_EQUALS ){
             QString tmp = tag.getTag("genre").toString();
-            checkRule( tmp.compare( r.value, s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==TAG_TRACK_IS ){
+            checkRule( tmp.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
+        }else if( t==rule::TAG_TRACK_IS ){
             int tmp = tag.getTag("track").toInt();
             QVector<int> intvals;
-            ok = Global::checkIntValue( &intvals, r.value );
+            ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
-        }else if( t==TAG_YEAR_IS ){
+        }else if( t==rule::TAG_YEAR_IS ){
             int tmp = tag.getTag("year").toInt();
             QVector<int> intvals;
-            ok = Global::checkIntValue( &intvals, r.value );
+            ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
-        }else if( t==AUDIO_BITRATE_IS ){
+        }else if( t==rule::AUDIO_BITRATE_IS ){
             int tmp = tag.getTag("bitrate").toInt();
             QVector<int> intvals;
-            ok = Global::checkIntValue( &intvals, r.value );
+            ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
-        }else if( t==AUDIO_SAMPLERATE_IS ){
+        }else if( t==rule::AUDIO_SAMPLERATE_IS ){
             int tmp = tag.getTag("sampleRate").toInt();
             QVector<int> intvals;
-            ok = Global::checkIntValue( &intvals, r.value );
+            ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
-        }else if( t==AUDIO_CHANNELS_IS ){
+        }else if( t==rule::AUDIO_CHANNELS_IS ){
             int tmp = tag.getTag("channels").toInt();
             QVector<int> intvals;
-            ok = Global::checkIntValue( &intvals, r.value );
+            ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
-        }else if( t==AUDIO_LENGTH_IS ){
+        }else if( t==rule::AUDIO_LENGTH_IS ){
             int tmp = tag.getTag("length").toInt();
             QVector<int> intvals;
-            ok = Global::checkIntValue( &intvals, r.value );
+            ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
         }
     }
@@ -545,27 +546,28 @@ QString playList::createExtinfString( Tag tag, QString file, QString format ){
         format.replace( QString("%track%"), track );
         format.replace( QString("%filename%"), file );
 
-        int sum = (int)artistEmpty + (int)titleEmpty + (int)albumEmpty + (int)commentEmpty + (int)genreEmpty + (int)trackEmpty + (int)yearEmpty;
+        int sum = settings_.artistEmpty() + settings_.titleEmpty() + settings_.albumEmpty() \
+                + settings_.commentEmpty() + settings_.genreEmpty() + settings_.trackEmpty() + settings_.yearEmpty();
         int sum2=0;
-        if( artist.isEmpty() && artistEmpty ){
+        if( artist.isEmpty() && settings_.artistEmpty() ){
             sum2++;
         }
-        if( title.isEmpty() && titleEmpty ){
+        if( title.isEmpty() && settings_.titleEmpty() ){
             sum2++;
         }
-        if( album.isEmpty() && albumEmpty ){
+        if( album.isEmpty() && settings_.albumEmpty() ){
             sum2++;
         }
-        if( comment.isEmpty() && commentEmpty ){
+        if( comment.isEmpty() && settings_.commentEmpty() ){
             sum2++;
         }
-        if( genre.isEmpty() && genreEmpty ){
+        if( genre.isEmpty() && settings_.genreEmpty() ){
             sum2++;
         }
-        if( track.isEmpty() && trackEmpty ){
+        if( track.isEmpty() && settings_.trackEmpty() ){
             sum2++;
         }
-        if( year.isEmpty() && yearEmpty ){
+        if( year.isEmpty() && settings_.yearEmpty() ){
             sum2++;
         }
         if(sum2==sum){
@@ -636,7 +638,7 @@ QStringList playList::extensions() const{
     return extensions_;
 }
 
-bool playList::randomize( bool  ) const{
+bool playList::randomize() const{
     return randomize_;
 }
 
@@ -679,6 +681,11 @@ QStringList playList::individualFiles() const{
 QString playList::script() const{
     return script_;
 }
+
+QString playList::outPutFolder() const{
+    return outPutFolder_;
+}
+
 
 
 void playList::setName( const QString &name ){
@@ -739,5 +746,50 @@ void playList::setIndividualFiles( const QStringList &individualFiles ){
 
 void playList::setScript( const QString &script ){
     script_ = script;
+}
+
+void playList::setOutPutFolder( const QString &outPutFolder ){
+    outPutFolder_ = outPutFolder;
+}
+
+
+playList::operator QVariant () const{
+    return QVariant::fromValue(*this);
+}
+
+QDataStream &operator>>(QDataStream &in, playList &p){
+
+    QString name_;
+    QVector<rule> rules_;
+    QStringList folders_;
+    QStringList extensions_;
+    bool randomize_;
+    bool includeSubFolders;
+    bool relativePath_;
+    bool allRulesTrue_;
+    bool includeExtInf_;
+    bool makeUnique_;
+    int uniqueId;
+    QString copyFilesToDir;
+    bool copyFiles;
+    QStringList individualFiles_;
+    QString script_,outPutFolder;
+
+    in >> name_ >> rules_ >> folders_ >> extensions_ >> randomize_ >> includeSubFolders >> relativePath_ >> allRulesTrue_;
+    in >> includeExtInf_ >> makeUnique_ >> uniqueId >> copyFilesToDir >> copyFiles >> individualFiles_ >> script_ >> outPutFolder;
+
+    p = playList();
+    p.setName(name_); p.setRules(rules_); p.setFolders(folders_); p.setExtensions(extensions_); p.setRandomize(randomize_);
+    p.setIncludeSubFolders(includeSubFolders); p.setRelativePath(relativePath_); p.setAllRulesTrue(allRulesTrue_);
+    p.setIncludeExtInf(includeExtInf_); p.setMakeUnique(makeUnique_); p.setUniqueId(uniqueId); p.setCopyFilesToDir(copyFilesToDir);
+    p.setCopyFiles(copyFiles); p.setIndividualFiles(individualFiles_); p.setScript(script_); p.setOutPutFolder(outPutFolder);
+    return in;
+}
+
+QDataStream &operator<<(QDataStream &out, const playList &p){
+    out << p.name() << p.rules() << p.folders() << p.extensions() << p.randomize() << p.includeSubFolders();
+    out << p.relativePath() << p.allRulesTrue() << p.includeExtInf() << p.makeUnique() << p.uniqueId() << p.copyFilesToDir();
+    out << p.copyFiles() << p.individualFiles() << p.script() << p.outPutFolder();
+    return out;
 }
 
