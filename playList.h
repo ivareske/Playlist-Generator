@@ -21,11 +21,13 @@
 #include "globalFunctions.h"
 
 
-class playList{
+class playList : public QListWidgetItem{
 
 public:
-    playList( const QStringList &defaultExtensions = QStringList() );
+    playList( const QStringList &defaultExtensions = QStringList(), QListWidget *parent = 0 );
+    playList( const playList &other );
     bool generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log, QHash<QString,Tag> *tags, const settingsClass &settings );
+    void copyFoundFiles( QList<m3uEntry> songs, QString *log );
 
     QString name() const;
     QVector<rule> rules() const;
@@ -77,7 +79,7 @@ private:
     settingsClass settings_;
 
 
-    QString name_;
+    //QString name_;
     QVector<rule> rules_;
     QStringList folders_;
     QStringList extensions_;

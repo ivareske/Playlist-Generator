@@ -2,9 +2,9 @@
 #include "playList.h"
 
 
-playList::playList( const QStringList &defaultExtensions ){
+playList::playList( const QStringList &defaultExtensions, QListWidget *parent ) : QListWidgetItem(parent){
 
-    name_="";
+    setName("New playlist");
     extensions_ = defaultExtensions;
     if( extensions_.size()==0 ){
         extensions_<<"*.mp3"<<"*.wma"<<"*.wav"<<"*.ogg"<<"*.aac"<<"*.ac3";
@@ -21,6 +21,66 @@ playList::playList( const QStringList &defaultExtensions ){
     scriptVariables_<<"ARTIST"<<"ALBUM"<<"TITLE"<<"GENRE"<<"TRACK"<<"YEAR"<<"COMMENT"<<"LENGTH"<<"SAMPLERATE"<<"BITRATE"<<"CHANNELS";
 
 }
+
+playList::playList( const playList &other ){
+    QListWidgetItem::operator =(other);
+    setName(other.name());
+    rules_ = other.rules();
+    folders_ = other.folders();
+    extensions_ = other.extensions();
+    randomize_ = other.randomize();
+    includeSubFolders_ = other.includeSubFolders();
+    relativePath_ = other.relativePath();
+    allRulesTrue_ = other.allRulesTrue();
+    includeExtInf_ = other.includeExtInf();
+    makeUnique_ = other.makeUnique();
+    copyFilesToDir_ = other.copyFilesToDir();
+    copyFiles_ = other.copyFiles();
+    individualFiles_ = other.individualFiles();
+    script_ = other.script();
+    outPutFolder_ = other.outPutFolder();
+    scriptVariables_<<"ARTIST"<<"ALBUM"<<"TITLE"<<"GENRE"<<"TRACK"<<"YEAR"<<"COMMENT"<<"LENGTH"<<"SAMPLERATE"<<"BITRATE"<<"CHANNELS";
+
+}
+
+void playList::copyFoundFiles( QList<m3uEntry> songs, QString *log ){
+
+    log->append("\nResult from file copy:\n");
+    int nCopied=0;
+
+    qDebug()<<"starting to copy "<<songs.size()<<" files!";
+    QProgressDialog pr("Copying files for playlist "+name()+" to "+copyFilesToDir_, "Abort", 0, songs.size(), 0);
+    pr.setWindowModality(Qt::WindowModal);
+    QPushButton *cancelButton = new QPushButton;
+    pr.setCancelButton(cancelButton);
+    pr.setCancelButtonText("Cancel");
+    pr.setLabelText("Copying files");
+    for(int j=0;j<songs.size();j++){
+        pr.setValue(j);
+        if (pr.wasCanceled()){
+            break;
+        }
+        QFile f( songs[j].originalFile() );
+        QString newname = copyFilesToDir_ + "/" + songs[j].file();
+        bool okf = f.copy( newname );
+        //qDebug_<<"copy result of "<<songs[j].originalfile<<" -> "<<newname<<": "<<okf;
+        if(!okf){
+            QFile f2(newname);
+            if( f2.exists() ){
+                log->append( songs[j].file() + " was not copied as it already exists in "+copyFilesToDir_+"\n" );
+            }else{
+                log->append( songs[j].file() + " could not be copied to "+copyFilesToDir_+"\n" );
+            }
+        }else{
+            nCopied++;
+        }
+    }
+    pr.setValue(songs.size());
+    pr.close();
+    log->append(QString::number(nCopied)+" of "+QString::number(songs.size())+" files copied to "+copyFilesToDir_+"\n");
+
+}
+
 
 /*
 void playList::getGuiSettings(){
@@ -62,7 +122,7 @@ bool playList::generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log,
 
     if(songs.isEmpty()){
         QMessageBox::information(0, "",
-                                 "No songs matching your criteria were found for playlist "+name_,
+                                 "No songs matching your criteria were found for playlist "+name(),
                                  QMessageBox::Ok, QMessageBox::Ok);
         End_t = time(NULL);    //record time that task 1 ends
         totaltime = difftime(End_t, Start_t);    //compute elapsed time of task 1
@@ -72,12 +132,12 @@ bool playList::generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log,
 
     writeM3U( songs );
 
-    s->showMessage( "Generated playlist '"+name_+"' with "+QString::number(songs.size())+" songs", 10000 );
+    s->showMessage( "Generated playlist '"+name()+"' with "+QString::number(songs.size())+" songs", 10000 );
     End_t = time(NULL);    //record time that task 1 ends
     totaltime = difftime(End_t, Start_t);    //compute elapsed time of task 1
     std::cout<<"time used: "<<totaltime<<std::endl;
 
-    log->append("\n Found "+QString::number(songs.size())+" songs for "+ name_ +". Time used: "+QString::number(totaltime)+" seconds\n");
+    log->append("\n Found "+QString::number(songs.size())+" songs for "+ name() +". Time used: "+QString::number(totaltime)+" seconds\n");
     return canceled;
 }
 
@@ -86,7 +146,7 @@ void playList::writeM3U( QList<m3uEntry> songs ){
     if(outPutFolder_.right(1)!="\\" && outPutFolder_.right(1)!="/"){
         outPutFolder_.append("/");
     }
-    QString file = outPutFolder_ + name_ + ".m3u";
+    QString file = outPutFolder_ + name() + ".m3u";
 
     QFile f( file );
     if( !f.open( QIODevice::WriteOnly ) ){
@@ -200,14 +260,14 @@ QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log
     QHash<QString,Tag> tagscopy = *tags;
 
     int n=fileInfo.size(); QList<m3uEntry> tmplist;
-    QProgressDialog p("Locating files for playlist "+name_, "Abort", 0, n, 0);
+    QProgressDialog p("Locating files for playlist "+name(), "Abort", 0, n, 0);
     p.setWindowModality(Qt::WindowModal);
 
 
     QPushButton *cancelButton = new QPushButton;
     p.setCancelButton(cancelButton);
     p.setCancelButtonText("Cancel");
-    p.setLabelText("Locating files for "+name_);
+    p.setLabelText("Locating files for "+name());
     bool wasCanceled=false;
 
     qDebug()<<"found "<<n<<" files to process";
@@ -623,7 +683,7 @@ void playList::checkRange( QVector<int> intvals, int tmp, bool *allOk, bool *any
 
 
 QString playList::name() const{
-    return name_;
+    return this->text();
 }
 
 QVector<rule> playList::rules() const{
@@ -687,9 +747,8 @@ QString playList::outPutFolder() const{
 }
 
 
-
 void playList::setName( const QString &name ){
-    name_ = name;
+    this->setText(name);
 }
 
 void playList::setRules( const QVector<rule> &rules ){

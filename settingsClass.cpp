@@ -4,7 +4,7 @@
 settingsClass::settingsClass(){
 
 
-    style_="";
+    style_="Plastique";
     artistEmpty_=true;
     titleEmpty_=true;
     albumEmpty_=false;
