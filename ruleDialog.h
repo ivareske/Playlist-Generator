@@ -2,7 +2,6 @@
 #define RULEDIALOG_H
  
 #include <QtGui>
-#include "structs.h"
 #include "rule.h"
 #include "playList.h"
 #include "globalFunctions.h"

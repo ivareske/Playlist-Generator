@@ -29,48 +29,47 @@ public:
     bool generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log, QHash<QString,Tag> *tags, const settingsClass &settings );
     void copyFoundFiles( QList<m3uEntry> songs, QString *log );
 
+    QString fileNameWithoutExtension() const;
     QString name() const;
     QVector<rule> rules() const;
-    QStringList folders() const;
+    QList<QDir> folders() const;
     QStringList extensions() const;
     bool randomize() const;
     bool includeSubFolders() const;
     bool relativePath() const;
     bool allRulesTrue() const;
     bool includeExtInf() const;
-    bool makeUnique() const;
-    int uniqueId() const;
-    QString copyFilesToDir() const;
+    bool makeUnique() const;    
+    QDir copyFilesToDir() const;
     bool copyFiles() const;
-    QStringList individualFiles() const;
+    QList<QFileInfo> individualFiles() const;
     QString script() const;
-    QString outPutFolder() const;
+    QDir outPutFolder() const;
 
     void setName( const QString &name );
     void setRules( const QVector<rule> &rules );
-    void setFolders( const QStringList &folders );
+    void setFolders( const QList<QDir> &folders );
     void setExtensions( const QStringList &extensions );
     void setRandomize( bool randomize );
     void setIncludeSubFolders( bool includeSubFolders );
     void setRelativePath( bool setRelativePath );
     void setAllRulesTrue( bool allRulesTrue );
     void setIncludeExtInf( bool includeExtInf );
-    void setMakeUnique( bool makeUnique );
-    void setUniqueId( int uniqueId );
-    void setCopyFilesToDir( const QString &copyFilesToDir );
+    void setMakeUnique( bool makeUnique );    
+    void setCopyFilesToDir( const QDir &copyFilesToDir );
     void setCopyFiles( bool copyFiles );
-    void setIndividualFiles( const QStringList &individualFiles );
+    void setIndividualFiles( const QList<QFileInfo> &individualFiles );
     void setScript( const QString &script );
-    void setOutPutFolder( const QString &outPutFolder );
+    void setOutPutFolder( const QDir &outPutFolder );
 
     operator QVariant () const;
 
 private:
 
     QList<m3uEntry> findFiles( QStatusBar *s, bool *canceled, QString *log, QHash<QString,Tag> *tags );
-    QList<QFileInfo> getDirContent( QString& aPath );
+    QList<QFileInfo> getDirContent( const QString& aPath );
     void checkRange( QVector<int> intvals, int tmp, bool *allOk, bool *anyOk, bool shouldBeTrue );
-    void writeM3U( QList<m3uEntry> songs );
+    bool writeM3U( QList<m3uEntry> songs, QString *log=0 );
     void checkRule( bool ruleCheck, bool *allOk, bool *anyOk, bool shouldBeTrue );
     QList<m3uEntry> processFile( bool *wasCanceled, QFileInfo fileInfo, QStatusBar *s, bool hasTagRule, bool hasAudioRule, QString *log, QHash<QString,Tag> *tags, QHash<QString,Tag> *tagscopy );
     QString createExtinfString( Tag tag, QString file, QString format );
@@ -81,7 +80,7 @@ private:
 
     //QString name_;
     QVector<rule> rules_;
-    QStringList folders_;
+    QList<QDir> folders_;
     QStringList extensions_;
     bool randomize_;
     bool includeSubFolders_;
@@ -90,11 +89,11 @@ private:
     bool includeExtInf_;
     bool makeUnique_;
     int uniqueId_;
-    QString copyFilesToDir_;
+    QDir copyFilesToDir_;
     bool copyFiles_;
-    QStringList individualFiles_;
+    QList<QFileInfo> individualFiles_;
     QString script_;
-    QString outPutFolder_;
+    QDir outPutFolder_;
     QStringList scriptVariables_;
 
     /*

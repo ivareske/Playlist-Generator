@@ -49,7 +49,7 @@ void playList::copyFoundFiles( QList<m3uEntry> songs, QString *log ){
     int nCopied=0;
 
     qDebug()<<"starting to copy "<<songs.size()<<" files!";
-    QProgressDialog pr("Copying files for playlist "+name()+" to "+copyFilesToDir_, "Abort", 0, songs.size(), 0);
+    QProgressDialog pr("Copying files for playlist "+name()+" to "+copyFilesToDir_.absolutePath(), "Abort", 0, songs.size(), 0);
     pr.setWindowModality(Qt::WindowModal);
     QPushButton *cancelButton = new QPushButton;
     pr.setCancelButton(cancelButton);
@@ -61,15 +61,15 @@ void playList::copyFoundFiles( QList<m3uEntry> songs, QString *log ){
             break;
         }
         QFile f( songs[j].originalFile() );
-        QString newname = copyFilesToDir_ + "/" + songs[j].file();
+        QString newname = copyFilesToDir_.absolutePath() + "/" + songs[j].file();
         bool okf = f.copy( newname );
         //qDebug_<<"copy result of "<<songs[j].originalfile<<" -> "<<newname<<": "<<okf;
         if(!okf){
             QFile f2(newname);
             if( f2.exists() ){
-                log->append( songs[j].file() + " was not copied as it already exists in "+copyFilesToDir_+"\n" );
+                log->append( songs[j].file() + " was not copied as it already exists in "+copyFilesToDir_.absolutePath()+"\n" );
             }else{
-                log->append( songs[j].file() + " could not be copied to "+copyFilesToDir_+"\n" );
+                log->append( songs[j].file() + " could not be copied to "+copyFilesToDir_.absolutePath()+"\n" );
             }
         }else{
             nCopied++;
@@ -77,40 +77,19 @@ void playList::copyFoundFiles( QList<m3uEntry> songs, QString *log ){
     }
     pr.setValue(songs.size());
     pr.close();
-    log->append(QString::number(nCopied)+" of "+QString::number(songs.size())+" files copied to "+copyFilesToDir_+"\n");
+    log->append(QString::number(nCopied)+" of "+QString::number(songs.size())+" files copied to "+copyFilesToDir_.absolutePath()+"\n");
 
 }
 
 
-/*
-void playList::getGuiSettings(){
-
-    guiSettings = new QSettings("playListGenerator"+ext,QSettings::IniFormat,0);
-    artistEmpty = guiSettings->value("artistEmpty",true).toBool();
-    titleEmpty = guiSettings->value("titleEmpty",true).toBool();
-    albumEmpty = guiSettings->value("albumEmpty",false).toBool();
-    commentEmpty = guiSettings->value("commentEmpty",false).toBool();
-    genreEmpty = guiSettings->value("genreEmpty",false).toBool();
-    trackEmpty = guiSettings->value("trackEmpty",false).toBool();
-    yearEmpty = guiSettings->value("yearEmpty",false).toBool();
-    outPutFolder_ = guiSettings->value("defaultOutputFolder","").toString();
-    format = guiSettings->value("format","%artist% - %title%").toString();
-    useScript_ = guiSettings->value("useScript_",false).toBool();
-    keepTags = guiSettings->value("keepTags",true).toBool();
-    useCopyFilesToPath = guiSettings->value("useCopyFilesToPath",true).toBool();
-    ShowTagLibDebug = guiSettings->value("ShowTagLibDebug",true).toBool();
-
-}
-*/
-
-bool playList::generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log, QHash<QString, Tag> *tags, const settingsClass &settings ){
+bool playList::generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log, QHash<QString, Tag> *tags, const settingsClass &settings ){    
 
     //getGuiSettings();
     settings_ = settings;
 
     time_t Start_t, End_t;
     int totaltime;
-    Start_t = time(NULL);
+    Start_t = time(0);
 
     bool canceled = false;
     QList<m3uEntry> songs = findFiles( s, &canceled, log, tags );
@@ -124,16 +103,18 @@ bool playList::generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log,
         QMessageBox::information(0, "",
                                  "No songs matching your criteria were found for playlist "+name(),
                                  QMessageBox::Ok, QMessageBox::Ok);
-        End_t = time(NULL);    //record time that task 1 ends
+        End_t = time(0);    //record time that task 1 ends
         totaltime = difftime(End_t, Start_t);    //compute elapsed time of task 1
         log->append("\n Found "+QString::number(songs.size())+" songs. Time used: "+QString::number(totaltime)+" seconds\n");
         return true;
     }
 
-    writeM3U( songs );
+    bool writeOk = writeM3U( songs, log );
 
-    s->showMessage( "Generated playlist '"+name()+"' with "+QString::number(songs.size())+" songs", 10000 );
-    End_t = time(NULL);    //record time that task 1 ends
+    if(writeOk){
+        s->showMessage( "Generated playlist '"+name()+"' with "+QString::number(songs.size())+" songs", 10000 );
+    }
+    End_t = time(0);    //record time that task 1 ends
     totaltime = difftime(End_t, Start_t);    //compute elapsed time of task 1
     std::cout<<"time used: "<<totaltime<<std::endl;
 
@@ -141,19 +122,21 @@ bool playList::generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log,
     return canceled;
 }
 
-void playList::writeM3U( QList<m3uEntry> songs ){
+bool playList::writeM3U( QList<m3uEntry> songs, QString *log ){
 
-    if(outPutFolder_.right(1)!="\\" && outPutFolder_.right(1)!="/"){
-        outPutFolder_.append("/");
-    }
-    QString file = outPutFolder_ + name() + ".m3u";
+    QString file = outPutFolder_.absolutePath() +"/"+ name() + ".m3u";
 
     QFile f( file );
     if( !f.open( QIODevice::WriteOnly ) ){
+        /*
         QMessageBox::warning(0, "",
                              "Could not open "+file+" for writing",
                              QMessageBox::Ok, QMessageBox::Ok);
-        return;
+        */
+        if(log){
+            log->append("\nCould not open "+file+" for writing");
+        }
+        return false;
     }
     QTextStream ts( &f );
     if( includeExtInf_ ){
@@ -168,6 +151,7 @@ void playList::writeM3U( QList<m3uEntry> songs ){
 
     f.close();
     qDebug()<<"Finished writing "<<file;
+    return true;
 }
 
 QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log, QHash<QString,Tag> *tags ){
@@ -236,14 +220,14 @@ QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log
         QDir d(folders_[i]);
         if( !d.exists() ){
             QMessageBox::critical(0, "",
-                                  "Folder"+folders_[i]+" doesn`t exist",
+                                  "Folder"+folders_[i].absolutePath()+" doesn`t exist",
                                   QMessageBox::Ok, QMessageBox::Ok);
             *canceled = true;
             return plist;
         }
         if( !d.isAbsolute() ){
             QMessageBox::critical(0, "",
-                                  "Folder"+folders_[i]+" is not an absolute path",
+                                  "Folder"+folders_[i].absolutePath()+" is not an absolute path",
                                   QMessageBox::Ok, QMessageBox::Ok);
             plist.clear();
             *canceled = true;
@@ -251,7 +235,7 @@ QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log
         }
 
         //get content from the specified folder(s)
-        fileInfo = fileInfo + getDirContent( folders_[i] );
+        fileInfo = fileInfo + getDirContent( folders_[i].absolutePath() );
     }
     //make unique
     fileInfo = fileInfo.toSet().toList();
@@ -324,7 +308,7 @@ QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log
 
 
 
-QList<QFileInfo> playList::getDirContent( QString& aPath ){
+QList<QFileInfo> playList::getDirContent( const QString& aPath ){
 
     // append the filtered files to this list
 
@@ -398,7 +382,7 @@ QList<m3uEntry>  playList::processFile( bool *wasCanceled, QFileInfo fileInfo, Q
         skipRules=true;
     }
     for(int i=0;i<individualFiles_.size();i++){
-        if( file == individualFiles_[i] ){
+        if( file == individualFiles_[i].absoluteFilePath() ){
             allOk = true;
             anyOk = true;
             skipRules = true;
@@ -471,8 +455,8 @@ QList<m3uEntry>  playList::processFile( bool *wasCanceled, QFileInfo fileInfo, Q
             tmp = QDir(settings_.copyFilesToDir());
         }
         static QDir d;
-        if( d.absolutePath()!=outPutFolder_ ){
-            d = QDir(outPutFolder_);
+        if( d!=outPutFolder_ ){
+            d = outPutFolder_;
         }
         if( relativePath_ ){
             if( settings_.useCopyFilesToPath() && copyFiles_ && tmp.exists() ){
@@ -587,7 +571,7 @@ void playList::evaluateRules( Tag tag, QString file, bool *allOk, bool* anyOk ){
 
 QString playList::createExtinfString( Tag tag, QString file, QString format ){
 
-    //if( tag!=NULL ){
+    //if( tag!=0 ){
     if( tag.tagOk() ){
         QString artist = tag.getTag("artist").toString(); //tag->artist().toCString();
         QString title = tag.getTag("title").toString(); //tag->title().toCString();
@@ -680,7 +664,9 @@ void playList::checkRange( QVector<int> intvals, int tmp, bool *allOk, bool *any
 }
 
 
-
+QString playList::fileNameWithoutExtension() const{
+    return outPutFolder_.absolutePath()+"/"+name();
+}
 
 QString playList::name() const{
     return this->text();
@@ -690,7 +676,7 @@ QVector<rule> playList::rules() const{
     return rules_;
 }
 
-QStringList playList::folders() const{
+QList<QDir> playList::folders() const{
     return folders_;
 }
 
@@ -722,11 +708,7 @@ bool playList::makeUnique() const{
     return makeUnique_;
 }
 
-int playList::uniqueId() const{
-    return uniqueId_;
-}
-
-QString playList::copyFilesToDir() const{
+QDir playList::copyFilesToDir() const{
     return copyFilesToDir_;
 }
 
@@ -734,7 +716,7 @@ bool playList::copyFiles() const{
     return copyFiles_;
 }
 
-QStringList playList::individualFiles() const{
+QList<QFileInfo> playList::individualFiles() const{
     return individualFiles_;
 }
 
@@ -742,7 +724,7 @@ QString playList::script() const{
     return script_;
 }
 
-QString playList::outPutFolder() const{
+QDir playList::outPutFolder() const{
     return outPutFolder_;
 }
 
@@ -755,7 +737,7 @@ void playList::setRules( const QVector<rule> &rules ){
     rules_ = rules;
 }
 
-void playList::setFolders( const QStringList &folders ){
+void playList::setFolders( const QList<QDir> &folders ){
     folders_ = folders;
 }
 
@@ -787,11 +769,8 @@ void playList::setMakeUnique( bool makeUnique ){
     makeUnique_ = makeUnique;
 }
 
-void playList::setUniqueId( int uniqueId ){
-    uniqueId_ = uniqueId;
-}
 
-void playList::setCopyFilesToDir( const QString &copyFilesToDir ){
+void playList::setCopyFilesToDir( const QDir &copyFilesToDir ){
     copyFilesToDir_ = copyFilesToDir;
 }
 
@@ -799,7 +778,7 @@ void playList::setCopyFiles( bool copyFiles ){
     copyFiles_ = copyFiles;
 }
 
-void playList::setIndividualFiles( const QStringList &individualFiles ){
+void playList::setIndividualFiles( const QList<QFileInfo> &individualFiles ){
     individualFiles_ = individualFiles;
 }
 
@@ -807,7 +786,7 @@ void playList::setScript( const QString &script ){
     script_ = script;
 }
 
-void playList::setOutPutFolder( const QString &outPutFolder ){
+void playList::setOutPutFolder( const QDir &outPutFolder ){
     outPutFolder_ = outPutFolder;
 }
 
@@ -820,35 +799,57 @@ QDataStream &operator>>(QDataStream &in, playList &p){
 
     QString name_;
     QVector<rule> rules_;
-    QStringList folders_;
+    QList<QString> folders_;
     QStringList extensions_;
     bool randomize_;
     bool includeSubFolders;
     bool relativePath_;
     bool allRulesTrue_;
     bool includeExtInf_;
-    bool makeUnique_;
-    int uniqueId;
+    bool makeUnique_;    
     QString copyFilesToDir;
     bool copyFiles;
-    QStringList individualFiles_;
-    QString script_,outPutFolder;
+    QList<QString> individualFiles_;
+    QString script_;
+    QString outPutFolder;
 
     in >> name_ >> rules_ >> folders_ >> extensions_ >> randomize_ >> includeSubFolders >> relativePath_ >> allRulesTrue_;
-    in >> includeExtInf_ >> makeUnique_ >> uniqueId >> copyFilesToDir >> copyFiles >> individualFiles_ >> script_ >> outPutFolder;
+    in >> includeExtInf_ >> makeUnique_;
+    in >> copyFilesToDir >> copyFiles;
+    in >> individualFiles_ >> script_ >> outPutFolder;
+
+    QList<QDir> folders;
+    for(int i=0;i<folders_.size();i++){
+        folders.append(QDir(folders_[i]));
+    }
+    QList<QFileInfo> individualFiles;
+    for(int i=0;i<individualFiles_.size();i++){
+        individualFiles.append(QFileInfo(individualFiles_[i]));
+    }
 
     p = playList();
-    p.setName(name_); p.setRules(rules_); p.setFolders(folders_); p.setExtensions(extensions_); p.setRandomize(randomize_);
+    p.setName(name_); p.setRules(rules_); p.setFolders(folders); p.setExtensions(extensions_); p.setRandomize(randomize_);
     p.setIncludeSubFolders(includeSubFolders); p.setRelativePath(relativePath_); p.setAllRulesTrue(allRulesTrue_);
-    p.setIncludeExtInf(includeExtInf_); p.setMakeUnique(makeUnique_); p.setUniqueId(uniqueId); p.setCopyFilesToDir(copyFilesToDir);
-    p.setCopyFiles(copyFiles); p.setIndividualFiles(individualFiles_); p.setScript(script_); p.setOutPutFolder(outPutFolder);
+    p.setIncludeExtInf(includeExtInf_); p.setMakeUnique(makeUnique_); p.setCopyFilesToDir(QDir(copyFilesToDir));
+    p.setCopyFiles(copyFiles); p.setIndividualFiles(individualFiles); p.setScript(script_); p.setOutPutFolder(QDir(outPutFolder));
     return in;
 }
 
 QDataStream &operator<<(QDataStream &out, const playList &p){
-    out << p.name() << p.rules() << p.folders() << p.extensions() << p.randomize() << p.includeSubFolders();
-    out << p.relativePath() << p.allRulesTrue() << p.includeExtInf() << p.makeUnique() << p.uniqueId() << p.copyFilesToDir();
-    out << p.copyFiles() << p.individualFiles() << p.script() << p.outPutFolder();
+
+    QStringList folders;
+    QList<QDir> folders_ = p.folders();
+    for(int i=0;i<folders_.size();i++){
+        folders.append(folders_[i].absolutePath());
+    }
+    QStringList individualFiles;
+    QList<QFileInfo> individualFiles_ = p.individualFiles();
+    for(int i=0;i<individualFiles_.size();i++){
+        individualFiles.append(individualFiles_[i].absoluteFilePath());
+    }
+    out << p.name() << p.rules() << folders << p.extensions() << p.randomize() << p.includeSubFolders();
+    out << p.relativePath() << p.allRulesTrue() << p.includeExtInf() << p.makeUnique() << p.copyFilesToDir().absolutePath();
+    out << p.copyFiles() << individualFiles << p.script() << p.outPutFolder().absolutePath();
     return out;
 }
 

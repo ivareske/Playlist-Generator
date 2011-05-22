@@ -12,16 +12,14 @@ class addFilesDialog : public QDialog, private Ui::addFilesDialog
  
 public:
 
-    addFilesDialog(QWidget *parent = 0);
+    addFilesDialog( const QList<QFileInfo> &files,  QWidget *parent = 0 );
+    QList<QFileInfo> getFiles() const;
 	
-	
-public slots:
+private slots:
 
-        void setFiles( const QStringList &files );
-        QStringList getFiles() const;
 	void chooseFiles();
 	void removeFiles();
-protected:
+
 	
 	
 };

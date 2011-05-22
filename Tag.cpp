@@ -74,7 +74,7 @@ void Tag::readTags(){
 	
 	tagisread=true;
         TagLib::FileRef f( filename_.toStdString().c_str() );
-	if( !f.isNull() && f.tag()!=NULL  ){
+	if( !f.isNull() && f.tag()!=0  ){
 		artist = f.tag()->artist().toCString();
 		album = f.tag()->album().toCString();
 		title = f.tag()->title().toCString();
@@ -84,7 +84,7 @@ void Tag::readTags(){
 		track = f.tag()->track();
 		tagok=true;
 	}
-	if( !f.isNull() && f.audioProperties()!=NULL ){				
+	if( !f.isNull() && f.audioProperties()!=0 ){				
 		length = f.audioProperties()->length();
 		bitrate = f.audioProperties()->bitrate();
 		samplerate = f.audioProperties()->sampleRate();

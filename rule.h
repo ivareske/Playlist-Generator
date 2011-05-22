@@ -1,8 +1,7 @@
 #ifndef RULE_H
 #define RULE_H
 
-#include "structs.h"
-
+#include <QtGui>
 
 class rule{
 

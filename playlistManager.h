@@ -3,8 +3,6 @@
 
 #include <time.h> 
 #include <QtGui>
-//#include <QtScript>
-#include "structs.h"
 #include "rule.h"
 #include "playList.h"
 #include "globalFunctions.h"
@@ -33,7 +31,7 @@ private slots:
     void updateUseScript();
     void addIndividualFiles();
     void createActions();
-    fileReadResult readSettings( QFileInfo file );
+    Global::fileReadResult readSettings( QFileInfo file );
     void saveSettings( QFileInfo file );
     void saveSettingsAs();
     void saveCurrentSettings();

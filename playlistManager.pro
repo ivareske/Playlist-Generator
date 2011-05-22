@@ -24,7 +24,7 @@ LIBS += $$quote(C:/Program Files/taglib/bin/libtag.dll)
 #LIBS += $$quote(C:/Qt/4.6.3/plugins/script/qtscript_cored.dll)
 
 
-HEADERS = playListManager.h settingsDialog.h ruleDialog.h playList.h rule.h globalFunctions.h m3uEntry.h addFilesDialog.h textViewer.h structs.h Tag.h settingsClass.h
+HEADERS = playListManager.h settingsDialog.h ruleDialog.h playList.h rule.h globalFunctions.h m3uEntry.h addFilesDialog.h textViewer.h Tag.h settingsClass.h
 FORMS   = playlistManager.ui settingsDialog.ui ruleDialog.ui addFilesDialog.ui textViewer.ui
 SOURCES = main.cpp playListManager.cpp  settingsDialog.cpp ruleDialog.cpp playList.cpp rule.cpp globalFunctions.cpp m3uEntry.cpp addFilesDialog.cpp textViewer.cpp Tag.cpp settingsClass.cpp
 

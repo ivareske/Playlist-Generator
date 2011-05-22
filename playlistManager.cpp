@@ -10,8 +10,7 @@ playlistManager::playlistManager(QWidget *parent) : QMainWindow(parent){
     qRegisterMetaType<rule>("rule");
     qRegisterMetaTypeStreamOperators<rule>("rule");
     qRegisterMetaType<settingsClass>("settingsClass");
-    qRegisterMetaTypeStreamOperators<settingsClass>("settingsClass");
-
+    qRegisterMetaTypeStreamOperators<settingsClass>("settingsClass");    
 
 
     createActions();
@@ -22,7 +21,7 @@ playlistManager::playlistManager(QWidget *parent) : QMainWindow(parent){
     paths <<  QString("U:/Programmering/c++/QT/qt-labs-qtscriptgenerator-4.6.3/plugins");
     qApp->setLibraryPaths(paths);
 	*/
-    guiSettings = new QSettings("playListGenerator"+ext,QSettings::IniFormat,this);
+    guiSettings = new QSettings("playListGenerator"+Global::ext,QSettings::IniFormat,this);
     readGUISettings();
     playListSettings = new QSettings( settingsFile.fileName(), QSettings::IniFormat, this );
     initialize( settingsFile );
@@ -253,7 +252,7 @@ void playlistManager::newCollection(){
     if(dir.isEmpty()){
         dir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
     }
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Name of new playlist collection"),dir, "*"+ext);
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Name of new playlist collection"),dir, "*"+Global::ext);
 
     if( fileName.isNull() || fileName.isEmpty() ){
         return;
@@ -351,7 +350,7 @@ void playlistManager::readGUISettings(){
     this->resize(guiSettings->value("size", QSize(400, 400)).toSize());
     this->move(guiSettings->value("pos", QPoint(200, 200)).toPoint());
     guiSettings->endGroup();
-    settingsFile = guiSettings->value("settingsFile","examples"+ext).toString();
+    settingsFile = guiSettings->value("settingsFile","examples"+Global::ext).toString();
     settings_ = guiSettings->value("settingsClass",settingsClass()).value<settingsClass>();
 
 }
@@ -363,7 +362,7 @@ void playlistManager::open(){
     if(dir.isEmpty()){
         dir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
     }
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open file"),dir, "*"+ext);
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open file"),dir, "*"+Global::ext);
     if( fileName.isEmpty() ){
         return;
     }
@@ -378,14 +377,14 @@ void playlistManager::initialize( QFileInfo file ){
 
     qDebug()<<"Initializing";
     //playLists_.clear();
-    fileReadResult ok = readSettings( file );
-    if(ok==NOTVALID){
+    Global::fileReadResult ok = readSettings( file );
+    if(ok==Global::NOTVALID){
         QMessageBox::critical(this, "",
                               file.absoluteFilePath()+" is not a valid playListGenerator file",
                               QMessageBox::Ok, QMessageBox::Ok);
         //settingsFile = QFileInfo("New Collection"+ext);
         //return;
-    }else if(ok==DOESNOTEXIST){
+    }else if(ok==Global::DOESNOTEXIST){
         QMessageBox::critical(this, "",
                               file.absoluteFilePath()+" does not exist",
                               QMessageBox::Ok, QMessageBox::Ok);
@@ -474,14 +473,12 @@ void playlistManager::addIndividualFiles(){
         return;
     }
 
-    addFilesDialog d;
-    d.setFiles( p->individualFiles() );
+    addFilesDialog d(p->individualFiles());
     if( d.exec()!=QDialog::Accepted ){
         return;
-    }
-    QStringList files = d.getFiles();
+    }    
 
-    p->setIndividualFiles(files);
+    p->setIndividualFiles(d.getFiles());
 
     //show bold text on "add individual files" if individual files exist
     QFont f = addFilesButton->font();
@@ -650,18 +647,17 @@ void playlistManager::addFolder(){
     }
     QStringList d = dialog.selectedFiles();
 
-    QStringList folders = p->folders();
+    QList<QDir> folders = p->folders();
     for(int i=0;i<d.size();i++){
         if(i==0){
             QFileInfo f(d[i]);
             guiSettings->setValue("lastFolder",f.absolutePath());
-        }
-        qDebug()<<d[i];
+        }        
         QListWidgetItem *item = new QListWidgetItem();
         item->setText( d[i] );
         item->setFlags(item->flags () & ~Qt::ItemIsEditable);
         folderTable->addItem( item );
-        folders.append(d[i]);
+        folders.append(QDir(d[i]));
     }
     p->setFolders(folders);
 }
@@ -673,8 +669,8 @@ void playlistManager::renameFolder(QListWidgetItem *item){
         return;
     }
     int ind = folderTable->currentRow();
-    QStringList folders = p->folders();
-    QString oldName = folders[ind];
+    QList<QDir> folders = p->folders();
+    QString oldName = folders[ind].absolutePath();
     QString newName = item->text();
     QDir d( newName );
     if( !d.exists() ){
@@ -692,7 +688,7 @@ void playlistManager::renameFolder(QListWidgetItem *item){
         item->setText( oldName );
         return;
     }
-    folders[ind] = newName;
+    folders[ind] = QDir(newName);
     p->setFolders(folders);
     qDebug()<<"renamed from "<<oldName<<" to "<<item->text();
 
@@ -705,8 +701,8 @@ void playlistManager::changeFolder(QListWidgetItem *item){
         return;
     }
     int ind = folderTable->currentRow();
-    QStringList folders = p->folders();
-    QString oldName = folders[ind];
+    QList<QDir> folders = p->folders();
+    QString oldName = folders[ind].absolutePath();
     QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory"),
                                                     oldName,QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
@@ -714,7 +710,7 @@ void playlistManager::changeFolder(QListWidgetItem *item){
         return;
     }
     item->setText( dir );
-    folders[ind] = dir;
+    folders[ind] = QDir(dir);
     p->setFolders(folders);
 
 }
@@ -726,7 +722,7 @@ void playlistManager::removeFolder(){
     if(ind==-1 || !p){
         return;
     }
-    QStringList folders = p->folders();
+    QList<QDir> folders = p->folders();
     folders.removeAt( ind );
     delete folderTable->takeItem( ind );
     p->setFolders(folders);
@@ -789,9 +785,9 @@ void playlistManager::showRulesAndFolders(){
     enableOptions( true );
 
     //folders    
-    QStringList folders = p->folders();
+    QList<QDir> folders = p->folders();
     for(int i=0;i<folders.size();i++){
-        QString t = folders[i];
+        QString t = folders[i].absolutePath();
         QListWidgetItem *item = new QListWidgetItem();
         item->setFlags(item->flags () & ~Qt::ItemIsEditable);
         item->setText( t );
@@ -807,7 +803,7 @@ void playlistManager::showRulesAndFolders(){
     relativePath->setChecked( p->relativePath() );
     makeUnique->setChecked( p->makeUnique() );
     copyFilesCheckBox->setChecked( p->copyFiles() );
-    copyFilesText->setText( p->copyFilesToDir() );
+    copyFilesText->setText( p->copyFilesToDir().absolutePath() );
     qDebug()<<"f";
     //show bold text on "add individual files" if individual files exist
     QFont f = addFilesButton->font();
@@ -855,11 +851,11 @@ void playlistManager::renamePlayList(QListWidgetItem *item){
 
 }
 */
-fileReadResult playlistManager::readSettings( QFileInfo file ){
+Global::fileReadResult playlistManager::readSettings( QFileInfo file ){
     qDebug()<<"Reading settings...";
 
     if( !file.exists() ){
-        return DOESNOTEXIST;
+        return Global::DOESNOTEXIST;
     }
 
     playListSettings = new QSettings( file.absoluteFilePath(), QSettings::IniFormat, this );
@@ -878,7 +874,7 @@ fileReadResult playlistManager::readSettings( QFileInfo file ){
     }
 
 
-    return EXISTS;
+    return Global::EXISTS;
 
 }
 
@@ -888,7 +884,7 @@ void playlistManager::saveSettingsAs(){
     if(dir.isEmpty()){
         dir = qApp->applicationDirPath();//QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
     }
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save file as..."), dir, "*"+ext);
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save file as..."), dir, "*"+Global::ext);
 
     if( fileName.isNull() || fileName.isEmpty() ){
         return;
@@ -978,7 +974,7 @@ void playlistManager::generatePlayLists( QList<int> inds ){
     QString log;
     time_t Start_t, End_t;
     int totaltime; QStringList names;
-    Start_t = time(NULL);
+    Start_t = time(0);
 
     for(int i=0;i<inds.size();i++){
 
@@ -991,11 +987,11 @@ void playlistManager::generatePlayLists( QList<int> inds ){
             QDir c(p->copyFilesToDir());
             if( !c.exists() ){
                 QDir newDir;
-                ok = newDir.mkpath( p->copyFilesToDir() );
+                ok = newDir.mkpath( p->copyFilesToDir().absolutePath() );
                 if(ok){
-                    log.append("Created directory "+p->copyFilesToDir()+"\n");
+                    log.append("Created directory "+p->copyFilesToDir().absolutePath()+"\n");
                 }else{
-                    log.append("Could not create directory "+p->copyFilesToDir()+", no copying performed\n");
+                    log.append("Could not create directory "+p->copyFilesToDir().absolutePath()+", no copying performed\n");
                 }
             }
         }
@@ -1011,7 +1007,7 @@ void playlistManager::generatePlayLists( QList<int> inds ){
         }
         log.append("\n----------------------------------------------------------\n");
     }
-    End_t = time(NULL);
+    End_t = time(0);
     if(names.size()!=names.toSet().toList().size()){
         //if some names are equal
         log.append("Warning, some playlists have identical names!\n");
