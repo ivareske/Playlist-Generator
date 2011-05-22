@@ -122,17 +122,13 @@ bool PlayList::generate( QList<M3uEntry> *songsOut, QStatusBar *s, QString *log,
     return canceled;
 }
 
-bool PlayList::writeM3U( QList<M3uEntry> songs, QString *log ){
+bool PlayList::writeM3U( const QList<M3uEntry> &songs, QString *log ) const{
 
     QString file = outPutFolder_.absolutePath() +"/"+ name() + ".m3u";
 
     QFile f( file );
     if( !f.open( QIODevice::WriteOnly ) ){
-        /*
-        QMessageBox::warning(0, "",
-                             "Could not open "+file+" for writing",
-                             QMessageBox::Ok, QMessageBox::Ok);
-        */
+
         if(log){
             log->append("\nCould not open "+file+" for writing");
         }
@@ -154,7 +150,7 @@ bool PlayList::writeM3U( QList<M3uEntry> songs, QString *log ){
     return true;
 }
 
-QList<M3uEntry> PlayList::findFiles( bool *canceled, QString *log, QHash<QString,Tag> *tags ){
+QList<M3uEntry> PlayList::findFiles( bool *canceled, QString *log, QHash<QString,Tag> *tags ) const{
 
     qDebug()<<"finding files...";
 
@@ -292,7 +288,7 @@ QList<M3uEntry> PlayList::findFiles( bool *canceled, QString *log, QHash<QString
 
 
 
-QList<QFileInfo> PlayList::getDirContent( const QString& aPath ){
+QList<QFileInfo> PlayList::getDirContent( const QString& aPath ) const{
 
     // append the filtered files to this list
 
@@ -322,9 +318,9 @@ QList<QFileInfo> PlayList::getDirContent( const QString& aPath ){
     return fileInfo;
 }
 
-QList<M3uEntry>  PlayList::processFile( QFileInfo fileInfo, bool hasTagRule, bool hasAudioRule, QString *log, QHash<QString,Tag> *tags, QHash<QString,Tag> *tagsCopy ){
+QList<M3uEntry>  PlayList::processFile( const QFileInfo &fileInfo, bool hasTagRule, bool hasAudioRule, QString *log, QHash<QString,Tag> *tags, QHash<QString,Tag> *tagsCopy ) const{
 
-    QList<M3uEntry>  list;
+    QList<M3uEntry> list;
 
     QString file = fileInfo.fileName();
     QString fullfile = fileInfo.absoluteFilePath();
@@ -379,7 +375,7 @@ QList<M3uEntry>  PlayList::processFile( QFileInfo fileInfo, bool hasTagRule, boo
     if( (allRulesTrue_ && allOk) || (!allRulesTrue_ && anyOk) || scriptok ){
         //extinf info for m3u
         if( includeExtInf_ ){            
-            e.setExtInf( createExtinfString( tag, file, settings_.format() ) );
+            e.setExtInf( createExtInfString( tag, file, settings_.format() ) );
         }
         e.setOriginalFile( fullfile );
         static QDir tmp;
@@ -411,7 +407,7 @@ QList<M3uEntry>  PlayList::processFile( QFileInfo fileInfo, bool hasTagRule, boo
     return list;
 }
 
-void PlayList::evaluateRules( Tag tag, QString file, bool *allOk, bool* anyOk ){
+void PlayList::evaluateRules( const Tag &tag, const QString &file, bool *allOk, bool* anyOk ) const{
 
     bool ok;
     for(int i=0;i<rules_.size();i++){
@@ -492,9 +488,10 @@ void PlayList::evaluateRules( Tag tag, QString file, bool *allOk, bool* anyOk ){
 }
 
 
-QString PlayList::createExtinfString( Tag tag, QString file, QString format ){
+QString PlayList::createExtInfString( const Tag &tag, const QString &file, const QString &format_ ) const{
 
-    //if( tag!=0 ){
+    QString format = format_;
+
     if( tag.tagOk() ){
         QString artist = tag.artist();
         QString title = tag.title();
@@ -544,18 +541,14 @@ QString PlayList::createExtinfString( Tag tag, QString file, QString format ){
     }else{
         format = file;
     }
-    /*int length=-1;;
-        if( ap ){
-                length = ap->length();
-        }
-        */
+
     QString result = QString("#EXTINF:")+QString::number( tag.length() )+","+format;
 
     return result;
 }
 
-void PlayList::checkRule( bool ruleCheck, bool *allOk, bool *anyOk, bool shouldBeTrue ){
-    if( ruleCheck ){
+void PlayList::checkRule( bool value, bool *allOk, bool *anyOk, bool shouldBeTrue ) const{
+    if( value ){
         *allOk = *allOk && shouldBeTrue;
         *anyOk = shouldBeTrue;
     }else{
@@ -564,19 +557,19 @@ void PlayList::checkRule( bool ruleCheck, bool *allOk, bool *anyOk, bool shouldB
     }
 }
 
-void PlayList::checkRange( QVector<int> intvals, int tmp, bool *allOk, bool *anyOk, bool shouldBeTrue ){
+void PlayList::checkRange( const QVector<int> &intvals, int value, bool *allOk, bool *anyOk, bool shouldBeTrue ) const{
 
 
     int n=intvals.size();
     if(n==1){
-        if( tmp==intvals[0] && shouldBeTrue ){
+        if( value==intvals[0] && shouldBeTrue ){
             *allOk = *allOk && true;
             *anyOk = true;
         }else{
             *allOk = *allOk && false;
         }
     }else if(n==2){
-        if( tmp>=intvals[0] && tmp<=intvals[1] && shouldBeTrue ){
+        if( value>=intvals[0] && value<=intvals[1] && shouldBeTrue ){
             *allOk = *allOk && true;
             *anyOk = true;
         }else{

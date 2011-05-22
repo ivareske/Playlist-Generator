@@ -66,14 +66,14 @@ public:
 
 private:
 
-    QList<M3uEntry> findFiles( bool *canceled, QString *log, QHash<QString,Tag> *tags );
-    QList<QFileInfo> getDirContent( const QString& aPath );
-    void checkRange( QVector<int> intvals, int tmp, bool *allOk, bool *anyOk, bool shouldBeTrue );
-    bool writeM3U( QList<M3uEntry> songs, QString *log=0 );
-    void checkRule( bool ruleCheck, bool *allOk, bool *anyOk, bool shouldBeTrue );
-    QList<M3uEntry> processFile( QFileInfo fileInfo, bool hasTagRule, bool hasAudioRule, QString *log, QHash<QString,Tag> *tags, QHash<QString,Tag> *tagsCopy );
-    QString createExtinfString( Tag tag, QString file, QString format );
-    void evaluateRules( Tag tag, QString file, bool *allOk, bool* anyOk );
+    QList<M3uEntry> findFiles( bool *canceled, QString *log, QHash<QString,Tag> *tags ) const;
+    QList<QFileInfo> getDirContent( const QString& aPath ) const;
+    void checkRange( const QVector<int> &intvals, int value, bool *allOk, bool *anyOk, bool shouldBeTrue ) const;
+    bool writeM3U( const QList<M3uEntry> &songs, QString *log=0 ) const;
+    void checkRule( bool value, bool *allOk, bool *anyOk, bool shouldBeTrue ) const;
+    QList<M3uEntry> processFile( const QFileInfo &fileInfo, bool hasTagRule, bool hasAudioRule, QString *log, QHash<QString,Tag> *tags, QHash<QString,Tag> *tagsCopy ) const;
+    QString createExtInfString( const Tag &tag, const QString &file, const QString &format_ ) const;
+    void evaluateRules( const Tag &tag, const QString &file, bool *allOk, bool* anyOk ) const;
 
     SettingsClass settings_;
 
