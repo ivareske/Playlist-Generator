@@ -1,8 +1,8 @@
 
-#include "playlistManager.h"
+#include "PlaylistManager.h"
 
 
-playlistManager::playlistManager(QWidget *parent) : QMainWindow(parent){
+PlaylistManager::PlaylistManager(QWidget *parent) : QMainWindow(parent){
     setupUi(this); // this sets up GUI			
 
     qRegisterMetaType<PlayList>("PlayList");
@@ -42,7 +42,7 @@ playlistManager::playlistManager(QWidget *parent) : QMainWindow(parent){
 }
 
 
-void playlistManager::runscript(){
+void PlaylistManager::runscript(){
 
     /*
 	QScriptEngine *engine = new QScriptEngine(this);    
@@ -81,7 +81,7 @@ void playlistManager::runscript(){
 	*/
 }
 
-void playlistManager::openStyleSheet(){
+void PlaylistManager::openStyleSheet(){
 
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open style sheet file"),
                                                     guiSettings->value("lastStyleSheetFolder",QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation)).toString(), tr("*.qss"));
@@ -108,7 +108,7 @@ void playlistManager::openStyleSheet(){
 
 }
 
-bool playlistManager::loadStyleSheet( QString file ){
+bool PlaylistManager::loadStyleSheet( const QString &file ){
     //http://zhoushanfeng.spaces.live.com/blog/cns!E046ED05325D3173!336.entry
 
     QFile data(file);
@@ -127,7 +127,7 @@ bool playlistManager::loadStyleSheet( QString file ){
     return true;
 }
 
-void playlistManager::createActions(){
+void PlaylistManager::createActions(){
 
     //connect( actionRunScript, SIGNAL( triggered() ), this, SLOT( runscript() ) );
 
@@ -192,13 +192,13 @@ void playlistManager::createActions(){
 
 }
 
-void playlistManager::clearTags(){
+void PlaylistManager::clearTags(){
 
     tags_.clear();
     statusBar()->showMessage("Tags cleared", 8000);
 }
 
-void playlistManager::getCopyDir(){
+void PlaylistManager::getCopyDir(){
 
     QFileDialog dialog;
     dialog.setFileMode(QFileDialog::Directory);
@@ -218,7 +218,7 @@ void playlistManager::getCopyDir(){
     }
 }
 
-void playlistManager::updateCopyFiles( const QString &text ){
+void PlaylistManager::updateCopyFiles( const QString &text ){
 
     PlayList *p = currentPlayList();
     if(!p){
@@ -232,7 +232,7 @@ void playlistManager::updateCopyFiles( const QString &text ){
     p->setCopyFilesToDir(copyFilesText->text());
 }
 
-void playlistManager::updateCopyTo( int state ){
+void PlaylistManager::updateCopyTo( int state ){
 
     PlayList *p = currentPlayList();
     if(!p){
@@ -246,7 +246,7 @@ void playlistManager::updateCopyTo( int state ){
     p->setCopyFiles(copyFilesCheckBox->isChecked());
 }
 
-void playlistManager::newCollection(){
+void PlaylistManager::newCollection(){
 
     QString dir = settingsFile.absoluteFilePath();
     if(dir.isEmpty()){
@@ -273,7 +273,7 @@ void playlistManager::newCollection(){
 }
 
 
-void playlistManager::uncheckStyleActions(){
+void PlaylistManager::uncheckStyleActions(){
 
     QList<QAction *> actions = menuStyle->actions();
     for(int i=0;i<actions.size();i++){
@@ -281,7 +281,7 @@ void playlistManager::uncheckStyleActions(){
     }
 }
 
-void playlistManager::checkStyleAction( QString actionText, bool state ){
+void PlaylistManager::checkStyleAction( const QString &actionText, bool state ){
 
     QList<QAction *> actions = menuStyle->actions();
     for(int i=0;i<actions.size();i++){
@@ -291,7 +291,7 @@ void playlistManager::checkStyleAction( QString actionText, bool state ){
     }
 }
 
-void playlistManager::setGUIStyle( const QString &s ){
+void PlaylistManager::setGUIStyle( const QString &s ){
 
     qDebug()<<"style: "<<s;
     QStringList styles = QStyleFactory::keys();
@@ -327,7 +327,7 @@ void playlistManager::setGUIStyle( const QString &s ){
 
 }
 
-void playlistManager::writeGUISettings(){
+void PlaylistManager::writeGUISettings(){
 
     guiSettings->clear();
     guiSettings->beginGroup("MainWindow");
@@ -344,7 +344,7 @@ void playlistManager::writeGUISettings(){
 
 }
 
-void playlistManager::readGUISettings(){
+void PlaylistManager::readGUISettings(){
 
     guiSettings->beginGroup("MainWindow");
     this->resize(guiSettings->value("size", QSize(400, 400)).toSize());
@@ -356,7 +356,7 @@ void playlistManager::readGUISettings(){
 }
 
 
-void playlistManager::open(){
+void PlaylistManager::open(){
 
     QString dir = settingsFile.absoluteFilePath();
     if(dir.isEmpty()){
@@ -373,7 +373,7 @@ void playlistManager::open(){
     showRulesAndFolders();
 }
 
-void playlistManager::initialize( QFileInfo file ){
+void PlaylistManager::initialize( const QFileInfo &file ){
 
     qDebug()<<"Initializing";
     //playLists_.clear();
@@ -387,19 +387,16 @@ void playlistManager::initialize( QFileInfo file ){
     }else if(ok==Global::DOESNOTEXIST){
         QMessageBox::critical(this, "",
                               file.absoluteFilePath()+" does not exist",
-                              QMessageBox::Ok, QMessageBox::Ok);
-        //settingsFile = QFileInfo("New Collection"+ext);
-        //return;
+                              QMessageBox::Ok, QMessageBox::Ok);        
     }
-    enableOptions( false );
-    //sortPlayLists();
+    enableOptions( false );    
     setGUIStyle( settings_.style() );
     updateUseScript();
     settingsFile = file;
     this->setWindowTitle( "Current playlist collection: "+settingsFile.absoluteFilePath() );
 }
 
-void playlistManager::updateUseScript(){
+void PlaylistManager::updateUseScript(){
     if( settings_.useScript() ){
         rulesFrame->hide();
         RuleScript->show();
@@ -412,7 +409,7 @@ void playlistManager::updateUseScript(){
 }
 
 /*
-void playlistManager::giveUniqueIds(){
+void PlaylistManager::giveUniqueIds(){
 
     for(int i=0;i<playLists_.size();i++){
         playLists_[i].setUniqueId(i);
@@ -422,7 +419,7 @@ void playlistManager::giveUniqueIds(){
 */
 
 /*
-void playlistManager::sortPlayLists(){
+void PlaylistManager::sortPlayLists(){
 
     //give unique ids
     giveUniqueIds();
@@ -466,7 +463,7 @@ void playlistManager::sortPlayLists(){
 }
 */
 
-void playlistManager::addIndividualFiles(){
+void PlaylistManager::addIndividualFiles(){
 
     PlayList *p = currentPlayList();
     if(!p){
@@ -492,7 +489,7 @@ void playlistManager::addIndividualFiles(){
 }
 
 
-void playlistManager::enableOptions( bool state ){
+void PlaylistManager::enableOptions( bool state ){
 
     foldersGroupBox->setEnabled( state );
     rulesGroupBox->setEnabled( state );
@@ -501,7 +498,7 @@ void playlistManager::enableOptions( bool state ){
     copyFilesFrame->setEnabled( state );
 }
 
-void playlistManager::updateRandomize( int state ){	
+void PlaylistManager::updateRandomize( int state ){
 
     PlayList *p = currentPlayList();
     if(!p){
@@ -515,13 +512,13 @@ void playlistManager::updateRandomize( int state ){
 
 }
 
-PlayList* playlistManager::currentPlayList(){
+PlayList* PlaylistManager::currentPlayList(){
     PlayList *p = static_cast<PlayList*>(playListTable->currentItem());
     return p;
 }
 
 
-void playlistManager::updateAllRulesTrue( int state ){	
+void PlaylistManager::updateAllRulesTrue( int state ){
 
     PlayList *p = currentPlayList();
     if(!p){
@@ -535,7 +532,7 @@ void playlistManager::updateAllRulesTrue( int state ){
 
 }
 
-void playlistManager::updateSearchSubfolders( int state ){	
+void PlaylistManager::updateSearchSubfolders( int state ){
 
     PlayList *p = currentPlayList();
     if(!p){
@@ -549,7 +546,7 @@ void playlistManager::updateSearchSubfolders( int state ){
 
 }
 
-void playlistManager::updateIncludeExtInf( int state ){	
+void PlaylistManager::updateIncludeExtInf( int state ){
 
     PlayList *p = currentPlayList();
     if(!p){
@@ -563,7 +560,7 @@ void playlistManager::updateIncludeExtInf( int state ){
 
 }
 
-void playlistManager::updateUseRelativePath( int state ){	
+void PlaylistManager::updateUseRelativePath( int state ){
 
     PlayList *p = currentPlayList();
     if(!p){
@@ -578,7 +575,7 @@ void playlistManager::updateUseRelativePath( int state ){
 }
 
 
-void playlistManager::updateMakeUnique( int state ){	
+void PlaylistManager::updateMakeUnique( int state ){
 
     PlayList *p = currentPlayList();
     if(!p){
@@ -592,7 +589,7 @@ void playlistManager::updateMakeUnique( int state ){
 
 }
 
-void playlistManager::updateScript(){
+void PlaylistManager::updateScript(){
 
     PlayList *p = currentPlayList();
     if(!p){
@@ -606,7 +603,7 @@ void playlistManager::updateScript(){
 
 }
 
-void playlistManager::updateExtensions( const QString & exts ){
+void PlaylistManager::updateExtensions( const QString & exts ){
 
     PlayList *p = currentPlayList();
     if(!p){
@@ -619,7 +616,7 @@ void playlistManager::updateExtensions( const QString & exts ){
     p->setExtensions(exts.split(";"));
 }
 
-void playlistManager::addFolder(){
+void PlaylistManager::addFolder(){
 
     PlayList *p = currentPlayList();
     if(!p){
@@ -662,7 +659,7 @@ void playlistManager::addFolder(){
     p->setFolders(folders);
 }
 
-void playlistManager::renameFolder(QListWidgetItem *item){
+void PlaylistManager::renameFolder(QListWidgetItem *item){
 
     PlayList *p = currentPlayList();
     if( !p || !folderTable->currentItem() ){
@@ -694,7 +691,7 @@ void playlistManager::renameFolder(QListWidgetItem *item){
 
 }
 
-void playlistManager::changeFolder(QListWidgetItem *item){
+void PlaylistManager::changeFolder(QListWidgetItem *item){
 
     PlayList *p = currentPlayList();
     if(!p){
@@ -715,7 +712,7 @@ void playlistManager::changeFolder(QListWidgetItem *item){
 
 }
 
-void playlistManager::removeFolder(){
+void PlaylistManager::removeFolder(){
 
     PlayList *p = currentPlayList();
     int ind = folderTable->currentRow();    
@@ -728,7 +725,7 @@ void playlistManager::removeFolder(){
     p->setFolders(folders);
 }
 
-void playlistManager::closeEvent( QCloseEvent *event ){
+void PlaylistManager::closeEvent( QCloseEvent *event ){
 
     if( !settingsFile.exists() ){
         saveSettingsAs();
@@ -738,7 +735,7 @@ void playlistManager::closeEvent( QCloseEvent *event ){
     writeGUISettings();
 }
 
-void playlistManager::clearRulesAndFolders(){
+void PlaylistManager::clearRulesAndFolders(){
 
     QList<QWidget*> children = optionsFrame->findChildren<QWidget*>();
     for(int i=0;i<children.size();i++){
@@ -763,7 +760,7 @@ void playlistManager::clearRulesAndFolders(){
 
 }
 
-void playlistManager::showRulesAndFolders(){
+void PlaylistManager::showRulesAndFolders(){
 
     folderTable->clear();
     rulesTable->clear();
@@ -818,20 +815,20 @@ void playlistManager::showRulesAndFolders(){
     RuleScript->setText( p->script() );
     QVector<Rule> rules = p->rules();
     for(int i=0;i<rules.size();i++){
-        Rule::ruleType t = rules[i].type();
+        Rule::RuleType t = rules[i].type();
         QListWidgetItem *item = new QListWidgetItem();
         if(!rules[i].shouldBeTrue()){
             QFont f = item->font(); f.setItalic(true);
             item->setFont(f);
         }
-        item->setText( Global::getRuleName(t)+": "+ rules[i].value() );
+        item->setText( Rule::getRuleName(t)+": "+ rules[i].value() );
         rulesTable->addItem( item );
     }
 
 }
 
 /*
-void playlistManager::renamePlayList(QListWidgetItem *item){
+void PlaylistManager::renamePlayList(QListWidgetItem *item){
 
     PlayList *p = static_cast<PlayList*>(item);
     QString oldName = p->name();
@@ -851,7 +848,7 @@ void playlistManager::renamePlayList(QListWidgetItem *item){
 
 }
 */
-Global::fileReadResult playlistManager::readSettings( QFileInfo file ){
+Global::fileReadResult PlaylistManager::readSettings( const QFileInfo &file ){
     qDebug()<<"Reading settings...";
 
     if( !file.exists() ){
@@ -878,7 +875,7 @@ Global::fileReadResult playlistManager::readSettings( QFileInfo file ){
 
 }
 
-void playlistManager::saveSettingsAs(){
+void PlaylistManager::saveSettingsAs(){
 
     QString dir = settingsFile.absoluteFilePath();
     if(dir.isEmpty()){
@@ -898,11 +895,11 @@ void playlistManager::saveSettingsAs(){
 
 }
 
-void playlistManager::saveCurrentSettings(){		
+void PlaylistManager::saveCurrentSettings(){
     saveSettings( settingsFile );
 }
 
-void playlistManager::saveSettings( QFileInfo file ){
+void PlaylistManager::saveSettings( const QFileInfo &file ){
 
     if( !file.absoluteDir().exists() || file.fileName().isEmpty() ){
         saveSettingsAs();
@@ -923,7 +920,7 @@ void playlistManager::saveSettings( QFileInfo file ){
 }
 
 
-void playlistManager::generateSelectedPlayLists(){
+void PlaylistManager::generateSelectedPlayLists(){
 
     //int ind = playListTable->currentRow();
     QModelIndexList indexes = playListTable->selectionModel()->selectedIndexes();
@@ -943,7 +940,7 @@ void playlistManager::generateSelectedPlayLists(){
 
 }
 
-void playlistManager::generateAllPlayLists(){
+void PlaylistManager::generateAllPlayLists(){
 
     QList<int> inds;
     for(int i=0;i<playListTable->count();i++){
@@ -955,7 +952,7 @@ void playlistManager::generateAllPlayLists(){
 }
 
 
-void playlistManager::generatePlayLists( QList<int> inds ){
+void PlaylistManager::generatePlayLists( const QList<int> &inds ){
 
     if( inds.size()==0 ){
         return;
@@ -1025,7 +1022,7 @@ void playlistManager::generatePlayLists( QList<int> inds ){
 }
 
 /*
-void playlistManager::copyFiles( PlayList p, QList<M3uEntry> songs, QString *log ){
+void PlaylistManager::copyFiles( PlayList p, QList<M3uEntry> songs, QString *log ){
 
     log->append("\nResult from file copy:\n");
     int nCopied=0;
@@ -1064,7 +1061,7 @@ void playlistManager::copyFiles( PlayList p, QList<M3uEntry> songs, QString *log
 }
 */
 
-void playlistManager::addPlayList(){
+void PlaylistManager::addPlayList(){
 
     QString name = "New playlist";
 
@@ -1076,7 +1073,7 @@ void playlistManager::addPlayList(){
 
 }
 
-void playlistManager::removePlayList(){
+void PlaylistManager::removePlayList(){
 
     QModelIndexList indexes = playListTable->selectionModel()->selectedIndexes();
 
@@ -1099,7 +1096,7 @@ void playlistManager::removePlayList(){
 
 }
 
-void playlistManager::newRule(){
+void PlaylistManager::newRule(){
 
     PlayList *p = currentPlayList();
     if(!p){
@@ -1122,7 +1119,7 @@ void playlistManager::newRule(){
 
 }
 
-void playlistManager::editRule(){
+void PlaylistManager::editRule(){
 
     PlayList *p = currentPlayList();
     int rind = rulesTable->currentRow();
@@ -1143,12 +1140,12 @@ void playlistManager::editRule(){
     rules.append(newr);
     p->setRules(rules);
     delete rulesTable->takeItem(rind);
-    rulesTable->insertItem( rind, Global::getRuleName( newr.type() )+": "+newr.value() );
+    rulesTable->insertItem( rind, Rule::getRuleName( newr.type() )+": "+newr.value() );
     showRulesAndFolders();
 
 }
 
-void playlistManager::removeRule(){
+void PlaylistManager::removeRule(){
 
     PlayList *p = currentPlayList();
     int rind = rulesTable->currentRow();
@@ -1167,7 +1164,7 @@ void playlistManager::removeRule(){
 
 
 
-void playlistManager::showSettings(){
+void PlaylistManager::showSettings(){
 
     SettingsDialog s(&settings_);
     //guiSettings->sync();

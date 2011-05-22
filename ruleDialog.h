@@ -13,19 +13,21 @@ class RuleDialog : public QDialog, private Ui::RuleDialog{
  
 public:
 
-    //RuleDialog(QWidget *parent = 0, int index=0, QString val="");
         RuleDialog( Rule *r=0, QWidget *parent = 0 );
 	
 	
 public slots:
 
-	void setSettings( );
+        void setSettings();
 	Rule getSettings();
 	void indexChanged(int ind);
 	void disableRuleChange();
 	void finito();
 
 protected:
+
+private:
+        QString getRuleExample( const Rule::RuleType &type );
 	
 };
  

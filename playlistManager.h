@@ -15,13 +15,13 @@
 
 
 
-class playlistManager : public QMainWindow, private Ui::playListGenerator
+class PlaylistManager : public QMainWindow, private Ui::playListGenerator
 {
     Q_OBJECT
 
 public:
 
-    playlistManager(QWidget *parent = 0);
+    PlaylistManager(QWidget *parent = 0);
 
 protected:
     void closeEvent( QCloseEvent *event );
@@ -31,18 +31,18 @@ private slots:
     void updateUseScript();
     void addIndividualFiles();
     void createActions();
-    Global::fileReadResult readSettings( QFileInfo file );
-    void saveSettings( QFileInfo file );
+    Global::fileReadResult readSettings( const QFileInfo &file );
+    void saveSettings( const QFileInfo &file );
     void saveSettingsAs();
     void saveCurrentSettings();
     //void generatePlayList( int ind );
     void generateAllPlayLists();
     void generateSelectedPlayLists();
-    void generatePlayLists( QList<int> inds );
+    void generatePlayLists( const QList<int> &inds );
     void addPlayList();
     void removePlayList();
     void changeFolder(QListWidgetItem *item);
-    bool loadStyleSheet( QString file );
+    bool loadStyleSheet( const QString &file );
     void newRule();
     void editRule();
     void removeRule();
@@ -67,11 +67,11 @@ private slots:
     void updateUseRelativePath( int state );
     void updateMakeUnique( int state );
     //void giveUniqueIds();
-    void initialize( QFileInfo file );
+    void initialize( const QFileInfo &file );
     void writeGUISettings();
     void readGUISettings();
     void uncheckStyleActions();
-    void checkStyleAction( QString actionText, bool state );
+    void checkStyleAction( const QString &actionText, bool state );
     void getCopyDir();
     void updateCopyFiles( const QString &text );
     void updateCopyTo( int state );

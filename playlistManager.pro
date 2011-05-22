@@ -19,16 +19,16 @@ CONFIG += qt release warn_on
 CONFIG += console
 #QT += script
  
-INCLUDEPATH  += $$quote(C:/Program Files/taglib/include/taglib/)
-LIBS += $$quote(C:/Program Files/taglib/bin/libtag.dll)
+INCLUDEPATH  += ./taglib
+LIBS += -L./ libtag
 #LIBS += $$quote(C:/Qt/4.6.3/plugins/script/qtscript_cored.dll)
 
 
-HEADERS = PlayListManager.h SettingsDialog.h RuleDialog.h PlayList.h Rule.h globalFunctions.h M3uEntry.h AddFilesDialog.h TextViewer.h Tag.h SettingsClass.h
-FORMS   = playlistManager.ui SettingsDialog.ui RuleDialog.ui AddFilesDialog.ui TextViewer.ui
-SOURCES = main.cpp PlayListManager.cpp  SettingsDialog.cpp RuleDialog.cpp PlayList.cpp Rule.cpp globalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp SettingsClass.cpp
+HEADERS = PlaylistManager.h SettingsDialog.h RuleDialog.h PlayList.h Rule.h globalFunctions.h M3uEntry.h AddFilesDialog.h TextViewer.h Tag.h SettingsClass.h
+FORMS   = PlaylistManager.ui SettingsDialog.ui RuleDialog.ui AddFilesDialog.ui TextViewer.ui
+SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp RuleDialog.cpp PlayList.cpp Rule.cpp globalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp SettingsClass.cpp
 
-RC_FILE = PlayListManager.rc
+RC_FILE = PlaylistManager.rc
 
 
 

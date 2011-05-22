@@ -10,10 +10,9 @@ class PlayList;
 
 namespace Global{
 
-    QString getRuleName( const Rule::ruleType &type );
-    QString getRuleExample( const Rule::ruleType &type );
     bool checkIntValue( QVector<int> *intvals, const QString &val );
-    bool caseInsensitiveLessThan(const PlayList &s1, const PlayList &s2);
+    bool stringLessThan( const QString &s1, const QString &s2 );
+    int naturalCompare( const QString &_a, const QString &_b, Qt::CaseSensitivity caseSensitivity );
 
     const QString version = "1.0";
     enum fileReadResult{ DOESNOTEXIST, EXISTS, NOTVALID };

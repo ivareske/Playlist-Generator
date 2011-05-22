@@ -1,11 +1,11 @@
 #include <QApplication>
-#include "playlistManager.h"
+#include "PlaylistManager.h"
 
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    playlistManager plm;
+    PlaylistManager plm;
     plm.show();
     return app.exec();
 }

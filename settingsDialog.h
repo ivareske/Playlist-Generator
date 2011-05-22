@@ -17,19 +17,12 @@ public:
     SettingsDialog( SettingsClass *settings, QWidget *parent = 0);
 
 
-    //public slots:
-
-
-
-    //void getSettings();
-
 protected:
 
 private:
 
     void setSettings();
     QString chooseDir();
-    //QSettings *settings;
     SettingsClass *settings_;
 private slots:
     void onFinish( int result );

@@ -4,120 +4,194 @@
 namespace Global{
 
 
-    bool caseInsensitiveLessThan( const PlayList &s1, const PlayList &s2 ){
-        return s1.name().toLower() < s2.name().toLower();
+bool stringLessThan( const QString &s1, const QString &s2 ){
+    return naturalCompare( s1, s2, Qt::CaseSensitive )<0 ;
+}
+
+
+bool checkIntValue( QVector<int> *intvals, const QString &val ){
+    //val should be a single value (e.g. 500),
+    //or a range: 500-1000
+    bool ok; int tmp; int tmp1; int tmp2;
+    QStringList vals = val.split("-");
+    intvals->clear();
+    if(vals.size()==1){
+        tmp = val.toInt( &ok, 10 );
+        //qDebug()<<"single value: "<<tmp;
+        if(ok){
+            intvals->append(tmp);
+        }
+    }else if( vals.size()==2 ){
+        bool ok1;
+        bool ok2;
+        tmp1 = vals[0].toInt( &ok1, 10 );
+        tmp2 = vals[1].toInt( &ok2, 10 );
+        ok = ok1 && ok2;
+        if(ok){
+            intvals->append(tmp1);
+            intvals->append(tmp2);
+        }
+        //qDebug()<<"range: "<<tmp1<<" - "<<tmp2;
+    }else{
+        ok = false;
+    }
+    //qDebug()<<"ok: "<<ok;
+    return ok;
+}
+
+
+
+int naturalCompare( const QString &_a, const QString &_b, Qt::CaseSensitivity caseSensitivity ){
+    // This method chops the input a and b into pieces of
+    // digits and non-digits (a1.05 becomes a | 1 | . | 05)
+    // and compares these pieces of a and b to each other
+    // (first with first, second with second, ...).
+    //
+    // This is based on the natural sort order code code by Martin Pool
+    // http://sourcefrog.net/projects/natsort/
+    // Martin Pool agreed to license this under LGPL or GPL.
+
+    // FIXME: Using toLower() to implement case insensitive comparison is
+    // sub-optimal, but is needed because we compare strings with
+    // localeAwareCompare(), which does not know about case sensitivity.
+    // A task has been filled for this in Qt Task Tracker with ID 205990.
+    // http://trolltech.com/developer/task-tracker/index_html?method=entry&id=205990
+    QString a;
+    QString b;
+    if (caseSensitivity == Qt::CaseSensitive) {
+        a = _a;
+        b = _b;
+    } else {
+        a = _a.toLower();
+        b = _b.toLower();
     }
 
-    QString getRuleName( const Rule::ruleType &type ){
+    const QChar* currA = a.unicode(); // iterator over a
+    const QChar* currB = b.unicode(); // iterator over b
 
-	QString ans="";
-        if( type==Rule::FILENAME_CONTAINS ){
-            ans = "File name contains";
-        }else if( type==Rule::FILENAME_EQUALS ){
-            ans = "File name equals";
-        }else if( type==Rule::TAG_TITLE_CONTAINS ){
-            ans = "Title tag contains";
-        }else if( type==Rule::TAG_TITLE_EQUALS ){
-            ans = "Title tag equals";
-        }else if( type==Rule::TAG_ARTIST_CONTAINS ){
-            ans = "Artist tag contains";
-        }else if( type==Rule::TAG_ARTIST_EQUALS ){
-            ans = "Artist tag equals";
-        }else if( type==Rule::TAG_ALBUM_CONTAINS ){
-            ans = "Album tag contains";
-        }else if( type==Rule::TAG_ALBUM_EQUALS ){
-            ans = "Album tag equals";
-        }else if( type==Rule::TAG_YEAR_IS ){
-            ans = "Year tag is";
-        }else if( type==Rule::TAG_COMMENT_CONTAINS ){
-            ans = "Comment tag contains";
-        }else if( type==Rule::TAG_COMMENT_EQUALS ){
-            ans = "Comment tag equals";
-        }else if( type==Rule::TAG_TRACK_IS ){
-            ans = "Track tag is";
-        }else if( type==Rule::TAG_GENRE_CONTAINS ){
-            ans = "Genre tag contains";
-        }else if( type==Rule::TAG_GENRE_EQUALS ){
-            ans = "Genre tag equals";
-        }else if( type==Rule::AUDIO_BITRATE_IS ){
-            ans = "Audio bitrate is";
-        }else if( type==Rule::AUDIO_SAMPLERATE_IS ){
-            ans = "Audio samplerate is";
-        }else if( type==Rule::AUDIO_CHANNELS_IS ){
-            ans = "Audio channels is";
-        }else if( type==Rule::AUDIO_LENGTH_IS ){
-            ans = "Audio lenght is";
-	}
-	
-	return ans;
-
+    if (currA == currB) {
+        return 0;
     }
 
+    int lean = 0; // comparison of first ignored difference, to be used if all else is equal
 
-    QString getRuleExample( const Rule::ruleType &type ){
+    while (!currA->isNull() && !currB->isNull()) {
+        const QChar* begSeqA = currA; // beginning of a new character sequence of a
+        const QChar* begSeqB = currB;
+        if (currA->unicode() == QChar::ObjectReplacementCharacter) {
+            return 1;
+        }
 
+        if (currB->unicode() == QChar::ObjectReplacementCharacter) {
+            return -1;
+        }
 
-	QString ans="";
-        if( type==Rule::FILENAME_CONTAINS || type==Rule::FILENAME_EQUALS ){
-            ans = "pantera";
-        }else if( type==Rule::TAG_TITLE_CONTAINS || type==Rule::TAG_TITLE_EQUALS ){
-            ans = "acdc";
-        }else if( type==Rule::TAG_ARTIST_CONTAINS || type==Rule::TAG_ARTIST_EQUALS ){
-            ans = "acdc";
-        }else if( type==Rule::TAG_ALBUM_CONTAINS || type==Rule::TAG_ALBUM_EQUALS ){
-            ans = "live";
-        }else if( type==Rule::TAG_YEAR_IS ){
-            ans = "Single nr.: '2001', or a range: '1990-1998'";
-        }else if( type==Rule::TAG_COMMENT_CONTAINS || type==Rule::TAG_COMMENT_EQUALS ){
-            ans = "whatever...";
-        }else if( type==Rule::TAG_TRACK_IS ){
-            ans = "Single nr.: '1', or a range: '7-12'";
-        }else if( type==Rule::TAG_GENRE_CONTAINS || type==Rule::TAG_GENRE_EQUALS ){
-            ans = "'rock'";
-        }else if( type==Rule::AUDIO_BITRATE_IS ){
-            ans = "Single nr.: '128', or a range: '128-196'";
-        }else if( type==Rule::AUDIO_SAMPLERATE_IS ){
-            ans = "Single nr.: '44100', or a range: '44100-9999999'";
-        }else if( type==Rule::AUDIO_CHANNELS_IS ){
-            ans = "Single nr.: '2', or a range: '2-6'";
-        }else if( type==Rule::AUDIO_LENGTH_IS ){
-            ans = "Single nr.: '300', or a range: '500-700' (use seconds) ";
-	}
-	
-	return ans;
+        if (currA->unicode() == QChar::ReplacementCharacter) {
+            return 1;
+        }
 
-    }
+        if (currB->unicode() == QChar::ReplacementCharacter) {
+            return -1;
+        }
 
+        // find sequence of characters ending at the first non-character
+        while (!currA->isNull() && !currA->isDigit() && !currA->isPunct() && !currA->isSpace()) {
+            ++currA;
+        }
 
-    bool checkIntValue( QVector<int> *intvals, const QString &val ){
-	//val should be a single value (e.g. 500),
-	//or a range: 500-1000
-	bool ok; int tmp; int tmp1; int tmp2;
-	QStringList vals = val.split("-");
-	intvals->clear();	
-	if(vals.size()==1){
-            tmp = val.toInt( &ok, 10 );
-            //qDebug()<<"single value: "<<tmp;
-            if(ok){
-                intvals->append(tmp);
+        while (!currB->isNull() && !currB->isDigit() && !currB->isPunct() && !currB->isSpace()) {
+            ++currB;
+        }
+
+        // compare these sequences
+        const QStringRef& subA(a.midRef(begSeqA - a.unicode(), currA - begSeqA));
+        const QStringRef& subB(b.midRef(begSeqB - b.unicode(), currB - begSeqB));
+        const int cmp = QStringRef::localeAwareCompare(subA, subB);
+        if (cmp != 0) {
+            return cmp < 0 ? -1 : +1;
+        }
+
+        if (currA->isNull() || currB->isNull()) {
+            break;
+        }
+
+        // find sequence of characters ending at the first non-character
+        while ((currA->isPunct() || currA->isSpace()) && (currB->isPunct() || currB->isSpace())) {
+            if (*currA != *currB) {
+                // accept difference in punctuation for now ('_' or '.' used instead of ' ').
+                if (lean == 0)
+                    lean = (*currA < *currB) ? -1 : +1;
             }
-	}else if( vals.size()==2 ){
-            bool ok1;
-            bool ok2;
-            tmp1 = vals[0].toInt( &ok1, 10 );
-            tmp2 = vals[1].toInt( &ok2, 10 );
-            ok = ok1 && ok2;
-            if(ok){
-                intvals->append(tmp1);
-                intvals->append(tmp2);
+            ++currA;
+            ++currB;
+        }
+
+        // now some digits follow...
+        if ((*currA == '0') || (*currB == '0')) {
+            // one digit-sequence starts with 0 -> assume we are in a fraction part
+            // do left aligned comparison (numbers are considered left aligned)
+            while (1) {
+                if (!currA->isDigit() && !currB->isDigit()) {
+                    break;
+                } else if (!currA->isDigit()) {
+                    return +1;
+                } else if (!currB->isDigit()) {
+                    return -1;
+                } else if (*currA < *currB) {
+                    return -1;
+                } else if (*currA > *currB) {
+                    return + 1;
+                }
+                ++currA;
+                ++currB;
             }
-            //qDebug()<<"range: "<<tmp1<<" - "<<tmp2;
-	}else{
-            ok = false;
-	}
-	//qDebug()<<"ok: "<<ok;
-	return ok;
+        } else {
+            // No digit-sequence starts with 0 -> assume we are looking at some integer
+            // do right aligned comparison.
+            //
+            // The longest run of digits wins. That aside, the greatest
+            // value wins, but we can't know that it will until we've scanned
+            // both numbers to know that they have the same magnitude.
+
+            bool isFirstRun = true;
+            int weight = 0;
+            while (1) {
+                if (!currA->isDigit() && !currB->isDigit()) {
+                    if (weight != 0) {
+                        return weight;
+                    }
+                    break;
+                } else if (!currA->isDigit()) {
+                    if (isFirstRun) {
+                        return *currA < *currB ? -1 : +1;
+                    } else {
+                        return -1;
+                    }
+                } else if (!currB->isDigit()) {
+                    if (isFirstRun) {
+                        return *currA < *currB ? -1 : +1;
+                    } else {
+                        return +1;
+                    }
+                } else if ((*currA < *currB) && (weight == 0)) {
+                    weight = -1;
+                } else if ((*currA > *currB) && (weight == 0)) {
+                    weight = + 1;
+                }
+                ++currA;
+                ++currB;
+                isFirstRun = false;
+            }
+        }
+        continue;
     }
+
+    if (currA->isNull() && currB->isNull()) {
+        return lean;
+    }
+
+    return currA->isNull() ? -1 : + 1;
+}
 
 
 }

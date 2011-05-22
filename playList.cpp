@@ -92,7 +92,7 @@ bool PlayList::generate( QList<M3uEntry> *songsOut, QStatusBar *s, QString *log,
     Start_t = time(0);
 
     bool canceled = false;
-    QList<M3uEntry> songs = findFiles( s, &canceled, log, tags );
+    QList<M3uEntry> songs = findFiles( &canceled, log, tags );
 
     songsOut->append(songs);
     if(canceled){
@@ -154,7 +154,7 @@ bool PlayList::writeM3U( QList<M3uEntry> songs, QString *log ){
     return true;
 }
 
-QList<M3uEntry> PlayList::findFiles( QStatusBar *s, bool *canceled, QString *log, QHash<QString,Tag> *tags ){
+QList<M3uEntry> PlayList::findFiles( bool *canceled, QString *log, QHash<QString,Tag> *tags ){
 
     qDebug()<<"finding files...";
 
@@ -176,21 +176,12 @@ QList<M3uEntry> PlayList::findFiles( QStatusBar *s, bool *canceled, QString *log
     }else{
         for(int i=0;i<rules_.size();i++){
             Rule r = rules_[i];
-            Rule::ruleType t = r.type();
+            Rule::RuleType t = r.type();
             if(t!=Rule::FILENAME_CONTAINS){
                 hasTagRule = true;
                 hasAudioRule = true;
                 break;
             }
-            /*
-                        //check that this coresponds with the ruleTypes enum!
-                        if( (int)t>=(int)TAG_TITLE_CONTAINS && (int)t<(int)AUDIO_BITRATE_IS){
-                                hasTagRule = true;
-                        }
-                        if( (int)t>=(int)AUDIO_BITRATE_IS ){
-                                hasAudioRule = true;
-                        }
-                        */
         }
         if(includeExtInf_){
             hasAudioRule = true;
@@ -241,7 +232,10 @@ QList<M3uEntry> PlayList::findFiles( QStatusBar *s, bool *canceled, QString *log
     fileInfo = fileInfo.toSet().toList();
 
     //local copy of QHash tags: new read tags are inserted into global tags. used files are removed from local qhash tags to increase lookup speed
-    QHash<QString,Tag> tagscopy = *tags;
+    static QHash<QString,Tag> tagsCopy;
+    if( tagsCopy.size()==0 ){
+        tagsCopy = *tags;
+    }
 
     int n=fileInfo.size(); QList<M3uEntry> tmplist;
     QProgressDialog p("Locating files for playlist "+name(), "Abort", 0, n, 0);
@@ -264,17 +258,7 @@ QList<M3uEntry> PlayList::findFiles( QStatusBar *s, bool *canceled, QString *log
             break;
         }
 
-        //TagLib::DebugLogger::Instance()->clear();
-        tmplist = processFile( &wasCanceled, fileInfo[i], s, hasTagRule, hasAudioRule, log, tags, &tagscopy );
-        /*std::vector<std::string> taglibDebug = TagLib::DebugLogger::Instance()->log();
-        if( taglibDebug.size()!=0 && ShowTagLibDebug ){
-            log->append( "\n" + fileInfo[i].absoluteFilePath() );
-            for(unsigned j=0;j<taglibDebug.size();j++){
-                log->append( ", " + QString(taglibDebug[j].c_str()) );
-            }
-            log->append( "\n" );
-        }
-        */
+        tmplist = processFile( fileInfo[i], hasTagRule, hasAudioRule, log, tags, &tagsCopy );
 
         if (wasCanceled){
             break;
@@ -338,20 +322,18 @@ QList<QFileInfo> PlayList::getDirContent( const QString& aPath ){
     return fileInfo;
 }
 
-QList<M3uEntry>  PlayList::processFile( bool *wasCanceled, QFileInfo fileInfo, QStatusBar *s, bool hasTagRule, bool hasAudioRule, QString *log, QHash<QString,Tag> *tags, QHash<QString,Tag> *tagscopy ){
-
-    //QTime t; t.start();
+QList<M3uEntry>  PlayList::processFile( QFileInfo fileInfo, bool hasTagRule, bool hasAudioRule, QString *log, QHash<QString,Tag> *tags, QHash<QString,Tag> *tagsCopy ){
 
     QList<M3uEntry>  list;
 
     QString file = fileInfo.fileName();
     QString fullfile = fileInfo.absoluteFilePath();
-    //qDebug()<<"processing file "<<fullfile;
 
     Tag tag;
     if( hasTagRule || hasAudioRule || includeExtInf_  ){
-        //tag is extracted from local copy of qhash tags, delete it to increase lookup speed
-        tag = tagscopy->take(fullfile);
+        //take tag from the inital copy of tags. If it doesnt exist there, read it, and insert into
+        //the original qhash of tags
+        tag = tagsCopy->take(fullfile);
         if( tag.fileName().isEmpty() ){
             tag = Tag(fullfile);
             tag.readTags();
@@ -363,7 +345,6 @@ QList<M3uEntry>  PlayList::processFile( bool *wasCanceled, QFileInfo fileInfo, Q
             log->append("Could not read tag for "+fullfile+"\n");
         }
     }
-    //qDebug()<<tags->size()<<tagscopy->size();
 
     //only these are needed
     bool anyOk;
@@ -390,63 +371,14 @@ QList<M3uEntry>  PlayList::processFile( bool *wasCanceled, QFileInfo fileInfo, Q
         }
     }
     bool scriptok = settings_.useScript();
-    if( !skipRules ){
-        /*if(useScript_){
-                                anyOk = false;
-                                allOk = false;
-                                //if script_ is empty result will be true/ok/include
-
-                                QScriptEngine e;
-                                if( !e.importedExtensions().contains("qt.core") ){
-                                        QScriptValue tmp = e.importExtension("qt.core");
-                                        if( e.hasUncaughtException() ){
-                                                log->append("\n"+tmp.toString());
-                                        }
-                                }
-                                QString tmpscript=script_;
-                                qDebug()<<"before: "<<tmpscript;
-                                QString definitons;
-                                for(int i=0;i<scriptVariables_.size();i++){
-                                        if( tmpscript.contains(scriptVariables_[i]) ){
-                                                QVariant tmp = tag.getTag( scriptVariables_[i].toLower() );
-                                                QString var="";
-                                                if(tmp.canConvert(QVariant::String)){
-                                                        var = tmp.toString();
-                                                }else if(tmp.canConvert(QVariant::Int)){
-                                                        var = QString::number( tmp.toInt() );
-                                                }
-                                                definitons.append("var "+scriptVariables_[i]+"="+"\""+var+"\"; ");
-                                                //definitons.append("var timer = new QTimer;");
-                                                //e.globalObject().setProperty( scriptVariables_[i], var );
-                                        }
-                                }
-                                tmpscript.prepend(definitons);
-                                qDebug()<<"after: "<<tmpscript;
-                                QScriptValue res = e.evaluate(tmpscript);
-                                if( e.hasUncaughtException() ){
-                                        QString err = e.uncaughtException().toString();
-                                        qDebug() << "Error when evaluating script_: \n"+tmpscript+"\n"+err;
-                                        log->append("\nError when evaluating script_: \n"+tmpscript+"\n"+err);
-                                        *wasCanceled=true;
-                                        scriptok=false;
-                                }else{
-                                        scriptok = res.toBool();
-                                }
-                                qDebug()<<"SCRIPT RESULT: "<<scriptok;
-                        }else{
-                        */
-        //evaluate the set of specified rules_
+    if( !skipRules ){    
         evaluateRules( tag, file, &allOk, &anyOk );
-        //qDebug()<<allOk<<anyOk;
-        //}
     }
     //decide to include or not
     M3uEntry e;    
     if( (allRulesTrue_ && allOk) || (!allRulesTrue_ && anyOk) || scriptok ){
         //extinf info for m3u
-        if( includeExtInf_ ){
-            //e.extinf = createExtinfString( format, tag, ap, file );
-            //e.extinf = createExtinfString( tag, ap, file, format );
+        if( includeExtInf_ ){            
             e.setExtInf( createExtinfString( tag, file, settings_.format() ) );
         }
         e.setOriginalFile( fullfile );
@@ -476,15 +408,6 @@ QList<M3uEntry>  PlayList::processFile( bool *wasCanceled, QFileInfo fileInfo, Q
         list.append( e );
     }
 
-    //append cerr info to log, and reset cerr redirection
-    //log->append("\n"+QString(ostr.str().c_str())+"\n");
-    //std::cerr.rdbuf(cerr_buffer);
-
-    /*int msec = t.elapsed();
-    if(msec>10){
-        log->append("\n"+fullfile+": Time used: "+QString::number(msec));
-    }
-*/
     return list;
 }
 
@@ -493,7 +416,7 @@ void PlayList::evaluateRules( Tag tag, QString file, bool *allOk, bool* anyOk ){
     bool ok;
     for(int i=0;i<rules_.size();i++){
         Rule r = rules_[i];
-        Rule::ruleType t = r.type();
+        Rule::RuleType t = r.type();
         bool shouldBeTrue = r.shouldBeTrue();
         Qt::CaseSensitivity s = Qt::CaseInsensitive;
         if(r.caseSensitive()){
@@ -504,62 +427,62 @@ void PlayList::evaluateRules( Tag tag, QString file, bool *allOk, bool* anyOk ){
         }else if( t==Rule::FILENAME_EQUALS ){
             checkRule( file.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
         }else if( t==Rule::TAG_TITLE_CONTAINS ){
-            QString tmp = tag.getTag("title").toString();
+            QString tmp = tag.title();
             checkRule( tmp.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
         }else if( t==Rule::TAG_TITLE_EQUALS ){
-            QString tmp = tag.getTag("title").toString();
+            QString tmp = tag.title();
             checkRule( tmp.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
         }else if( t==Rule::TAG_ARTIST_CONTAINS ){
-            QString tmp = tag.getTag("artist").toString();
+            QString tmp = tag.artist();
             checkRule( tmp.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
         }else if( t==Rule::TAG_ARTIST_EQUALS ){
-            QString tmp = tag.getTag("artist").toString();
+            QString tmp = tag.artist();
             checkRule( tmp.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
         }else if( t==Rule::TAG_ALBUM_CONTAINS ){
-            QString tmp = tag.getTag("album").toString();
+            QString tmp = tag.album();
             checkRule( tmp.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
         }else if( t==Rule::TAG_ALBUM_EQUALS ){
-            QString tmp = tag.getTag("album").toString();
+            QString tmp = tag.album();
             checkRule( tmp.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
         }else if( t==Rule::TAG_COMMENT_CONTAINS ){
-            QString tmp = tag.getTag("comment").toString();
+            QString tmp = tag.comment();
             checkRule( tmp.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
         }else if( t==Rule::TAG_COMMENT_EQUALS ){
-            QString tmp = tag.getTag("comment").toString();
+            QString tmp = tag.comment();
             checkRule( tmp.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
         }else if( t==Rule::TAG_GENRE_CONTAINS ){
-            QString tmp = tag.getTag("genre").toString();
+            QString tmp = tag.genre();
             checkRule( tmp.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
         }else if( t==Rule::TAG_GENRE_EQUALS ){
-            QString tmp = tag.getTag("genre").toString();
+            QString tmp = tag.genre();
             checkRule( tmp.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
         }else if( t==Rule::TAG_TRACK_IS ){
-            int tmp = tag.getTag("track").toInt();
+            int tmp = tag.track();
             QVector<int> intvals;
             ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
         }else if( t==Rule::TAG_YEAR_IS ){
-            int tmp = tag.getTag("year").toInt();
+            int tmp = tag.year();
             QVector<int> intvals;
             ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
         }else if( t==Rule::AUDIO_BITRATE_IS ){
-            int tmp = tag.getTag("bitrate").toInt();
+            int tmp = tag.bitRate();
             QVector<int> intvals;
             ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
         }else if( t==Rule::AUDIO_SAMPLERATE_IS ){
-            int tmp = tag.getTag("sampleRate").toInt();
+            int tmp = tag.sampleRate();
             QVector<int> intvals;
             ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
         }else if( t==Rule::AUDIO_CHANNELS_IS ){
-            int tmp = tag.getTag("channels").toInt();
+            int tmp = tag.channels();
             QVector<int> intvals;
             ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
         }else if( t==Rule::AUDIO_LENGTH_IS ){
-            int tmp = tag.getTag("length").toInt();
+            int tmp = tag.length();
             QVector<int> intvals;
             ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
@@ -573,13 +496,13 @@ QString PlayList::createExtinfString( Tag tag, QString file, QString format ){
 
     //if( tag!=0 ){
     if( tag.tagOk() ){
-        QString artist = tag.getTag("artist").toString(); //tag->artist().toCString();
-        QString title = tag.getTag("title").toString(); //tag->title().toCString();
-        QString album = tag.getTag("album").toString(); //tag->album().toCString();
-        QString comment = tag.getTag("comment").toString(); //tag->comment().toCString();
-        QString genre = tag.getTag("genre").toString(); //tag->genre().toCString();
-        QString year = QString::number( tag.getTag("year").toInt() ); //QString::number( tag->year() );
-        QString track = QString::number( tag.getTag("track").toInt() ); //QString::number( tag->track() );
+        QString artist = tag.artist();
+        QString title = tag.title();
+        QString album = tag.album();
+        QString comment = tag.comment();
+        QString genre = tag.genre();
+        QString year = QString::number(tag.year());
+        QString track = QString::number(tag.track());
 
         format.replace( QString("%artist%"), artist );
         format.replace( QString("%title%"), title );
@@ -626,7 +549,7 @@ QString PlayList::createExtinfString( Tag tag, QString file, QString format ){
                 length = ap->length();
         }
         */
-    QString result = QString("#EXTINF:")+QString::number( tag.getTag("length").toInt() )+","+format;
+    QString result = QString("#EXTINF:")+QString::number( tag.length() )+","+format;
 
     return result;
 }

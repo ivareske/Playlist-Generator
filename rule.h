@@ -7,24 +7,26 @@ class Rule{
 
 public:
     Rule();
-    enum ruleType{ UNKNOWN, FILENAME_CONTAINS,FILENAME_EQUALS, TAG_TITLE_CONTAINS, TAG_TITLE_EQUALS, TAG_ARTIST_CONTAINS, TAG_ARTIST_EQUALS,\
+    enum RuleType{ UNKNOWN, FILENAME_CONTAINS,FILENAME_EQUALS, TAG_TITLE_CONTAINS, TAG_TITLE_EQUALS, TAG_ARTIST_CONTAINS, TAG_ARTIST_EQUALS,\
             TAG_ALBUM_CONTAINS, TAG_ALBUM_EQUALS, TAG_YEAR_IS, TAG_COMMENT_CONTAINS, TAG_COMMENT_EQUALS, TAG_TRACK_IS, TAG_GENRE_CONTAINS, TAG_GENRE_EQUALS, AUDIO_BITRATE_IS, AUDIO_SAMPLERATE_IS,\
             AUDIO_CHANNELS_IS, AUDIO_LENGTH_IS, NUMBEROFRULES };
 
-    ruleType type() const;
+    RuleType type() const;
     QString value() const;
     bool shouldBeTrue() const;
     bool caseSensitive() const;
 
-    void setType( ruleType );
+    void setType( RuleType );
     void setValue( const QString &value );
     void setShouldBeTrue( bool shouldBeTrue );
     void setCaseSensitive( bool caseSensitive );
+    static QString getRuleName( const Rule::RuleType &type );
+
 
     operator QVariant () const;
 
 private:
-    ruleType type_;
+    RuleType type_;
     QString value_;
     bool shouldBeTrue_;
     bool caseSensitive_;
