@@ -1,8 +1,8 @@
-#include "ruleDialog.h"
+#include "RuleDialog.h"
 
 
 
-ruleDialog::ruleDialog( rule *r, QWidget *parent ) : QDialog(parent){
+RuleDialog::RuleDialog( Rule *r, QWidget *parent ) : QDialog(parent){
     setupUi(this); // this sets up GUI
 
     //ShouldBeTrue->hide();
@@ -23,17 +23,17 @@ ruleDialog::ruleDialog( rule *r, QWidget *parent ) : QDialog(parent){
 
 }
 
-void ruleDialog::finito(){
+void RuleDialog::finito(){
     if(value->text().isEmpty()){
         QMessageBox::information(this, "",
-                                 "You have to specify a value for the rule",
+                                 "You have to specify a value for the Rule",
                                  QMessageBox::Ok, QMessageBox::Ok);
         return;
     }
     int ind = ruleComboBox->currentIndex();
-    rule::ruleType t = static_cast<rule::ruleType>(ind);
-    if( t==rule::TAG_YEAR_IS || t==rule::TAG_TRACK_IS || t==rule::AUDIO_BITRATE_IS || \
-            t==rule::AUDIO_SAMPLERATE_IS || t==rule::AUDIO_CHANNELS_IS || t==rule::AUDIO_LENGTH_IS ){
+    Rule::ruleType t = static_cast<Rule::ruleType>(ind);
+    if( t==Rule::TAG_YEAR_IS || t==Rule::TAG_TRACK_IS || t==Rule::AUDIO_BITRATE_IS || \
+            t==Rule::AUDIO_SAMPLERATE_IS || t==Rule::AUDIO_CHANNELS_IS || t==Rule::AUDIO_LENGTH_IS ){
         QVector<int> intvals;
         bool ok = Global::checkIntValue( &intvals, value->text() );
         if(!ok){
@@ -46,18 +46,18 @@ void ruleDialog::finito(){
     this->accept();
 }
 
-void ruleDialog::indexChanged( int ind ){
+void RuleDialog::indexChanged( int ind ){
 
-    valueLabel->setText( "Value (Ex: "+Global::getRuleExample(static_cast<rule::ruleType>(ind))+")" );
+    valueLabel->setText( "Value (Ex: "+Global::getRuleExample(static_cast<Rule::ruleType>(ind))+")" );
 
 }
 
 
-void ruleDialog::setSettings(){
+void RuleDialog::setSettings(){
 
     QStringList list;
-    for(int i=0;i<rule::NUMBEROFRULES;i++){
-        list.append( Global::getRuleName( static_cast<rule::ruleType>(i) ) );
+    for(int i=0;i<Rule::NUMBEROFRULES;i++){
+        list.append( Global::getRuleName( static_cast<Rule::ruleType>(i) ) );
     }
     ruleComboBox->addItems( list );
     ShouldBeTrue->setChecked(true);
@@ -65,11 +65,11 @@ void ruleDialog::setSettings(){
 
 }
 
-rule ruleDialog::getSettings(){
+Rule RuleDialog::getSettings(){
 
-    rule r;
+    Rule r;
     int ind = ruleComboBox->currentIndex();
-    r.setType(static_cast<rule::ruleType>(ind));
+    r.setType(static_cast<Rule::ruleType>(ind));
     r.setValue(value->text());
     r.setShouldBeTrue(ShouldBeTrue->isChecked());
     r.setCaseSensitive(CaseSensitive->isChecked());
@@ -78,7 +78,7 @@ rule ruleDialog::getSettings(){
 }
 
 
-void ruleDialog::disableRuleChange(){
+void RuleDialog::disableRuleChange(){
     ruleComboBox->setDisabled( true );
 }
 

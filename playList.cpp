@@ -1,8 +1,8 @@
 
-#include "playList.h"
+#include "PlayList.h"
 
 
-playList::playList( const QStringList &defaultExtensions, QListWidget *parent ) : QListWidgetItem(parent){
+PlayList::PlayList( const QStringList &defaultExtensions, QListWidget *parent ) : QListWidgetItem(parent){
 
     setName("New playlist");
     extensions_ = defaultExtensions;
@@ -22,7 +22,7 @@ playList::playList( const QStringList &defaultExtensions, QListWidget *parent ) 
 
 }
 
-playList::playList( const playList &other ){
+PlayList::PlayList( const PlayList &other ){
     QListWidgetItem::operator =(other);
     setName(other.name());
     rules_ = other.rules();
@@ -43,7 +43,7 @@ playList::playList( const playList &other ){
 
 }
 
-void playList::copyFoundFiles( QList<m3uEntry> songs, QString *log ){
+void PlayList::copyFoundFiles( QList<M3uEntry> songs, QString *log ){
 
     log->append("\nResult from file copy:\n");
     int nCopied=0;
@@ -82,7 +82,7 @@ void playList::copyFoundFiles( QList<m3uEntry> songs, QString *log ){
 }
 
 
-bool playList::generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log, QHash<QString, Tag> *tags, const settingsClass &settings ){    
+bool PlayList::generate( QList<M3uEntry> *songsOut, QStatusBar *s, QString *log, QHash<QString, Tag> *tags, const SettingsClass &settings ){    
 
     //getGuiSettings();
     settings_ = settings;
@@ -92,7 +92,7 @@ bool playList::generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log,
     Start_t = time(0);
 
     bool canceled = false;
-    QList<m3uEntry> songs = findFiles( s, &canceled, log, tags );
+    QList<M3uEntry> songs = findFiles( s, &canceled, log, tags );
 
     songsOut->append(songs);
     if(canceled){
@@ -122,7 +122,7 @@ bool playList::generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log,
     return canceled;
 }
 
-bool playList::writeM3U( QList<m3uEntry> songs, QString *log ){
+bool PlayList::writeM3U( QList<M3uEntry> songs, QString *log ){
 
     QString file = outPutFolder_.absolutePath() +"/"+ name() + ".m3u";
 
@@ -154,12 +154,12 @@ bool playList::writeM3U( QList<m3uEntry> songs, QString *log ){
     return true;
 }
 
-QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log, QHash<QString,Tag> *tags ){
+QList<M3uEntry> PlayList::findFiles( QStatusBar *s, bool *canceled, QString *log, QHash<QString,Tag> *tags ){
 
     qDebug()<<"finding files...";
 
     //the two first mandatory rules_
-    QList<m3uEntry> plist;
+    QList<M3uEntry> plist;
 
 
 
@@ -175,9 +175,9 @@ QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log
         }
     }else{
         for(int i=0;i<rules_.size();i++){
-            rule r = rules_[i];
-            rule::ruleType t = r.type();
-            if(t!=rule::FILENAME_CONTAINS){
+            Rule r = rules_[i];
+            Rule::ruleType t = r.type();
+            if(t!=Rule::FILENAME_CONTAINS){
                 hasTagRule = true;
                 hasAudioRule = true;
                 break;
@@ -243,7 +243,7 @@ QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log
     //local copy of QHash tags: new read tags are inserted into global tags. used files are removed from local qhash tags to increase lookup speed
     QHash<QString,Tag> tagscopy = *tags;
 
-    int n=fileInfo.size(); QList<m3uEntry> tmplist;
+    int n=fileInfo.size(); QList<M3uEntry> tmplist;
     QProgressDialog p("Locating files for playlist "+name(), "Abort", 0, n, 0);
     p.setWindowModality(Qt::WindowModal);
 
@@ -308,7 +308,7 @@ QList<m3uEntry> playList::findFiles( QStatusBar *s, bool *canceled, QString *log
 
 
 
-QList<QFileInfo> playList::getDirContent( const QString& aPath ){
+QList<QFileInfo> PlayList::getDirContent( const QString& aPath ){
 
     // append the filtered files to this list
 
@@ -338,11 +338,11 @@ QList<QFileInfo> playList::getDirContent( const QString& aPath ){
     return fileInfo;
 }
 
-QList<m3uEntry>  playList::processFile( bool *wasCanceled, QFileInfo fileInfo, QStatusBar *s, bool hasTagRule, bool hasAudioRule, QString *log, QHash<QString,Tag> *tags, QHash<QString,Tag> *tagscopy ){
+QList<M3uEntry>  PlayList::processFile( bool *wasCanceled, QFileInfo fileInfo, QStatusBar *s, bool hasTagRule, bool hasAudioRule, QString *log, QHash<QString,Tag> *tags, QHash<QString,Tag> *tagscopy ){
 
     //QTime t; t.start();
 
-    QList<m3uEntry>  list;
+    QList<M3uEntry>  list;
 
     QString file = fileInfo.fileName();
     QString fullfile = fileInfo.absoluteFilePath();
@@ -441,7 +441,7 @@ QList<m3uEntry>  playList::processFile( bool *wasCanceled, QFileInfo fileInfo, Q
         //}
     }
     //decide to include or not
-    m3uEntry e;    
+    M3uEntry e;    
     if( (allRulesTrue_ && allOk) || (!allRulesTrue_ && anyOk) || scriptok ){
         //extinf info for m3u
         if( includeExtInf_ ){
@@ -488,77 +488,77 @@ QList<m3uEntry>  playList::processFile( bool *wasCanceled, QFileInfo fileInfo, Q
     return list;
 }
 
-void playList::evaluateRules( Tag tag, QString file, bool *allOk, bool* anyOk ){
+void PlayList::evaluateRules( Tag tag, QString file, bool *allOk, bool* anyOk ){
 
     bool ok;
     for(int i=0;i<rules_.size();i++){
-        rule r = rules_[i];
-        rule::ruleType t = r.type();
+        Rule r = rules_[i];
+        Rule::ruleType t = r.type();
         bool shouldBeTrue = r.shouldBeTrue();
         Qt::CaseSensitivity s = Qt::CaseInsensitive;
         if(r.caseSensitive()){
             s = Qt::CaseSensitive;
         }
-        if( t==rule::FILENAME_CONTAINS ){
+        if( t==Rule::FILENAME_CONTAINS ){
             checkRule( file.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==rule::FILENAME_EQUALS ){
+        }else if( t==Rule::FILENAME_EQUALS ){
             checkRule( file.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==rule::TAG_TITLE_CONTAINS ){
+        }else if( t==Rule::TAG_TITLE_CONTAINS ){
             QString tmp = tag.getTag("title").toString();
             checkRule( tmp.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==rule::TAG_TITLE_EQUALS ){
+        }else if( t==Rule::TAG_TITLE_EQUALS ){
             QString tmp = tag.getTag("title").toString();
             checkRule( tmp.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==rule::TAG_ARTIST_CONTAINS ){
+        }else if( t==Rule::TAG_ARTIST_CONTAINS ){
             QString tmp = tag.getTag("artist").toString();
             checkRule( tmp.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==rule::TAG_ARTIST_EQUALS ){
+        }else if( t==Rule::TAG_ARTIST_EQUALS ){
             QString tmp = tag.getTag("artist").toString();
             checkRule( tmp.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==rule::TAG_ALBUM_CONTAINS ){
+        }else if( t==Rule::TAG_ALBUM_CONTAINS ){
             QString tmp = tag.getTag("album").toString();
             checkRule( tmp.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==rule::TAG_ALBUM_EQUALS ){
+        }else if( t==Rule::TAG_ALBUM_EQUALS ){
             QString tmp = tag.getTag("album").toString();
             checkRule( tmp.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==rule::TAG_COMMENT_CONTAINS ){
+        }else if( t==Rule::TAG_COMMENT_CONTAINS ){
             QString tmp = tag.getTag("comment").toString();
             checkRule( tmp.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==rule::TAG_COMMENT_EQUALS ){
+        }else if( t==Rule::TAG_COMMENT_EQUALS ){
             QString tmp = tag.getTag("comment").toString();
             checkRule( tmp.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==rule::TAG_GENRE_CONTAINS ){
+        }else if( t==Rule::TAG_GENRE_CONTAINS ){
             QString tmp = tag.getTag("genre").toString();
             checkRule( tmp.contains( r.value(), s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==rule::TAG_GENRE_EQUALS ){
+        }else if( t==Rule::TAG_GENRE_EQUALS ){
             QString tmp = tag.getTag("genre").toString();
             checkRule( tmp.compare( r.value(), s ), allOk, anyOk, shouldBeTrue  );
-        }else if( t==rule::TAG_TRACK_IS ){
+        }else if( t==Rule::TAG_TRACK_IS ){
             int tmp = tag.getTag("track").toInt();
             QVector<int> intvals;
             ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
-        }else if( t==rule::TAG_YEAR_IS ){
+        }else if( t==Rule::TAG_YEAR_IS ){
             int tmp = tag.getTag("year").toInt();
             QVector<int> intvals;
             ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
-        }else if( t==rule::AUDIO_BITRATE_IS ){
+        }else if( t==Rule::AUDIO_BITRATE_IS ){
             int tmp = tag.getTag("bitrate").toInt();
             QVector<int> intvals;
             ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
-        }else if( t==rule::AUDIO_SAMPLERATE_IS ){
+        }else if( t==Rule::AUDIO_SAMPLERATE_IS ){
             int tmp = tag.getTag("sampleRate").toInt();
             QVector<int> intvals;
             ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
-        }else if( t==rule::AUDIO_CHANNELS_IS ){
+        }else if( t==Rule::AUDIO_CHANNELS_IS ){
             int tmp = tag.getTag("channels").toInt();
             QVector<int> intvals;
             ok = Global::checkIntValue( &intvals, r.value() );
             checkRange( intvals, tmp, allOk, anyOk, shouldBeTrue );
-        }else if( t==rule::AUDIO_LENGTH_IS ){
+        }else if( t==Rule::AUDIO_LENGTH_IS ){
             int tmp = tag.getTag("length").toInt();
             QVector<int> intvals;
             ok = Global::checkIntValue( &intvals, r.value() );
@@ -569,7 +569,7 @@ void playList::evaluateRules( Tag tag, QString file, bool *allOk, bool* anyOk ){
 }
 
 
-QString playList::createExtinfString( Tag tag, QString file, QString format ){
+QString PlayList::createExtinfString( Tag tag, QString file, QString format ){
 
     //if( tag!=0 ){
     if( tag.tagOk() ){
@@ -631,7 +631,7 @@ QString playList::createExtinfString( Tag tag, QString file, QString format ){
     return result;
 }
 
-void playList::checkRule( bool ruleCheck, bool *allOk, bool *anyOk, bool shouldBeTrue ){
+void PlayList::checkRule( bool ruleCheck, bool *allOk, bool *anyOk, bool shouldBeTrue ){
     if( ruleCheck ){
         *allOk = *allOk && shouldBeTrue;
         *anyOk = shouldBeTrue;
@@ -641,7 +641,7 @@ void playList::checkRule( bool ruleCheck, bool *allOk, bool *anyOk, bool shouldB
     }
 }
 
-void playList::checkRange( QVector<int> intvals, int tmp, bool *allOk, bool *anyOk, bool shouldBeTrue ){
+void PlayList::checkRange( QVector<int> intvals, int tmp, bool *allOk, bool *anyOk, bool shouldBeTrue ){
 
 
     int n=intvals.size();
@@ -664,141 +664,141 @@ void playList::checkRange( QVector<int> intvals, int tmp, bool *allOk, bool *any
 }
 
 
-QString playList::fileNameWithoutExtension() const{
+QString PlayList::fileNameWithoutExtension() const{
     return outPutFolder_.absolutePath()+"/"+name();
 }
 
-QString playList::name() const{
+QString PlayList::name() const{
     return this->text();
 }
 
-QVector<rule> playList::rules() const{
+QVector<Rule> PlayList::rules() const{
     return rules_;
 }
 
-QList<QDir> playList::folders() const{
+QList<QDir> PlayList::folders() const{
     return folders_;
 }
 
-QStringList playList::extensions() const{
+QStringList PlayList::extensions() const{
     return extensions_;
 }
 
-bool playList::randomize() const{
+bool PlayList::randomize() const{
     return randomize_;
 }
 
-bool playList::includeSubFolders() const{
+bool PlayList::includeSubFolders() const{
     return includeSubFolders_;
 }
 
-bool playList::relativePath() const{
+bool PlayList::relativePath() const{
     return relativePath_;
 }
 
-bool playList::allRulesTrue() const{
+bool PlayList::allRulesTrue() const{
     return allRulesTrue_;
 }
 
-bool playList::includeExtInf() const{
+bool PlayList::includeExtInf() const{
     return includeExtInf_;
 }
 
-bool playList::makeUnique() const{
+bool PlayList::makeUnique() const{
     return makeUnique_;
 }
 
-QDir playList::copyFilesToDir() const{
+QDir PlayList::copyFilesToDir() const{
     return copyFilesToDir_;
 }
 
-bool playList::copyFiles() const{
+bool PlayList::copyFiles() const{
     return copyFiles_;
 }
 
-QList<QFileInfo> playList::individualFiles() const{
+QList<QFileInfo> PlayList::individualFiles() const{
     return individualFiles_;
 }
 
-QString playList::script() const{
+QString PlayList::script() const{
     return script_;
 }
 
-QDir playList::outPutFolder() const{
+QDir PlayList::outPutFolder() const{
     return outPutFolder_;
 }
 
 
-void playList::setName( const QString &name ){
+void PlayList::setName( const QString &name ){
     this->setText(name);
 }
 
-void playList::setRules( const QVector<rule> &rules ){
+void PlayList::setRules( const QVector<Rule> &rules ){
     rules_ = rules;
 }
 
-void playList::setFolders( const QList<QDir> &folders ){
+void PlayList::setFolders( const QList<QDir> &folders ){
     folders_ = folders;
 }
 
-void playList::setExtensions( const QStringList &extensions ){
+void PlayList::setExtensions( const QStringList &extensions ){
     extensions_ = extensions;
 }
 
-void playList::setRandomize( bool randomize ){
+void PlayList::setRandomize( bool randomize ){
     randomize_ = randomize;
 }
 
-void playList::setIncludeSubFolders( bool includeSubFolders ){
+void PlayList::setIncludeSubFolders( bool includeSubFolders ){
     includeSubFolders_ = includeSubFolders;
 }
 
-void playList::setRelativePath( bool relativePath ){
+void PlayList::setRelativePath( bool relativePath ){
     relativePath_ = relativePath;
 }
 
-void playList::setAllRulesTrue( bool allRulesTrue ){
+void PlayList::setAllRulesTrue( bool allRulesTrue ){
     allRulesTrue_ = allRulesTrue;
 }
 
-void playList::setIncludeExtInf( bool includeExtInf ){
+void PlayList::setIncludeExtInf( bool includeExtInf ){
     includeExtInf_ = includeExtInf;
 }
 
-void playList::setMakeUnique( bool makeUnique ){
+void PlayList::setMakeUnique( bool makeUnique ){
     makeUnique_ = makeUnique;
 }
 
 
-void playList::setCopyFilesToDir( const QDir &copyFilesToDir ){
+void PlayList::setCopyFilesToDir( const QDir &copyFilesToDir ){
     copyFilesToDir_ = copyFilesToDir;
 }
 
-void playList::setCopyFiles( bool copyFiles ){
+void PlayList::setCopyFiles( bool copyFiles ){
     copyFiles_ = copyFiles;
 }
 
-void playList::setIndividualFiles( const QList<QFileInfo> &individualFiles ){
+void PlayList::setIndividualFiles( const QList<QFileInfo> &individualFiles ){
     individualFiles_ = individualFiles;
 }
 
-void playList::setScript( const QString &script ){
+void PlayList::setScript( const QString &script ){
     script_ = script;
 }
 
-void playList::setOutPutFolder( const QDir &outPutFolder ){
+void PlayList::setOutPutFolder( const QDir &outPutFolder ){
     outPutFolder_ = outPutFolder;
 }
 
 
-playList::operator QVariant () const{
+PlayList::operator QVariant () const{
     return QVariant::fromValue(*this);
 }
 
-QDataStream &operator>>(QDataStream &in, playList &p){
+QDataStream &operator>>(QDataStream &in, PlayList &p){
 
     QString name_;
-    QVector<rule> rules_;
+    QVector<Rule> rules_;
     QList<QString> folders_;
     QStringList extensions_;
     bool randomize_;
@@ -827,7 +827,7 @@ QDataStream &operator>>(QDataStream &in, playList &p){
         individualFiles.append(QFileInfo(individualFiles_[i]));
     }
 
-    p = playList();
+    p = PlayList();
     p.setName(name_); p.setRules(rules_); p.setFolders(folders); p.setExtensions(extensions_); p.setRandomize(randomize_);
     p.setIncludeSubFolders(includeSubFolders); p.setRelativePath(relativePath_); p.setAllRulesTrue(allRulesTrue_);
     p.setIncludeExtInf(includeExtInf_); p.setMakeUnique(makeUnique_); p.setCopyFilesToDir(QDir(copyFilesToDir));
@@ -835,7 +835,7 @@ QDataStream &operator>>(QDataStream &in, playList &p){
     return in;
 }
 
-QDataStream &operator<<(QDataStream &out, const playList &p){
+QDataStream &operator<<(QDataStream &out, const PlayList &p){
 
     QStringList folders;
     QList<QDir> folders_ = p.folders();

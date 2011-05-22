@@ -4,10 +4,10 @@
 #include <QtGui>
 #include <QHash>
 
-class m3uEntry{
+class M3uEntry{
 	
 	public:
-	m3uEntry();
+	M3uEntry();
 
         QString extInf() const;
         QString file() const;
@@ -18,7 +18,7 @@ class m3uEntry{
         void setFullFile( const QString &fullFile );
         void setOriginalFile( const QString &originalFile );
 
-	bool operator==(const m3uEntry &e1) const;	
+	bool operator==(const M3uEntry &e1) const;	
 
 private:
         QString extInf_;

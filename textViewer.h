@@ -5,13 +5,13 @@
 #include "ui_textViewer.h"
  
  
-class textViewer : public QDialog, private Ui::textViewer
+class TextViewer : public QDialog, private Ui::TextViewer
 {
     Q_OBJECT
  
 public:
 
-    textViewer(QWidget *parent = 0, QString *text=0);
+    TextViewer(QWidget *parent = 0, QString *text=0);
 	QTextEdit *getTextEdit();
 	
 public slots:

@@ -2,19 +2,19 @@
 #define SETTINGSDIALOG_H
 
 #include <QtGui>
-#include "rule.h"
-#include "playList.h"
+#include "Rule.h"
+#include "PlayList.h"
 #include "globalFunctions.h"
 #include "ui_settingsDialog.h"
 
 
-class settingsDialog : public QDialog, private Ui::settingsDialog
+class SettingsDialog : public QDialog, private Ui::SettingsDialog
 {
     Q_OBJECT
 
 public:
 
-    settingsDialog( settingsClass *settings, QWidget *parent = 0);
+    SettingsDialog( SettingsClass *settings, QWidget *parent = 0);
 
 
     //public slots:
@@ -30,7 +30,7 @@ private:
     void setSettings();
     QString chooseDir();
     //QSettings *settings;
-    settingsClass *settings_;
+    SettingsClass *settings_;
 private slots:
     void onFinish( int result );
     void setOutPutDir();

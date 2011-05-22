@@ -2,18 +2,18 @@
 #define GLOBALFUNCTIONS_H
 
 #include <QtGui>
-#include "rule.h"
-#include "m3uEntry.h"
-#include "playList.h"
+#include "Rule.h"
+#include "M3uEntry.h"
+#include "PlayList.h"
 
-class playList;
+class PlayList;
 
 namespace Global{
 
-    QString getRuleName( const rule::ruleType &type );
-    QString getRuleExample( const rule::ruleType &type );
+    QString getRuleName( const Rule::ruleType &type );
+    QString getRuleExample( const Rule::ruleType &type );
     bool checkIntValue( QVector<int> *intvals, const QString &val );
-    bool caseInsensitiveLessThan(const playList &s1, const playList &s2);
+    bool caseInsensitiveLessThan(const PlayList &s1, const PlayList &s2);
 
     const QString version = "1.0";
     enum fileReadResult{ DOESNOTEXIST, EXISTS, NOTVALID };
@@ -23,7 +23,7 @@ namespace Global{
 
 }
 
-uint qHash(const m3uEntry &key);
+uint qHash(const M3uEntry &key);
 uint qHash( const QFileInfo &key );
 
 #endif

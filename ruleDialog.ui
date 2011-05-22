@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ruleDialog</class>
- <widget class="QDialog" name="ruleDialog">
+ <class>RuleDialog</class>
+ <widget class="QDialog" name="RuleDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -79,7 +79,7 @@
       <item row="3" column="0">
        <widget class="QCheckBox" name="ShouldBeTrue">
         <property name="toolTip">
-         <string>If checked, the rule should be true for a file to be included. If not checked, the rule should be false</string>
+         <string>If checked, the Rule should be true for a file to be included. If not checked, the Rule should be false</string>
         </property>
         <property name="statusTip">
          <string/>

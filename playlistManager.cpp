@@ -5,12 +5,12 @@
 playlistManager::playlistManager(QWidget *parent) : QMainWindow(parent){
     setupUi(this); // this sets up GUI			
 
-    qRegisterMetaType<playList>("playList");
-    qRegisterMetaTypeStreamOperators<playList>("playList");
-    qRegisterMetaType<rule>("rule");
-    qRegisterMetaTypeStreamOperators<rule>("rule");
-    qRegisterMetaType<settingsClass>("settingsClass");
-    qRegisterMetaTypeStreamOperators<settingsClass>("settingsClass");    
+    qRegisterMetaType<PlayList>("PlayList");
+    qRegisterMetaTypeStreamOperators<PlayList>("PlayList");
+    qRegisterMetaType<Rule>("Rule");
+    qRegisterMetaTypeStreamOperators<Rule>("Rule");
+    qRegisterMetaType<SettingsClass>("SettingsClass");
+    qRegisterMetaTypeStreamOperators<SettingsClass>("SettingsClass");    
 
 
     createActions();
@@ -211,7 +211,7 @@ void playlistManager::getCopyDir(){
     if( dialog.exec() ){
         QStringList d = dialog.selectedFiles();
         copyFilesText->setText( d[0] );
-        playList *p = currentPlayList();
+        PlayList *p = currentPlayList();
         if(p){
             p->setCopyFilesToDir(d[0]);
         }
@@ -220,7 +220,7 @@ void playlistManager::getCopyDir(){
 
 void playlistManager::updateCopyFiles( const QString &text ){
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     if(!p){
         QMessageBox::critical(this, "",
                               "Please choose a playlist before editing the extensions",
@@ -234,7 +234,7 @@ void playlistManager::updateCopyFiles( const QString &text ){
 
 void playlistManager::updateCopyTo( int state ){
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     if(!p){
         QMessageBox::critical(this, "",
                               "Please choose a playlist before editing the extensions",
@@ -335,7 +335,7 @@ void playlistManager::writeGUISettings(){
     guiSettings->setValue("pos", this->pos());
     guiSettings->endGroup();
     guiSettings->setValue("settingsFile", settingsFile.absoluteFilePath() );
-    guiSettings->setValue("settingsClass", settings_ );
+    guiSettings->setValue("SettingsClass", settings_ );
 
     guiSettings->sync();
     //delete guiSettings;
@@ -351,7 +351,7 @@ void playlistManager::readGUISettings(){
     this->move(guiSettings->value("pos", QPoint(200, 200)).toPoint());
     guiSettings->endGroup();
     settingsFile = guiSettings->value("settingsFile","examples"+Global::ext).toString();
-    settings_ = guiSettings->value("settingsClass",settingsClass()).value<settingsClass>();
+    settings_ = guiSettings->value("SettingsClass",SettingsClass()).value<SettingsClass>();
 
 }
 
@@ -468,12 +468,12 @@ void playlistManager::sortPlayLists(){
 
 void playlistManager::addIndividualFiles(){
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     if(!p){
         return;
     }
 
-    addFilesDialog d(p->individualFiles());
+    AddFilesDialog d(p->individualFiles());
     if( d.exec()!=QDialog::Accepted ){
         return;
     }    
@@ -503,7 +503,7 @@ void playlistManager::enableOptions( bool state ){
 
 void playlistManager::updateRandomize( int state ){	
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     if(!p){
         QMessageBox::critical(this, "",
                               "Please choose a playlist first",
@@ -515,15 +515,15 @@ void playlistManager::updateRandomize( int state ){
 
 }
 
-playList* playlistManager::currentPlayList(){
-    playList *p = static_cast<playList*>(playListTable->currentItem());
+PlayList* playlistManager::currentPlayList(){
+    PlayList *p = static_cast<PlayList*>(playListTable->currentItem());
     return p;
 }
 
 
 void playlistManager::updateAllRulesTrue( int state ){	
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     if(!p){
         QMessageBox::critical(this, "",
                               "Please choose a playlist first",
@@ -537,7 +537,7 @@ void playlistManager::updateAllRulesTrue( int state ){
 
 void playlistManager::updateSearchSubfolders( int state ){	
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     if(!p){
         QMessageBox::critical(this, "",
                               "Please choose a playlist first",
@@ -551,7 +551,7 @@ void playlistManager::updateSearchSubfolders( int state ){
 
 void playlistManager::updateIncludeExtInf( int state ){	
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     if(!p){
         QMessageBox::critical(this, "",
                               "Please choose a playlist first",
@@ -565,7 +565,7 @@ void playlistManager::updateIncludeExtInf( int state ){
 
 void playlistManager::updateUseRelativePath( int state ){	
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     if(!p){
         QMessageBox::critical(this, "",
                               "Please choose a playlist first",
@@ -580,7 +580,7 @@ void playlistManager::updateUseRelativePath( int state ){
 
 void playlistManager::updateMakeUnique( int state ){	
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     if(!p){
         QMessageBox::critical(this, "",
                               "Please choose a playlist first",
@@ -594,7 +594,7 @@ void playlistManager::updateMakeUnique( int state ){
 
 void playlistManager::updateScript(){
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     if(!p){
         QMessageBox::critical(this, "",
                               "Please choose a playlist before editing the script",
@@ -608,7 +608,7 @@ void playlistManager::updateScript(){
 
 void playlistManager::updateExtensions( const QString & exts ){
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     if(!p){
         QMessageBox::critical(this, "",
                               "Please choose a playlist before editing the extensions",
@@ -621,7 +621,7 @@ void playlistManager::updateExtensions( const QString & exts ){
 
 void playlistManager::addFolder(){
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     if(!p){
         QMessageBox::critical(this, "",
                               "Please choose a playlist first",
@@ -664,7 +664,7 @@ void playlistManager::addFolder(){
 
 void playlistManager::renameFolder(QListWidgetItem *item){
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     if( !p || !folderTable->currentItem() ){
         return;
     }
@@ -696,7 +696,7 @@ void playlistManager::renameFolder(QListWidgetItem *item){
 
 void playlistManager::changeFolder(QListWidgetItem *item){
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     if(!p){
         return;
     }
@@ -717,7 +717,7 @@ void playlistManager::changeFolder(QListWidgetItem *item){
 
 void playlistManager::removeFolder(){
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     int ind = folderTable->currentRow();    
     if(ind==-1 || !p){
         return;
@@ -776,7 +776,7 @@ void playlistManager::showRulesAndFolders(){
         return;
     }
     qDebug()<<"b";
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     if( !p ){
         enableOptions( false );
         return;
@@ -816,9 +816,9 @@ void playlistManager::showRulesAndFolders(){
 
     //rules
     RuleScript->setText( p->script() );
-    QVector<rule> rules = p->rules();
+    QVector<Rule> rules = p->rules();
     for(int i=0;i<rules.size();i++){
-        rule::ruleType t = rules[i].type();
+        Rule::ruleType t = rules[i].type();
         QListWidgetItem *item = new QListWidgetItem();
         if(!rules[i].shouldBeTrue()){
             QFont f = item->font(); f.setItalic(true);
@@ -833,7 +833,7 @@ void playlistManager::showRulesAndFolders(){
 /*
 void playlistManager::renamePlayList(QListWidgetItem *item){
 
-    playList *p = static_cast<playList*>(item);
+    PlayList *p = static_cast<PlayList*>(item);
     QString oldName = p->name();
     QString newName = item->text();
     if(newName.isEmpty()){
@@ -867,8 +867,8 @@ Global::fileReadResult playlistManager::readSettings( QFileInfo file ){
 
     QStringList playListNames = playListSettings->allKeys();
     for(int i=0;i<playListNames.size();i++){
-        playList p = playListSettings->value(playListNames[i]).value< playList >();
-        playList *p2 = new playList(p);
+        PlayList p = playListSettings->value(playListNames[i]).value< PlayList >();
+        PlayList *p2 = new PlayList(p);
         p2->setFlags(p2->flags () | Qt::ItemIsEditable);
         playListTable->addItem( p2 );
     }
@@ -911,7 +911,7 @@ void playlistManager::saveSettings( QFileInfo file ){
 
     playListSettings->clear();
     for(int i=0;i<playListTable->count();i++){
-        playList *p = static_cast<playList*>(playListTable->item(i));
+        PlayList *p = static_cast<PlayList*>(playListTable->item(i));
         playListSettings->setValue(p->name(),*p);
     }
 
@@ -978,7 +978,7 @@ void playlistManager::generatePlayLists( QList<int> inds ){
 
     for(int i=0;i<inds.size();i++){
 
-        playList *p = static_cast<playList*>(playListTable->item(i));
+        PlayList *p = static_cast<PlayList*>(playListTable->item(i));
         names.append( p->name() );
         log.append("Info for generation of playlist '"+p->name()+"'\n");
 
@@ -996,7 +996,7 @@ void playlistManager::generatePlayLists( QList<int> inds ){
             }
         }
 
-        QList<m3uEntry> songs;
+        QList<M3uEntry> songs;
         bool wasCanceled = p->generate( &songs, statusBar(), &log, &tags_, settings_ );
         if(wasCanceled){
             log.append("\n\nAborted by user");
@@ -1017,7 +1017,7 @@ void playlistManager::generatePlayLists( QList<int> inds ){
         log.append("\n\n Total time used: "+QString::number(totaltime)+" seconds\n");
     }
     if(settings_.showLog()){
-        textViewer t(this, &log);
+        TextViewer t(this, &log);
         t.resize(settings_.textViewerSize());
         t.exec();
         settings_.setTextViewerSize(t.size());
@@ -1025,7 +1025,7 @@ void playlistManager::generatePlayLists( QList<int> inds ){
 }
 
 /*
-void playlistManager::copyFiles( playList p, QList<m3uEntry> songs, QString *log ){
+void playlistManager::copyFiles( PlayList p, QList<M3uEntry> songs, QString *log ){
 
     log->append("\nResult from file copy:\n");
     int nCopied=0;
@@ -1068,7 +1068,7 @@ void playlistManager::addPlayList(){
 
     QString name = "New playlist";
 
-    playList *p = new playList( settings_.defaultExtensions() );
+    PlayList *p = new PlayList( settings_.defaultExtensions() );
     p->setFlags(p->flags () | Qt::ItemIsEditable);
     playListTable->addItem( p );
     playListTable->setCurrentItem(p);
@@ -1101,19 +1101,19 @@ void playlistManager::removePlayList(){
 
 void playlistManager::newRule(){
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     if(!p){
         QMessageBox::information(this, "",
                                  "Please select a playlist first",
                                  QMessageBox::Ok, QMessageBox::Ok);
         return;
     }
-    ruleDialog rd;
+    RuleDialog rd;
     if( rd.exec()!=QDialog::Accepted ){
         return;
     }
-    rule r = rd.getSettings();
-    QVector<rule> rules = p->rules();
+    Rule r = rd.getSettings();
+    QVector<Rule> rules = p->rules();
     rules.append( r );
     p->setRules(rules);
 
@@ -1124,22 +1124,22 @@ void playlistManager::newRule(){
 
 void playlistManager::editRule(){
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     int rind = rulesTable->currentRow();
     if(rind==-1 || !p){
         QMessageBox::information(this, "",
-                                 "Please select a rule first",
+                                 "Please select a Rule first",
                                  QMessageBox::Ok, QMessageBox::Ok);
         return;
     }
-    QVector<rule> rules = p->rules();
-    rule r = rules[rind];
-    ruleDialog rd( &r, this );
+    QVector<Rule> rules = p->rules();
+    Rule r = rules[rind];
+    RuleDialog rd( &r, this );
 
     if( rd.exec()!=QDialog::Accepted ){
         return;
     }
-    rule newr = rd.getSettings();
+    Rule newr = rd.getSettings();
     rules.append(newr);
     p->setRules(rules);
     delete rulesTable->takeItem(rind);
@@ -1150,16 +1150,16 @@ void playlistManager::editRule(){
 
 void playlistManager::removeRule(){
 
-    playList *p = currentPlayList();
+    PlayList *p = currentPlayList();
     int rind = rulesTable->currentRow();
     if(rind==-1 || !p){
         QMessageBox::information(this, "",
-                                 "Please select a rule first",
+                                 "Please select a Rule first",
                                  QMessageBox::Ok, QMessageBox::Ok);
         return;
     }
     delete rulesTable->takeItem(rind);
-    QVector<rule> rules = p->rules();
+    QVector<Rule> rules = p->rules();
     rules.remove(rind);
     p->setRules(rules);
 
@@ -1169,7 +1169,7 @@ void playlistManager::removeRule(){
 
 void playlistManager::showSettings(){
 
-    settingsDialog s(&settings_);
+    SettingsDialog s(&settings_);
     //guiSettings->sync();
     if( s.exec()==QDialog::Accepted ){
         updateUseScript();

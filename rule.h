@@ -3,10 +3,10 @@
 
 #include <QtGui>
 
-class rule{
+class Rule{
 
 public:
-    rule();
+    Rule();
     enum ruleType{ UNKNOWN, FILENAME_CONTAINS,FILENAME_EQUALS, TAG_TITLE_CONTAINS, TAG_TITLE_EQUALS, TAG_ARTIST_CONTAINS, TAG_ARTIST_EQUALS,\
             TAG_ALBUM_CONTAINS, TAG_ALBUM_EQUALS, TAG_YEAR_IS, TAG_COMMENT_CONTAINS, TAG_COMMENT_EQUALS, TAG_TRACK_IS, TAG_GENRE_CONTAINS, TAG_GENRE_EQUALS, AUDIO_BITRATE_IS, AUDIO_SAMPLERATE_IS,\
             AUDIO_CHANNELS_IS, AUDIO_LENGTH_IS, NUMBEROFRULES };
@@ -32,11 +32,11 @@ private:
 
 };
 
-Q_DECLARE_METATYPE(rule);
+Q_DECLARE_METATYPE(Rule);
 
 
-QDataStream &operator>>(QDataStream &in, rule &r);
-QDataStream &operator<<(QDataStream &out, const rule &r);
+QDataStream &operator>>(QDataStream &in, Rule &r);
+QDataStream &operator<<(QDataStream &out, const Rule &r);
 
 #endif
 

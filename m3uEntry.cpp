@@ -1,7 +1,7 @@
-#include "m3uEntry.h"
+#include "M3uEntry.h"
 
 
-m3uEntry::m3uEntry(){
+M3uEntry::M3uEntry(){
     
         file_="";
         fullFile_="";
@@ -10,44 +10,44 @@ m3uEntry::m3uEntry(){
 }
 
 
-bool m3uEntry::operator==(const m3uEntry &e1) const{
+bool M3uEntry::operator==(const M3uEntry &e1) const{
     return file_ == e1.file();
 }
 
-QString m3uEntry::extInf() const{
+QString M3uEntry::extInf() const{
     return extInf_;
 }
 
-QString m3uEntry::file() const{
+QString M3uEntry::file() const{
     return file_;
 }
 
-QString m3uEntry::fullFile() const{
+QString M3uEntry::fullFile() const{
     return fullFile_;
 }
 
-QString m3uEntry::originalFile() const{
+QString M3uEntry::originalFile() const{
     return originalFile_;
 }
 
-void m3uEntry::setExtInf( const QString &extInf ){
+void M3uEntry::setExtInf( const QString &extInf ){
     extInf_ = extInf;
 }
 
-void m3uEntry::setFile( const QString &file ){
+void M3uEntry::setFile( const QString &file ){
     file_ = file;
 }
 
-void m3uEntry::setFullFile( const QString &fullFile ){
+void M3uEntry::setFullFile( const QString &fullFile ){
     fullFile_ = fullFile;
 }
 
-void m3uEntry::setOriginalFile( const QString &originalFile ){
+void M3uEntry::setOriginalFile( const QString &originalFile ){
     originalFile_ = originalFile;
 }
 
 /*
-uint m3uEntry::qHash( const m3uEntry &key ){
+uint M3uEntry::qHash( const M3uEntry &key ){
 	//QString tmp = key.file;
 	uint val = qHash( file.unicode() );
 	return 1;

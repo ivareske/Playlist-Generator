@@ -3,10 +3,10 @@
 
 #include <QtGui>
 
-class settingsClass{
+class SettingsClass{
 
 public:
-    settingsClass();
+    SettingsClass();
 
     QString style() const;
     bool artistEmpty() const;
@@ -68,11 +68,11 @@ private:
 
 };
 
-Q_DECLARE_METATYPE(settingsClass);
+Q_DECLARE_METATYPE(SettingsClass);
 
 
-QDataStream &operator>>(QDataStream &in, settingsClass &s);
-QDataStream &operator<<(QDataStream &out, const settingsClass &s);
+QDataStream &operator>>(QDataStream &in, SettingsClass &s);
+QDataStream &operator<<(QDataStream &out, const SettingsClass &s);
 
 #endif
 

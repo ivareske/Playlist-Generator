@@ -1,7 +1,7 @@
-#include "addFilesDialog.h"
+#include "AddFilesDialog.h"
 
 
-addFilesDialog::addFilesDialog( const QList<QFileInfo> &files, QWidget *parent ) : QDialog(parent) {
+AddFilesDialog::AddFilesDialog( const QList<QFileInfo> &files, QWidget *parent ) : QDialog(parent) {
     setupUi(this); // this sets up GUI
 
     // signals/slots mechanism in action
@@ -17,7 +17,7 @@ addFilesDialog::addFilesDialog( const QList<QFileInfo> &files, QWidget *parent )
 }
 
 
-QList<QFileInfo> addFilesDialog::getFiles() const{
+QList<QFileInfo> AddFilesDialog::getFiles() const{
 
     QList<QFileInfo> files;
     for(int i=0;i<fileList->count();i++){
@@ -26,14 +26,14 @@ QList<QFileInfo> addFilesDialog::getFiles() const{
     return files;
 }
 
-void addFilesDialog::removeFiles(){			
+void AddFilesDialog::removeFiles(){			
 
     qDeleteAll(fileList->selectedItems());
 
 }
 
 
-void addFilesDialog::chooseFiles(){
+void AddFilesDialog::chooseFiles(){
 
 
     static QString lastUsedDir;

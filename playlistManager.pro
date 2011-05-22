@@ -13,7 +13,7 @@
 #fix const correctness and implement stream operators
 
 TEMPLATE=app
-TARGET = playListGenerator
+TARGET = PlayListGenerator
 CONFIG += qt release warn_on 
 #CONFIG += static
 CONFIG += console
@@ -24,21 +24,16 @@ LIBS += $$quote(C:/Program Files/taglib/bin/libtag.dll)
 #LIBS += $$quote(C:/Qt/4.6.3/plugins/script/qtscript_cored.dll)
 
 
-HEADERS = playListManager.h settingsDialog.h ruleDialog.h playList.h rule.h globalFunctions.h m3uEntry.h addFilesDialog.h textViewer.h Tag.h settingsClass.h
-FORMS   = playlistManager.ui settingsDialog.ui ruleDialog.ui addFilesDialog.ui textViewer.ui
-SOURCES = main.cpp playListManager.cpp  settingsDialog.cpp ruleDialog.cpp playList.cpp rule.cpp globalFunctions.cpp m3uEntry.cpp addFilesDialog.cpp textViewer.cpp Tag.cpp settingsClass.cpp
+HEADERS = PlayListManager.h SettingsDialog.h RuleDialog.h PlayList.h Rule.h globalFunctions.h M3uEntry.h AddFilesDialog.h TextViewer.h Tag.h SettingsClass.h
+FORMS   = playlistManager.ui SettingsDialog.ui RuleDialog.ui AddFilesDialog.ui TextViewer.ui
+SOURCES = main.cpp PlayListManager.cpp  SettingsDialog.cpp RuleDialog.cpp PlayList.cpp Rule.cpp globalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp SettingsClass.cpp
 
-RC_FILE = playListManager.rc
+RC_FILE = PlayListManager.rc
 
 
 
 #to build taglib (windows): download taglib source from
 #http://developer.kde.org/~wheeler/taglib.html
-#add the debuglogger class source file in cmakelists.txt and the debuglogger class header with the install files in the cmakelists.txt, and modify the taglib:.debug function to be as follows:
-#void TagLib::debug(const String &s){
-#  std::cerr << "TagLib: " << s << std::endl;
-# DebugLogger::Instance()->append( "TagLib: " + s.to8Bit() );
-#} 
 #Download the Zlib source (zlib125.zip) and unpack it with unzip or 7zip. Then, compile Zlib like this:
 #cd zlib-1.2.5/ 
 #make -f win32/Makefile.gcc

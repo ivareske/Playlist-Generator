@@ -1,8 +1,8 @@
-#include "settingsDialog.h"
+#include "SettingsDialog.h"
 
 
 
-settingsDialog::settingsDialog( settingsClass *settings, QWidget *parent) : QDialog(parent){
+SettingsDialog::SettingsDialog( SettingsClass *settings, QWidget *parent) : QDialog(parent){
     setupUi(this); // this sets up GUI
 
     settings_ = settings;
@@ -20,7 +20,7 @@ settingsDialog::settingsDialog( settingsClass *settings, QWidget *parent) : QDia
     UseScript->hide();
 }
 
-void settingsDialog::onFinish( int result ){
+void SettingsDialog::onFinish( int result ){
 
     if(result==QDialog::Accepted){
         QString out = outputPath->text();
@@ -46,7 +46,7 @@ void settingsDialog::onFinish( int result ){
 }
 
 
-void settingsDialog::setSettings(){
+void SettingsDialog::setSettings(){
 
     DefaultExtensions->setText( settings_->defaultExtensions().join(";") );
     Format->setText( settings_->format() );
@@ -85,7 +85,7 @@ void settingsDialog::setSettings(){
 }
 
 /*
-void settingsDialog::getSettings(){
+void SettingsDialog::getSettings(){
 
     settings = new QSettings( "playListGenerator"+ext, QSettings::IniFormat, this );
     QString out = outputPath->text();
@@ -112,7 +112,7 @@ void settingsDialog::getSettings(){
 }
 */
 
-QString settingsDialog::chooseDir(){
+QString SettingsDialog::chooseDir(){
 
     QString dir = outputPath->text();
     if(dir.isEmpty()){
@@ -132,7 +132,7 @@ QString settingsDialog::chooseDir(){
 
 }
 
-void settingsDialog::setOutPutDir(){
+void SettingsDialog::setOutPutDir(){
 
     QString dir = chooseDir();
     if(!dir.isEmpty()){

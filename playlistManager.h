@@ -3,14 +3,14 @@
 
 #include <time.h> 
 #include <QtGui>
-#include "rule.h"
-#include "playList.h"
+#include "Rule.h"
+#include "PlayList.h"
 #include "globalFunctions.h"
-#include "settingsDialog.h"
-#include "addFilesDialog.h"
-#include "textViewer.h"
-#include "ruleDialog.h"
-#include "settingsClass.h"
+#include "SettingsDialog.h"
+#include "AddFilesDialog.h"
+#include "TextViewer.h"
+#include "RuleDialog.h"
+#include "SettingsClass.h"
 #include "ui_playlistManager.h"
 
 
@@ -75,7 +75,7 @@ private slots:
     void getCopyDir();
     void updateCopyFiles( const QString &text );
     void updateCopyTo( int state );
-    //void copyFiles( playList p, QList<m3uEntry> songs, QString *log );
+    //void copyFiles( PlayList p, QList<M3uEntry> songs, QString *log );
     void enableOptions( bool state );
     void clearTags();
     void updateScript();
@@ -83,14 +83,14 @@ private slots:
 
 
 private:
-    playList* currentPlayList();
+    PlayList* currentPlayList();
 
     QFileInfo settingsFile;
     QSettings *guiSettings;
     QSettings *playListSettings;
-    //QList<playList> playLists_;
+    //QList<PlayList> playLists_;
     QHash<QString, Tag> tags_;
-    settingsClass settings_;
+    SettingsClass settings_;
 
 };
 

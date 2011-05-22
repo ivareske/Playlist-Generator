@@ -1,27 +1,27 @@
-#include "textViewer.h"
+#include "TextViewer.h"
 
  
-textViewer::textViewer(QWidget *parent, QString *text){
+TextViewer::TextViewer(QWidget *parent, QString *text){
     setupUi(this); // this sets up GUI 	       	
 	if(!text->isNull()){
 		textEdit->setText( *text );
 	}
 }
 
-QTextEdit* textViewer::getTextEdit(){
+QTextEdit* TextViewer::getTextEdit(){
 	return textEdit;
 }
 
-void textViewer::setText( QString text ){
+void TextViewer::setText( QString text ){
 	textEdit->setText( text );
 }
 
 /*
-void textViewer::resize( QSize size ){
+void TextViewer::resize( QSize size ){
 	this->setSize(size);
 }
 
-void textViewer::setFont( QFont font ){
+void TextViewer::setFont( QFont font ){
 	textEdit->setFont(font);
 }
 */

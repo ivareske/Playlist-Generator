@@ -1,7 +1,7 @@
-#include "settingsClass.h"
+#include "SettingsClass.h"
 
 
-settingsClass::settingsClass(){
+SettingsClass::SettingsClass(){
 
 
     style_="Plastique";
@@ -26,150 +26,150 @@ settingsClass::settingsClass(){
 
 
 
-QString settingsClass::style() const{
+QString SettingsClass::style() const{
     return style_;
 }
 
-bool settingsClass::artistEmpty() const{
+bool SettingsClass::artistEmpty() const{
     return artistEmpty_;
 }
 
-bool settingsClass::titleEmpty() const{
+bool SettingsClass::titleEmpty() const{
     return titleEmpty_;
 }
 
-bool settingsClass::albumEmpty() const{
+bool SettingsClass::albumEmpty() const{
     return albumEmpty_;
 }
 
-bool settingsClass::commentEmpty() const{
+bool SettingsClass::commentEmpty() const{
     return commentEmpty_;
 }
 
-bool settingsClass::genreEmpty() const{
+bool SettingsClass::genreEmpty() const{
     return genreEmpty_;
 }
 
-bool settingsClass::trackEmpty() const{
+bool SettingsClass::trackEmpty() const{
     return trackEmpty_;
 }
 
-bool settingsClass::yearEmpty() const{
+bool SettingsClass::yearEmpty() const{
     return yearEmpty_;
 }
 
-QString settingsClass::defaultOutputFolder() const{
+QString SettingsClass::defaultOutputFolder() const{
     return defaultOutputFolder_;
 }
 
-QStringList settingsClass::defaultExtensions() const{
+QStringList SettingsClass::defaultExtensions() const{
     return defaultExtensions_;
 }
 
-QString settingsClass::format() const{
+QString SettingsClass::format() const{
     return format_;
 }
 
-bool settingsClass::useScript() const{
+bool SettingsClass::useScript() const{
     return useScript_;
 }
 
-bool settingsClass::showLog() const{
+bool SettingsClass::showLog() const{
     return showLog_;
 }
 
-bool settingsClass::useCopyFilesToPath() const{
+bool SettingsClass::useCopyFilesToPath() const{
     return useCopyFilesToPath_;
 }
 
-bool settingsClass::keepTags() const{
+bool SettingsClass::keepTags() const{
     return keepTags_;
 }
 
-QString settingsClass::copyFilesToDir() const{
+QString SettingsClass::copyFilesToDir() const{
     return copyFilesToDir_;
 }
 
-QSize settingsClass::textViewerSize() const{
+QSize SettingsClass::textViewerSize() const{
     return textViewerSize_;
 }
 
 
-void settingsClass::setArtistEmpty( bool artistEmpty ){
+void SettingsClass::setArtistEmpty( bool artistEmpty ){
     artistEmpty_ = artistEmpty;
 }
 
-void settingsClass::setTitleEmpty( bool titleEmpty ){
+void SettingsClass::setTitleEmpty( bool titleEmpty ){
     titleEmpty_ = titleEmpty;
 }
 
-void settingsClass::setAlbumEmpty( bool albumEmpty ){
+void SettingsClass::setAlbumEmpty( bool albumEmpty ){
     albumEmpty_ = albumEmpty;
 }
 
-void settingsClass::setCommentEmpty( bool commentEmpty ){
+void SettingsClass::setCommentEmpty( bool commentEmpty ){
     commentEmpty_ = commentEmpty;
 }
 
-void settingsClass::setGenreEmpty( bool genreEmpty ){
+void SettingsClass::setGenreEmpty( bool genreEmpty ){
     genreEmpty_ = genreEmpty;
 }
 
-void settingsClass::setTrackEmpty( bool trackEmpty ){
+void SettingsClass::setTrackEmpty( bool trackEmpty ){
     trackEmpty_ = trackEmpty;
 }
 
-void settingsClass::setYearEmpty( bool yearEmpty ){
+void SettingsClass::setYearEmpty( bool yearEmpty ){
     yearEmpty_ = yearEmpty;
 }
 
-void settingsClass::setUseScript( bool useScript ){
+void SettingsClass::setUseScript( bool useScript ){
     useScript_ = useScript;
 }
 
-void settingsClass::setShowLog( bool showLog ){
+void SettingsClass::setShowLog( bool showLog ){
     showLog_ = showLog;
 }
 
-void settingsClass::setUseCopyFilesToPath( bool useCopyFilesToPath ){
+void SettingsClass::setUseCopyFilesToPath( bool useCopyFilesToPath ){
     useCopyFilesToPath_ = useCopyFilesToPath;
 }
 
-void settingsClass::setKeepTags( bool keepTags ){
+void SettingsClass::setKeepTags( bool keepTags ){
     keepTags_ = keepTags;
 }
 
-void settingsClass::setDefaultOutputFolder( const QString &defaultOutputFolder ){
+void SettingsClass::setDefaultOutputFolder( const QString &defaultOutputFolder ){
     defaultOutputFolder_ = defaultOutputFolder;
 }
 
-void settingsClass::setDefaultExtensions( const QStringList &defaultExtensions ){
+void SettingsClass::setDefaultExtensions( const QStringList &defaultExtensions ){
     defaultExtensions_ = defaultExtensions;
 }
 
-void settingsClass::setFormat( const QString &format ){
+void SettingsClass::setFormat( const QString &format ){
     format_ = format;
 }
 
-void settingsClass::setStyle( const QString &style ){
+void SettingsClass::setStyle( const QString &style ){
     style_ = style;
 }
 
-void settingsClass::setCopyFilesToDir( const QString &copyFilesToDir ){
+void SettingsClass::setCopyFilesToDir( const QString &copyFilesToDir ){
     copyFilesToDir_ = copyFilesToDir;
 }
 
-void settingsClass::setTextViewerSize( const QSize &textViewerSize ){
+void SettingsClass::setTextViewerSize( const QSize &textViewerSize ){
     textViewerSize_ = textViewerSize;
 }
 
 
-settingsClass::operator QVariant () const{
+SettingsClass::operator QVariant () const{
     return QVariant::fromValue(*this);
 }
 
 
-QDataStream &operator>>(QDataStream &in, settingsClass &s){
+QDataStream &operator>>(QDataStream &in, SettingsClass &s){
     QString style;
     bool artistEmpty;
     bool titleEmpty;
@@ -190,7 +190,7 @@ QDataStream &operator>>(QDataStream &in, settingsClass &s){
     in >> style >> artistEmpty >> titleEmpty >> albumEmpty >> commentEmpty >> genreEmpty >> trackEmpty;
     in >> yearEmpty >> defaultOutputFolder >> defaultExtensions >> format >> useScript >> showLog >> useCopyFilesToPath;
     in >> keepTags >> copyFilesToDir >> textViewerSize;
-    s = settingsClass();
+    s = SettingsClass();
     s.setStyle(style); s.setArtistEmpty(artistEmpty); s.setTitleEmpty(titleEmpty); s.setAlbumEmpty(albumEmpty);
     s.setCommentEmpty(commentEmpty); s.setGenreEmpty(genreEmpty); s.setTrackEmpty(trackEmpty); s.setYearEmpty(yearEmpty);
     s.setDefaultOutputFolder(defaultOutputFolder); s.setDefaultExtensions(defaultExtensions); s.setFormat(format);
@@ -199,7 +199,7 @@ QDataStream &operator>>(QDataStream &in, settingsClass &s){
     return in;
 }
 
-QDataStream &operator<<(QDataStream &out, const settingsClass &s){
+QDataStream &operator<<(QDataStream &out, const SettingsClass &s){
     out << s.style() << s.artistEmpty() << s.titleEmpty() << s.albumEmpty() << s.commentEmpty() << s.genreEmpty();
     out << s.trackEmpty() << s.yearEmpty() << s.defaultOutputFolder() << s.defaultExtensions() << s.format();
     out << s.useScript() << s.showLog() << s.useCopyFilesToPath() << s.keepTags() << s.copyFilesToDir() << s.textViewerSize();

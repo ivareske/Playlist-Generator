@@ -3,7 +3,7 @@
 
 #include <QtGui>
 //#include <QtScript>
-#include "rule.h"
+#include "Rule.h"
 #include "Tag.h"
 #include <tag.h>
 #include <taglib.h>
@@ -16,22 +16,22 @@
 #include <time.h>
 //#include "omp.h"
 #include <cstdlib>
-#include "m3uEntry.h"
-#include "settingsClass.h"
+#include "M3uEntry.h"
+#include "SettingsClass.h"
 #include "globalFunctions.h"
 
 
-class playList : public QListWidgetItem{
+class PlayList : public QListWidgetItem{
 
 public:
-    playList( const QStringList &defaultExtensions = QStringList(), QListWidget *parent = 0 );
-    playList( const playList &other );
-    bool generate( QList<m3uEntry> *songsOut, QStatusBar *s, QString *log, QHash<QString,Tag> *tags, const settingsClass &settings );
-    void copyFoundFiles( QList<m3uEntry> songs, QString *log );
+    PlayList( const QStringList &defaultExtensions = QStringList(), QListWidget *parent = 0 );
+    PlayList( const PlayList &other );
+    bool generate( QList<M3uEntry> *songsOut, QStatusBar *s, QString *log, QHash<QString,Tag> *tags, const SettingsClass &settings );
+    void copyFoundFiles( QList<M3uEntry> songs, QString *log );
 
     QString fileNameWithoutExtension() const;
     QString name() const;
-    QVector<rule> rules() const;
+    QVector<Rule> rules() const;
     QList<QDir> folders() const;
     QStringList extensions() const;
     bool randomize() const;
@@ -47,7 +47,7 @@ public:
     QDir outPutFolder() const;
 
     void setName( const QString &name );
-    void setRules( const QVector<rule> &rules );
+    void setRules( const QVector<Rule> &rules );
     void setFolders( const QList<QDir> &folders );
     void setExtensions( const QStringList &extensions );
     void setRandomize( bool randomize );
@@ -66,20 +66,20 @@ public:
 
 private:
 
-    QList<m3uEntry> findFiles( QStatusBar *s, bool *canceled, QString *log, QHash<QString,Tag> *tags );
+    QList<M3uEntry> findFiles( QStatusBar *s, bool *canceled, QString *log, QHash<QString,Tag> *tags );
     QList<QFileInfo> getDirContent( const QString& aPath );
     void checkRange( QVector<int> intvals, int tmp, bool *allOk, bool *anyOk, bool shouldBeTrue );
-    bool writeM3U( QList<m3uEntry> songs, QString *log=0 );
+    bool writeM3U( QList<M3uEntry> songs, QString *log=0 );
     void checkRule( bool ruleCheck, bool *allOk, bool *anyOk, bool shouldBeTrue );
-    QList<m3uEntry> processFile( bool *wasCanceled, QFileInfo fileInfo, QStatusBar *s, bool hasTagRule, bool hasAudioRule, QString *log, QHash<QString,Tag> *tags, QHash<QString,Tag> *tagscopy );
+    QList<M3uEntry> processFile( bool *wasCanceled, QFileInfo fileInfo, QStatusBar *s, bool hasTagRule, bool hasAudioRule, QString *log, QHash<QString,Tag> *tags, QHash<QString,Tag> *tagscopy );
     QString createExtinfString( Tag tag, QString file, QString format );
     void evaluateRules( Tag tag, QString file, bool *allOk, bool* anyOk );
 
-    settingsClass settings_;
+    SettingsClass settings_;
 
 
     //QString name_;
-    QVector<rule> rules_;
+    QVector<Rule> rules_;
     QList<QDir> folders_;
     QStringList extensions_;
     bool randomize_;
@@ -118,10 +118,10 @@ private:
 
 };
 
-Q_DECLARE_METATYPE(playList);
+Q_DECLARE_METATYPE(PlayList);
 
-QDataStream &operator>>(QDataStream &in, playList &p);
-QDataStream &operator<<(QDataStream &out, const playList &p);
+QDataStream &operator>>(QDataStream &in, PlayList &p);
+QDataStream &operator<<(QDataStream &out, const PlayList &p);
 
 #endif
 
