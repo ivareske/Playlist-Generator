@@ -4,6 +4,13 @@
 namespace Global{
 
 
+void guiSettings(){
+
+    return QSettings(qApp->applicationDirPath()+"/settings"+Global::ext,QSettings::IniFormat,this);
+
+}
+
+
 bool stringLessThan( const QString &s1, const QString &s2 ){
     return naturalCompare( s1, s2, Qt::CaseSensitive )<0 ;
 }

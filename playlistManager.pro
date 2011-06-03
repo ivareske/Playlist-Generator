@@ -12,6 +12,10 @@
 #prøve å kompilere taglib med qt? pro file ligge ved
 #fix const correctness and implement stream operators
 
+# The application version
+VERSION = 1.0
+
+
 TEMPLATE=app
 TARGET = PlayListGenerator
 CONFIG += qt release warn_on 
@@ -29,6 +33,10 @@ FORMS   = PlaylistManager.ui SettingsDialog.ui RuleDialog.ui AddFilesDialog.ui T
 SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp RuleDialog.cpp PlayList.cpp Rule.cpp globalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp SettingsClass.cpp
 
 RC_FILE = PlaylistManager.rc
+
+
+DEFINES += APP_VERSION=$$VERSION
+DEFINES += APP_NAME=$$TARGET
 
 
 

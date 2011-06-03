@@ -228,10 +228,7 @@ QList<M3uEntry> PlayList::findFiles( bool *canceled, QString *log, QHash<QString
     fileInfo = fileInfo.toSet().toList();
 
     //local copy of QHash tags: new read tags are inserted into global tags. used files are removed from local qhash tags to increase lookup speed
-    static QHash<QString,Tag> tagsCopy;
-    if( tagsCopy.size()==0 ){
-        tagsCopy = *tags;
-    }
+    QHash<QString,Tag> tagsCopy = *tags;
 
     int n=fileInfo.size(); QList<M3uEntry> tmplist;
     QProgressDialog p("Locating files for playlist "+name(), "Abort", 0, n, 0);
