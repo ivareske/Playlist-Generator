@@ -14,13 +14,7 @@ PlaylistManager::PlaylistManager(QWidget *parent) : QMainWindow(parent){
 
 
     createActions();
-    /*qApp->addLibraryPath("U:/Programmering/c++/QT/qt-labs-qtscriptgenerator/plugins");
-	qApp->addLibraryPath("U:/Programmering/c++/QT/qt-labs-qtscriptgenerator/plugins/script");
-	qApp->addLibraryPath("U:/Programmering/c++/QT/qt-labs-qtscriptgenerator/");
-	QStringList paths = qApp->libraryPaths();
-    paths <<  QString("U:/Programmering/c++/QT/qt-labs-qtscriptgenerator-4.6.3/plugins");
-    qApp->setLibraryPaths(paths);
-	*/
+
     guiSettings = new QSettings("playListGenerator"+Global::ext,QSettings::IniFormat,this);
     readGUISettings();
     playListSettings = new QSettings( settingsFile.fileName(), QSettings::IniFormat, this );

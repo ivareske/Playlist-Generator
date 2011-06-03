@@ -2,7 +2,6 @@
 #define M3UENTRY_H
 
 #include <QtGui>
-#include <QHash>
 
 class M3uEntry{
 	

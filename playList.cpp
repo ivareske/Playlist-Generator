@@ -750,6 +750,8 @@ QDataStream &operator>>(QDataStream &in, PlayList &p){
 
 QDataStream &operator<<(QDataStream &out, const PlayList &p){
 
+
+
     QStringList folders;
     QList<QDir> folders_ = p.folders();
     for(int i=0;i<folders_.size();i++){
