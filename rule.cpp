@@ -8,6 +8,11 @@ Rule::Rule(){
     caseSensitive_ = true;
 }
 
+bool Rule::operator==(const Rule &other) const{
+    bool res = type_==other.type() && value_==other.value();
+    res &= shouldBeTrue_==other.shouldBeTrue() && caseSensitive_==other.caseSensitive();
+    return res;
+}
 
 Rule::RuleType Rule::type() const{
     return type_;

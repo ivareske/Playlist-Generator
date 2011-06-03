@@ -14,8 +14,7 @@ PlayList::PlayList( const QString &name, QListWidget *parent ) : QListWidgetItem
     allRulesTrue_ = false;
     includeExtInf_ = true;
     makeUnique_= false;
-    copyFiles_=false;
-    uniqueId_ = -1;
+    copyFiles_=false;    
     script_="";
     scriptVariables_<<"ARTIST"<<"ALBUM"<<"TITLE"<<"GENRE"<<"TRACK"<<"YEAR"<<"COMMENT"<<"LENGTH"<<"SAMPLERATE"<<"BITRATE"<<"CHANNELS";
 
@@ -30,7 +29,9 @@ PlayList::~PlayList(){
 
 bool PlayList::operator==(const PlayList &other) const{
 
-    bool res = name()==other.name() && rules_==other.rules() && folders==other.folders();
+    bool res = name()==other.name();
+    res &= rules_==other.rules();
+    res &= folders_==other.folders();
     res &= extensions_==other.extensions() && randomize_==other.randomize() && includeSubFolders_==other.includeSubFolders();
     res &= relativePath_==other.relativePath() && allRulesTrue_==other.allRulesTrue() && includeExtInf_==other.includeExtInf();
     res &= makeUnique_==other.makeUnique() && copyFilesToDir_==other.copyFilesToDir() && copyFiles_==other.copyFiles();

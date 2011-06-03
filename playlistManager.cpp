@@ -12,7 +12,7 @@ PlaylistManager::PlaylistManager(QWidget *parent) : QMainWindow(parent){
     qRegisterMetaType<PlayList>("PlayList");
     qRegisterMetaTypeStreamOperators<PlayList>("PlayList");
     qRegisterMetaType<Rule>("Rule");
-    qRegisterMetaTypeStreamOperators<Rule>("Rule");    
+    qRegisterMetaTypeStreamOperators<Rule>("Rule");
 
 
     createActions();

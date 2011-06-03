@@ -24,6 +24,7 @@ public:
 
 
     operator QVariant () const;
+    bool operator==(const Rule &other) const;
 
 private:
     RuleType type_;
