@@ -10,7 +10,7 @@ class PlayList;
 
 namespace Global{
 
-    void guiSettings();
+    QSettings* guiSettings();
     bool checkIntValue( QVector<int> *intvals, const QString &val );
     bool stringLessThan( const QString &s1, const QString &s2 );
     int naturalCompare( const QString &_a, const QString &_b, Qt::CaseSensitivity caseSensitivity );

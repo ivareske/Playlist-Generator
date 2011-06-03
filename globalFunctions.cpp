@@ -4,9 +4,9 @@
 namespace Global{
 
 
-void guiSettings(){
+QSettings* guiSettings(){
 
-    return QSettings(qApp->applicationDirPath()+"/settings"+Global::ext,QSettings::IniFormat,this);
+    return new QSettings(qApp->applicationDirPath()+"/settings"+Global::ext,QSettings::IniFormat,0);
 
 }
 

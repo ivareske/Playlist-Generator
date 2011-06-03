@@ -2,7 +2,6 @@
 #define ADDFILESDIALOG_H
  
 #include <QtGui>
-#include "SettingsClass.h"
 #include "ui_addFilesDialog.h"
  
  

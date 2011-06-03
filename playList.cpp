@@ -2,13 +2,12 @@
 #include "PlayList.h"
 
 
-PlayList::PlayList( const QStringList &defaultExtensions, QListWidget *parent ) : QListWidgetItem(parent){
+PlayList::PlayList( const QString &name, QListWidget *parent ) : QListWidgetItem(parent){
 
-    setName("New playlist");
-    extensions_ = defaultExtensions;
-    if( extensions_.size()==0 ){
-        extensions_<<"*.mp3"<<"*.wma"<<"*.wav"<<"*.ogg"<<"*.aac"<<"*.ac3";
-    }
+    guiSettings = Global::guiSettings();
+
+    setName(name);
+    extensions_ = guiSettings->value("defaultExtensions").toStringList();
     randomize_ = false;
     includeSubFolders_ = true;
     relativePath_ = true;
@@ -22,7 +21,28 @@ PlayList::PlayList( const QStringList &defaultExtensions, QListWidget *parent ) 
 
 }
 
+PlayList::~PlayList(){
+    if(guiSettings!=0){
+        delete guiSettings;
+        guiSettings=0;
+    }
+}
+
+bool PlayList::operator==(const PlayList &other) const{
+
+    bool res = name()==other.name() && rules_==other.rules() && folders==other.folders();
+    res &= extensions_==other.extensions() && randomize_==other.randomize() && includeSubFolders_==other.includeSubFolders();
+    res &= relativePath_==other.relativePath() && allRulesTrue_==other.allRulesTrue() && includeExtInf_==other.includeExtInf();
+    res &= makeUnique_==other.makeUnique() && copyFilesToDir_==other.copyFilesToDir() && copyFiles_==other.copyFiles();
+    res &= individualFiles_==other.individualFiles() && script_==other.script() && outPutFolder_==other.outPutFolder();
+    res&= scriptVariables_==other.scriptVariables_;
+
+    return res;
+}
+
+/*
 PlayList::PlayList( const PlayList &other ){
+
     QListWidgetItem::operator =(other);
     setName(other.name());
     rules_ = other.rules();
@@ -42,7 +62,7 @@ PlayList::PlayList( const PlayList &other ){
     scriptVariables_<<"ARTIST"<<"ALBUM"<<"TITLE"<<"GENRE"<<"TRACK"<<"YEAR"<<"COMMENT"<<"LENGTH"<<"SAMPLERATE"<<"BITRATE"<<"CHANNELS";
 
 }
-
+*/
 void PlayList::copyFoundFiles( QList<M3uEntry> songs, QString *log ){
 
     log->append("\nResult from file copy:\n");
@@ -82,10 +102,8 @@ void PlayList::copyFoundFiles( QList<M3uEntry> songs, QString *log ){
 }
 
 
-bool PlayList::generate( QList<M3uEntry> *songsOut, QStatusBar *s, QString *log, QHash<QString, Tag> *tags, const SettingsClass &settings ){    
+bool PlayList::generate( QList<M3uEntry> *songsOut, QString *log, QHash<QString, Tag> *tags ){
 
-    //getGuiSettings();
-    settings_ = settings;
 
     time_t Start_t, End_t;
     int totaltime;
@@ -109,11 +127,8 @@ bool PlayList::generate( QList<M3uEntry> *songsOut, QStatusBar *s, QString *log,
         return true;
     }
 
-    bool writeOk = writeM3U( songs, log );
+    writeM3U( songs, log );
 
-    if(writeOk){
-        s->showMessage( "Generated playlist '"+name()+"' with "+QString::number(songs.size())+" songs", 10000 );
-    }
     End_t = time(0);    //record time that task 1 ends
     totaltime = difftime(End_t, Start_t);    //compute elapsed time of task 1
     std::cout<<"time used: "<<totaltime<<std::endl;
@@ -161,7 +176,7 @@ QList<M3uEntry> PlayList::findFiles( bool *canceled, QString *log, QHash<QString
 
     bool hasTagRule = false;
     bool hasAudioRule = false;
-    if( settings_.useScript() ){
+    if( guiSettings->value("useScript").toBool() ){
         for(int i=0;i<scriptVariables_.size();i++){
             if( script_.contains(scriptVariables_[i]) ){
                 hasAudioRule = true;
@@ -330,7 +345,7 @@ QList<M3uEntry>  PlayList::processFile( const QFileInfo &fileInfo, bool hasTagRu
         if( tag.fileName().isEmpty() ){
             tag = Tag(fullfile);
             tag.readTags();
-            if(settings_.keepTags()){
+            if(guiSettings->value("keepTags").toBool()){
                 tags->insert(fullfile,tag);
             }
         }
@@ -352,7 +367,7 @@ QList<M3uEntry>  PlayList::processFile( const QFileInfo &fileInfo, bool hasTagRu
     //loop list of individual files. If file matches one of the indiviudally specified files, it is
     //added. All rules_ ignored.
     bool skipRules = false;
-    if( settings_.useScript() && script_.isEmpty() ){
+    if( guiSettings->value("useScript").toBool() && script_.isEmpty() ){
         skipRules=true;
     }
     for(int i=0;i<individualFiles_.size();i++){
@@ -363,7 +378,7 @@ QList<M3uEntry>  PlayList::processFile( const QFileInfo &fileInfo, bool hasTagRu
             break;
         }
     }
-    bool scriptok = settings_.useScript();
+    bool scriptok = guiSettings->value("useScript").toBool();
     if( !skipRules ){    
         evaluateRules( tag, file, &allOk, &anyOk );
     }
@@ -372,26 +387,26 @@ QList<M3uEntry>  PlayList::processFile( const QFileInfo &fileInfo, bool hasTagRu
     if( (allRulesTrue_ && allOk) || (!allRulesTrue_ && anyOk) || scriptok ){
         //extinf info for m3u
         if( includeExtInf_ ){            
-            e.setExtInf( createExtInfString( tag, file, settings_.format() ) );
+            e.setExtInf( createExtInfString( tag, file, guiSettings->value("format").toString() ) );
         }
         e.setOriginalFile( fullfile );
         static QDir tmp;
-        if( tmp.absolutePath()!=settings_.copyFilesToDir() ){
-            tmp = QDir(settings_.copyFilesToDir());
+        if( tmp.absolutePath()!=guiSettings->value("copyFilesToDir").toString() ){
+            tmp = QDir(guiSettings->value("copyFilesToDir").toString());
         }
         static QDir d;
         if( d!=outPutFolder_ ){
             d = outPutFolder_;
         }
         if( relativePath_ ){
-            if( settings_.useCopyFilesToPath() && copyFiles_ && tmp.exists() ){
+            if( guiSettings->value("useCopyFilesToPath").toBool() && copyFiles_ && tmp.exists() ){
                 QString tmpfullfile = tmp.absolutePath()+"/"+file;
                 e.setFullFile( d.relativeFilePath( tmpfullfile ) );
             }else{
                 e.setFullFile( d.relativeFilePath( fullfile ) );
             }
         }else{
-            if( settings_.useCopyFilesToPath() && copyFiles_ && tmp.exists() ){
+            if( guiSettings->value("useCopyFilesToPath").toBool() && copyFiles_ && tmp.exists() ){
                 e.setFullFile( tmp.absolutePath()+"/"+file );
             }else{
                 e.setFullFile( fullfile );
@@ -507,28 +522,29 @@ QString PlayList::createExtInfString( const Tag &tag, const QString &file, const
         format.replace( QString("%track%"), track );
         format.replace( QString("%filename%"), file );
 
-        int sum = settings_.artistEmpty() + settings_.titleEmpty() + settings_.albumEmpty() \
-                + settings_.commentEmpty() + settings_.genreEmpty() + settings_.trackEmpty() + settings_.yearEmpty();
+        int sum = guiSettings->value("artistEmpty").toBool() + guiSettings->value("titleEmpty").toBool() + guiSettings->value("albumEmpty").toBool() \
+                + guiSettings->value("commentEmpty").toBool() + guiSettings->value("genreEmpty").toBool() + guiSettings->value("trackEmpty").toBool() \
+                + guiSettings->value("yearEmpty").toBool();
         int sum2=0;
-        if( artist.isEmpty() && settings_.artistEmpty() ){
+        if( artist.isEmpty() && guiSettings->value("artistEmpty").toBool() ){
             sum2++;
         }
-        if( title.isEmpty() && settings_.titleEmpty() ){
+        if( title.isEmpty() && guiSettings->value("titleEmpty").toBool() ){
             sum2++;
         }
-        if( album.isEmpty() && settings_.albumEmpty() ){
+        if( album.isEmpty() && guiSettings->value("albumEmpty").toBool() ){
             sum2++;
         }
-        if( comment.isEmpty() && settings_.commentEmpty() ){
+        if( comment.isEmpty() && guiSettings->value("commentEmpty").toBool() ){
             sum2++;
         }
-        if( genre.isEmpty() && settings_.genreEmpty() ){
+        if( genre.isEmpty() && guiSettings->value("genreEmpty").toBool() ){
             sum2++;
         }
-        if( track.isEmpty() && settings_.trackEmpty() ){
+        if( track.isEmpty() && guiSettings->value("trackEmpty").toBool() ){
             sum2++;
         }
-        if( year.isEmpty() && settings_.yearEmpty() ){
+        if( year.isEmpty() && guiSettings->value("yearEmpty").toBool() ){
             sum2++;
         }
         if(sum2==sum){

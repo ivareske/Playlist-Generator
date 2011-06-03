@@ -741,8 +741,15 @@
      <string>Style</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuAbout">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout"/>
+   </widget>
    <addaction name="menuTools"/>
    <addaction name="menuStyle"/>
+   <addaction name="menuAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionAddPlaylist">
@@ -843,6 +850,11 @@
   <action name="actionRunScript">
    <property name="text">
     <string>Run script</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
    </property>
   </action>
  </widget>

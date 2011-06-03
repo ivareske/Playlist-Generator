@@ -10,7 +10,6 @@
 #include "AddFilesDialog.h"
 #include "TextViewer.h"
 #include "RuleDialog.h"
-#include "SettingsClass.h"
 #include "ui_playlistManager.h"
 
 
@@ -27,14 +26,16 @@ protected:
     void closeEvent( QCloseEvent *event );
 
 private slots:
-
+    void initGuiSettings();
+    void showAbout();
+    QString newUniqePlayListName();
     void updateUseScript();
     void addIndividualFiles();
     void createActions();
-    Global::fileReadResult readSettings( const QFileInfo &file );
-    void saveSettings( const QFileInfo &file );
+    Global::fileReadResult readCollection( const QFileInfo &file );
+    void saveCollection( const QFileInfo &file );
     void saveSettingsAs();
-    void saveCurrentSettings();
+    void saveCurrentCollection();
     //void generatePlayList( int ind );
     void generateAllPlayLists();
     void generateSelectedPlayLists();
@@ -85,12 +86,11 @@ private slots:
 private:
     PlayList* currentPlayList();
 
-    QFileInfo settingsFile;
-    QSettings *guiSettings;
-    QSettings *playListSettings;
+    QFileInfo playListCollectionFile;
+    QSettings* guiSettings;
+    QSettings *playListCollection;
     //QList<PlayList> playLists_;
-    QHash<QString, Tag> tags_;
-    SettingsClass settings_;
+    QHash<QString, Tag> tags_;    
 
 };
 

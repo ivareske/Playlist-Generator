@@ -17,16 +17,16 @@
 //#include "omp.h"
 #include <cstdlib>
 #include "M3uEntry.h"
-#include "SettingsClass.h"
 #include "globalFunctions.h"
 
 
 class PlayList : public QListWidgetItem{
 
 public:
-    PlayList( const QStringList &defaultExtensions = QStringList(), QListWidget *parent = 0 );
-    PlayList( const PlayList &other );
-    bool generate( QList<M3uEntry> *songsOut, QStatusBar *s, QString *log, QHash<QString,Tag> *tags, const SettingsClass &settings );
+    explicit PlayList( const QString &name = "New playlist", QListWidget *parent = 0 );
+    ~PlayList();
+    //PlayList( const PlayList &other );
+    bool generate( QList<M3uEntry> *songsOut, QString *log, QHash<QString,Tag> *tags );
     void copyFoundFiles( QList<M3uEntry> songs, QString *log );
 
     QString fileNameWithoutExtension() const;
@@ -63,6 +63,7 @@ public:
     void setOutPutFolder( const QDir &outPutFolder );
 
     operator QVariant () const;
+    bool operator==(const PlayList &other) const;
 
 private:
 
@@ -75,9 +76,6 @@ private:
     QString createExtInfString( const Tag &tag, const QString &file, const QString &format_ ) const;
     void evaluateRules( const Tag &tag, const QString &file, bool *allOk, bool* anyOk ) const;
 
-    SettingsClass settings_;
-
-
     //QString name_;
     QVector<Rule> rules_;
     QList<QDir> folders_;
@@ -87,14 +85,14 @@ private:
     bool relativePath_;
     bool allRulesTrue_;
     bool includeExtInf_;
-    bool makeUnique_;
-    int uniqueId_;
+    bool makeUnique_;    
     QDir copyFilesToDir_;
     bool copyFiles_;
     QList<QFileInfo> individualFiles_;
     QString script_;
     QDir outPutFolder_;
     QStringList scriptVariables_;
+    QSettings *guiSettings;
 
 
 

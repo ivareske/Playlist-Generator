@@ -14,16 +14,16 @@ class SettingsDialog : public QDialog, private Ui::SettingsDialog
 
 public:
 
-    SettingsDialog( SettingsClass *settings, QWidget *parent = 0);
+    SettingsDialog( QWidget *parent = 0);
+    ~SettingsDialog();
 
 
 protected:
 
 private:
-
+    QSettings *settings;
     void setSettings();
-    QString chooseDir();
-    SettingsClass *settings_;
+    QString chooseDir();    
 private slots:
     void onFinish( int result );
     void setOutPutDir();
