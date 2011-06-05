@@ -10,6 +10,7 @@
 #include "AddFilesDialog.h"
 #include "TextViewer.h"
 #include "RuleDialog.h"
+#include "PlayListCollection.h"
 #include "ui_playlistManager.h"
 
 
@@ -32,11 +33,10 @@ private slots:
     void updateUseScript();
     void addIndividualFiles();
     void createActions();
-    Global::fileReadResult readCollection( const QFileInfo &file );
-    void saveCollection( const QFileInfo &file );
-    void saveSettingsAs();
-    void saveCurrentCollection();
-    //void generatePlayList( int ind );
+    void loadCollection( const QFileInfo &file );
+    void saveCollection( bool checkExistence=true );
+    void updateCollection();
+    void saveCollectionAs();
     void generateAllPlayLists();
     void generateSelectedPlayLists();
     void generatePlayLists( const QList<int> &inds );
@@ -47,15 +47,12 @@ private slots:
     void newRule();
     void editRule();
     void removeRule();
-    //void renamePlayList(QListWidgetItem *item);
     void showRulesAndFolders();
     void clearRulesAndFolders();
     void showSettings();
-    //void writeM3U( QString file, m3uList songs );
     void removeFolder();
     void renameFolder(QListWidgetItem *item);
     void addFolder();
-    //void sortPlayLists();
     void setGUIStyle( const QString &style );
     void open();
     void newCollection();
@@ -67,8 +64,7 @@ private slots:
     void updateIncludeExtInf( int state );
     void updateUseRelativePath( int state );
     void updateMakeUnique( int state );
-    //void giveUniqueIds();
-    void initialize( const QFileInfo &file );
+    void initialize();
     void writeGUISettings();
     void readGUISettings();
     void uncheckStyleActions();
@@ -80,20 +76,24 @@ private slots:
     void enableOptions( bool state );
     void clearTags();
     void updateScript();
-    void runscript();
 
 
 private:
+    PlayList* playListItem( int row );
+
     PlayList* currentPlayList();
 
-    QFileInfo playListCollectionFile;
+    //QFileInfo playListCollectionFile;
+    PlayListCollection collection_,lastSavedCollection_;
     QSettings* guiSettings;
-    QSettings *playListCollection;
+    //QSettings *playListCollection;
     //QList<PlayList> playLists_;
     QHash<QString, Tag> tags_;    
 
 };
 
+
+//Q_DECLARE_METATYPE(QList<PlayList>)
 
 #endif
 

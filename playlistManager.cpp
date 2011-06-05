@@ -5,36 +5,21 @@
 PlaylistManager::PlaylistManager(QWidget *parent) : QMainWindow(parent){
     setupUi(this); // this sets up GUI			
 
-    playListCollection=0;
-    guiSettings = Global::guiSettings();
-    initGuiSettings();
+    createActions();
 
     qRegisterMetaType<PlayList>("PlayList");
     qRegisterMetaTypeStreamOperators<PlayList>("PlayList");
     qRegisterMetaType<Rule>("Rule");
     qRegisterMetaTypeStreamOperators<Rule>("Rule");
+    qRegisterMetaType<PlayListCollection>("PlayListCollection");
+    qRegisterMetaTypeStreamOperators<PlayListCollection>("PlayListCollection");
 
+    //playListCollection=0;
+    guiSettings = Global::guiSettings();
+    initGuiSettings();
 
-    createActions();
+    readGUISettings();    
 
-
-    readGUISettings();
-
-    initialize( playListCollectionFile );
-    
-
-    /*
-	QScriptEngine e;
-	//e.globalObject().setProperty("QString(artist)","1");
-	QScriptValue res = e.evaluate(" QString(""artist"")==""1"" ");	
-	if( e.hasUncaughtException() ){
-		QString err = e.uncaughtExceptionBacktrace().join("\n");
-		qDebug()<<err;
-	}else{
-		bool res2 = res.toBool();
-		qDebug()<<"res "<<res2;
-	}	
-	*/
 }
 
 void PlaylistManager::initGuiSettings(){
@@ -42,63 +27,59 @@ void PlaylistManager::initGuiSettings(){
         guiSettings = Global::guiSettings();
     }
 
-    guiSettings->setValue("style","Plastique");
-    guiSettings->setValue("artistEmpty",true);
-    guiSettings->setValue("titleEmpty",true);
-    guiSettings->setValue("albumEmpty",false);
-    guiSettings->setValue("commentEmpty",false);
-    guiSettings->setValue("genreEmpty",false);
-    guiSettings->setValue("trackEmpty",false);
-    guiSettings->setValue("outputPath",QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
-    QStringList defExts; defExts<< "*.mp3"<<"*.wma"<<"*.wav"<<"*.ogg"<<"*.aac"<<"*.ac3";
-    guiSettings->setValue("defaultExtensions",defExts);
-    guiSettings->setValue("format","%artist% - %title%");
-    guiSettings->setValue("useScript",false);
-    guiSettings->setValue("showLog",true);
-    guiSettings->setValue("useCopyFilesToPath",false);
-    guiSettings->setValue("keepTags",true);
-    guiSettings->setValue("copyFilesToDir","");
+    if( !guiSettings->value("style").canConvert(QVariant::String)  ){
+        guiSettings->setValue("style","Plastique");
+    }
+    if( !guiSettings->value("artistEmpty").canConvert(QVariant::Bool) ){
+        guiSettings->setValue("artistEmpty",true);
+    }
+    if( !guiSettings->value("titleEmpty").canConvert(QVariant::Bool) ){
+        guiSettings->setValue("titleEmpty",true);
+    }
+    if( !guiSettings->value("albumEmpty").canConvert(QVariant::Bool) ){
+        guiSettings->setValue("albumEmpty",false);
+    }
+    if( !guiSettings->value("commentEmpty").canConvert(QVariant::Bool) ){
+        guiSettings->setValue("commentEmpty",false);
+    }
+    if( !guiSettings->value("genreEmpty").canConvert(QVariant::Bool) ){
+        guiSettings->setValue("genreEmpty",false);
+    }
+    if( !guiSettings->value("trackEmpty").canConvert(QVariant::Bool) ){
+        guiSettings->setValue("trackEmpty",false);
+    }
+    if( !guiSettings->value("outPutPath").canConvert(QVariant::String) ){
+        guiSettings->setValue("outPutPath",QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
+    }
+    if( !guiSettings->value("defaultExtensions").canConvert(QVariant::List) ){
+        QStringList defExts; defExts<< "*.mp3"<<"*.wma"<<"*.wav"<<"*.ogg"<<"*.aac"<<"*.ac3";
+        guiSettings->setValue("defaultExtensions",defExts);
+    }
+    if( !guiSettings->value("format").canConvert(QVariant::String) ){
+        guiSettings->setValue("format","%artist% - %title%");
+    }
+    if( !guiSettings->value("useScript").canConvert(QVariant::Bool) ){
+        guiSettings->setValue("useScript",false);
+    }
+    if( !guiSettings->value("showLog").canConvert(QVariant::Bool) ){
+        guiSettings->setValue("showLog",true);
+    }
+    if( !guiSettings->value("useCopyFilesToPath").canConvert(QVariant::Bool) ){
+        guiSettings->setValue("useCopyFilesToPath",false);
+    }
+    if( !guiSettings->value("keepFolderStructure").canConvert(QVariant::Bool) ){
+        guiSettings->setValue("keepFolderStructure",true);
+    }
+    if( !guiSettings->value("keepTags").canConvert(QVariant::Bool) ){
+        guiSettings->setValue("keepTags",true);
+    }
+    if( !guiSettings->value("copyFilesToDir").canConvert(QVariant::String) ){
+        guiSettings->setValue("copyFilesToDir","");
+    }
 
 }
 
-void PlaylistManager::runscript(){
 
-    /*
-	QScriptEngine *engine = new QScriptEngine(this);    
-
-	QString libpaths = qApp->libraryPaths().join("\n");
-	qDebug()<<libpaths;	
-	QString exts = engine->availableExtensions().join("\n");
-	qDebug()<<exts;
-	qDebug()<<engine->importedExtensions().join("\n");	
-	QScriptValue tmp = engine->importExtension("qt.core"); //"qt.gui"
-	qDebug()<<tmp.toString();
-	*/
-    /*	struct QtMetaObject : private QObject{
-	public:
-	 static const QMetaObject *get()
-		 { return &static_cast<QtMetaObject*>(0)->staticQtMetaObject; }
-	};	
-	QScriptValue Qt = engine.newQMetaObject(QtMetaObject::get());	
-    Qt.setProperty("App", engine.newQObject(qApp));
-    engine.globalObject().setProperty("Qt", Qt);
-	*/
-    /*
-	bool ok;
-	static QString script;
-	script = QInputDialog::getText(this, tr("QInputDialog::getText()"),	
-	tr("Script:"), QLineEdit::Normal,script,&ok);	
-	//QString script = " Qt::QString(\"artist\")==\"1\" " ;
-	qDebug()<<script;
-	QScriptValue res = engine->evaluate(script);	
-	if( engine->hasUncaughtException() ){
-		QString err = engine->uncaughtException().toString();
-		qDebug()<<err;
-	}else{		
-		qDebug()<<"res "<<res.toVariant();
-	}	
-	*/
-}
 
 void PlaylistManager::openStyleSheet(){
 
@@ -147,6 +128,56 @@ bool PlaylistManager::loadStyleSheet( const QString &file ){
     return true;
 }
 
+
+void PlaylistManager::uncheckStyleActions(){
+
+    QList<QAction *> actions = menuStyle->actions();
+    for(int i=0;i<actions.size();i++){
+        actions[i]->setChecked(false);
+    }
+}
+
+void PlaylistManager::checkStyleAction( const QString &actionText, bool state ){
+
+    QList<QAction *> actions = menuStyle->actions();
+    for(int i=0;i<actions.size();i++){
+        if( actions[i]->text()==actionText ){
+            actions[i]->setChecked(state);
+        }
+    }
+}
+
+void PlaylistManager::setGUIStyle( const QString &s ){
+
+    qDebug()<<"style: "<<s;
+    QStringList styles = QStyleFactory::keys();
+    if( styles.contains( s ) ){
+        //build in style
+
+        QApplication::setStyle( QStyleFactory::create ( s ) );
+        uncheckStyleActions();
+        guiSettings->setValue("style",s); guiSettings->sync();
+        checkStyleAction(s,true);
+        return;
+    }
+
+    //if function has not returned yet, assume qss file
+    qDebug()<<"Custom style!";
+    bool ok = loadStyleSheet( s );
+    if(!ok){
+        QMessageBox::critical(this, "",
+                              "Could not open style "+s,
+                              QMessageBox::Ok, QMessageBox::Ok);
+        //uncheck currently clicked action
+        checkStyleAction( "Custom...", false );
+    }else{
+        uncheckStyleActions();
+        checkStyleAction( "Custom...", true );
+        guiSettings->setValue("style",s); guiSettings->sync();
+    }
+
+}
+
 void PlaylistManager::createActions(){
 
     //connect( actionRunScript, SIGNAL( triggered() ), this, SLOT( runscript() ) );
@@ -182,8 +213,8 @@ void PlaylistManager::createActions(){
     connect( makeUnique, SIGNAL( stateChanged ( int ) ), this, SLOT( updateMakeUnique( int ) ) );
 
     connect( actionSettings, SIGNAL( triggered() ), this, SLOT( showSettings() ) );
-    connect( actionSave, SIGNAL( triggered() ), this, SLOT( saveCurrentCollection() ) );
-    connect( actionSaveAs, SIGNAL( triggered() ), this, SLOT( saveSettingsAs() ) );
+    connect( actionSave, SIGNAL( triggered() ), this, SLOT( saveCollection() ) );
+    connect( actionSaveAs, SIGNAL( triggered() ), this, SLOT( saveCollectionAs() ) );
     connect( actionOpen, SIGNAL( triggered() ), this, SLOT( open() ) );
     connect( actionNew, SIGNAL( triggered() ), this, SLOT( newCollection() ) );
     connect( actionClearTags, SIGNAL( triggered() ), this, SLOT( clearTags() ) );
@@ -276,88 +307,22 @@ void PlaylistManager::updateCopyTo( int state ){
 
 void PlaylistManager::newCollection(){
 
-    QString dir = playListCollectionFile.absoluteFilePath();
-    if(dir.isEmpty()){
-        dir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
-    }
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Name of new playlist collection"),dir, "*"+Global::ext);
+    updateCollection();
 
-    if( fileName.isNull() || fileName.isEmpty() ){
-        return;
-    }
-
-    qDebug()<<"New collection: "<<fileName;
-    QFileInfo file(fileName);
-    if(playListCollection!=0){
-        delete playListCollection; playListCollection=0;
-    }
-
-    playListCollection = new QSettings(file.absoluteFilePath(),QSettings::IniFormat,this);
-    playListCollection->clear();
-    playListCollection->setValue( "playListGeneratorFile", true ); //identifier to be accepted in initialize/readSettings as a valid file
-    playListCollection->sync();
-    //readGUISettings(); //no need
-    playListTable->blockSignals(true);
-    initialize( file );
-    saveCollection( file );
-    playListTable->blockSignals(false);
-    showRulesAndFolders();
-}
-
-
-void PlaylistManager::uncheckStyleActions(){
-
-    QList<QAction *> actions = menuStyle->actions();
-    for(int i=0;i<actions.size();i++){
-        actions[i]->setChecked(false);
-    }
-}
-
-void PlaylistManager::checkStyleAction( const QString &actionText, bool state ){
-
-    QList<QAction *> actions = menuStyle->actions();
-    for(int i=0;i<actions.size();i++){
-        if( actions[i]->text()==actionText ){
-            actions[i]->setChecked(state);
-        }
-    }
-}
-
-void PlaylistManager::setGUIStyle( const QString &s ){
-
-    qDebug()<<"style: "<<s;
-    QStringList styles = QStyleFactory::keys();
-    if( styles.contains( s ) ){
-        //build in style
-        QList<QAction *> actions = menuStyle->actions();
-        for(int i=0;i<actions.size();i++){
-            qDebug()<<actions[i]->text();
-            if( actions[i]->text()==s ){
-                QApplication::setStyle( QStyleFactory::create ( s ) );
-                uncheckStyleActions();
-                guiSettings->setValue("style",s); guiSettings->sync();
-                actions[i]->setChecked(true);
-                return;
-            }
+    if( !(lastSavedCollection_==collection_) ){
+        int ret = QMessageBox::warning(this,"","Save existing collection first?",QMessageBox::Yes,QMessageBox::No);
+        if(ret==QMessageBox::Yes){
+            saveCollection();
         }
     }
 
-    //if function has not returned yet, assume qss file
-    qDebug()<<"Custom style!";
-    bool ok = loadStyleSheet( s );
-    if(!ok){
-        QMessageBox::critical(this, "",
-                              "Could not open style "+s,
-                              QMessageBox::Ok, QMessageBox::Ok);
-        //uncheck currently clicked action
-        checkStyleAction( "Custom...", false );
-    }else{
-        uncheckStyleActions();
-        checkStyleAction( "Custom...", true );
-        guiSettings->setValue("style",s); guiSettings->sync();
-    }
+    collection_=PlayListCollection();
+    lastSavedCollection_=collection_;
+
+    initialize();
 
 }
+
 
 void PlaylistManager::writeGUISettings(){
 
@@ -366,7 +331,7 @@ void PlaylistManager::writeGUISettings(){
     guiSettings->setValue("size", this->size());
     guiSettings->setValue("pos", this->pos());
     guiSettings->endGroup();
-    guiSettings->setValue("settingsFile", playListCollectionFile.absoluteFilePath() );
+    guiSettings->setValue("collection", collection_.name() );
 
     guiSettings->sync();
     //delete guiSettings;
@@ -381,67 +346,56 @@ void PlaylistManager::readGUISettings(){
     this->resize(guiSettings->value("size", QSize(400, 400)).toSize());
     this->move(guiSettings->value("pos", QPoint(200, 200)).toPoint());
     guiSettings->endGroup();
-    playListCollectionFile = QFileInfo(guiSettings->value("settingsFile",QDesktopServices::storageLocation(QDesktopServices::MusicLocation)+"/New collection"+Global::ext ).toString());
+    setGUIStyle( guiSettings->value("style").toString() );
 
+    QFileInfo collectionFile(guiSettings->value("collection",QDesktopServices::storageLocation(QDesktopServices::MusicLocation)+"/New collection"+Global::ext ).toString());
+    loadCollection( collectionFile );
+    initialize();
 }
 
 
 void PlaylistManager::open(){
 
-    QString dir = playListCollectionFile.absoluteFilePath();
-    if(dir.isEmpty()){
-        dir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
+    updateCollection();
+    if( !(lastSavedCollection_==collection_) ){
+        int ret = QMessageBox::warning(this,"","Save existing collection first?",QMessageBox::Yes,QMessageBox::No);
+        if(ret==QMessageBox::Yes){
+            saveCollection();
+        }
     }
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open file"),dir, "*"+Global::ext);
+
+
+    QDir dir(collection_.name());
+    if(!dir.exists()){
+        dir = QDir(QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
+    }
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open collection"),dir.absolutePath(), "*"+Global::ext);
     if( fileName.isEmpty() ){
         return;
     }
-    QFileInfo file = QFileInfo( fileName );
-    playListTable->blockSignals(true);
-    initialize( file );
-    playListTable->blockSignals(false);
-    showRulesAndFolders();
+
+    QFileInfo file(fileName);
+
+    loadCollection(file);
+    initialize();
+
 }
 
-void PlaylistManager::initialize( const QFileInfo &file ){
+void PlaylistManager::initialize(){
+    //initialize the collection_ (private member)
 
-    playListCollectionFile = file;
+    qDebug()<<"Initializing";    
+    enableOptions( false );        
+    updateUseScript();
+    showRulesAndFolders();
 
+    this->setWindowTitle( collection_.name() );
 
-    QString newCollection = QDesktopServices::storageLocation(QDesktopServices::MusicLocation)+"/New collection"+Global::ext;
-    newCollection=newCollection.replace("\\","/");
-
-    if(playListCollectionFile.absoluteFilePath().isEmpty()){
-        playListCollectionFile = QFileInfo( newCollection );
-    }
-
-
-    if(playListCollection!=0){
-        delete playListCollection;
-        playListCollection=0;
-    }
-
-    playListCollection = new QSettings( playListCollectionFile.fileName(), QSettings::IniFormat, this );
-
-    qDebug()<<"Initializing";
-    Global::fileReadResult ok = readCollection( playListCollectionFile );
-    qDebug()<<file.absoluteFilePath()<<newCollection;
-    if(ok==Global::NOTVALID && file.absoluteFilePath()!=newCollection ){
-        QMessageBox::critical(this, "",
-                              file.absoluteFilePath()+" is not a valid " + qApp->applicationName() + " file",
-                              QMessageBox::Ok, QMessageBox::Ok);
-    }else if(ok==Global::DOESNOTEXIST && file.absoluteFilePath()!=newCollection ){
-        QMessageBox::critical(this, "",
-                              file.absoluteFilePath()+" does not exist",
-                              QMessageBox::Ok, QMessageBox::Ok);        
-    }
-    enableOptions( false );    
-    setGUIStyle( guiSettings->value("style").toString() );
-    updateUseScript();    
-    this->setWindowTitle( "Current playlist collection: "+playListCollectionFile.absoluteFilePath() );
 }
 
 void PlaylistManager::updateUseScript(){
+    //switch between using script or a set of rules
+
     if( guiSettings->value("useScript").toBool() ){
         rulesFrame->hide();
         RuleScript->show();
@@ -453,60 +407,6 @@ void PlaylistManager::updateUseScript(){
     }
 }
 
-/*
-void PlaylistManager::giveUniqueIds(){
-
-    for(int i=0;i<playLists_.size();i++){
-        playLists_[i].setUniqueId(i);
-    }
-
-}
-*/
-
-/*
-void PlaylistManager::sortPlayLists(){
-
-    //give unique ids
-    giveUniqueIds();
-    //get currently selected row
-    int nowRow = playListTable->currentRow();
-    qDebug()<<"nowRow "<<nowRow;
-
-    int id=-1;
-    if( nowRow>=0 && nowRow<playLists_.size() ){
-        id = playLists_[nowRow].uniqueId();
-    }
-
-    //do sorting
-    qSort( playLists_.begin(), playLists_.end(), Global::caseInsensitiveLessThan );
-    playListTable->clear();
-    for(int i=0;i<playLists_.size();i++){
-        QListWidgetItem *item = new QListWidgetItem();
-        item->setText( playLists_[i].name() );
-        item->setFlags(item->flags () | Qt::ItemIsEditable);
-        playListTable->addItem( item );
-    }
-
-    //find and select previously selected playlist
-    if( nowRow>=0 && nowRow<playLists_.size() ){
-        qDebug()<<"unique id of playlist is "<<id;
-        int row=-1;
-        for(int i=0;i<playLists_.size();i++){
-            if(playLists_[i].uniqueId()==id){
-                row = i;
-                qDebug()<<"found playlist with id "<<id<<" at row "<<row<<": "<<playLists_[row].name();
-                break;
-            }
-        }
-        if(row>=0){
-            playListTable->setCurrentRow(row);
-        }
-    }
-
-    showRulesAndFolders();
-
-}
-*/
 
 void PlaylistManager::addIndividualFiles(){
 
@@ -676,7 +576,7 @@ void PlaylistManager::addFolder(){
     QFileDialog dialog;
     dialog.setFileMode(QFileDialog::DirectoryOnly);
     //dialog.setOption(QFileDialog::ShowDirsOnly, true);
-    QString lastFolder = guiSettings->value("lastFolder",QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation)).toString();
+    QString lastFolder = guiSettings->value("lastFolder",QDesktopServices::storageLocation(QDesktopServices::MusicLocation)).toString();
     if(!lastFolder.isEmpty()){
         dialog.setDirectory( lastFolder );
     }
@@ -772,15 +672,20 @@ void PlaylistManager::removeFolder(){
 
 void PlaylistManager::closeEvent( QCloseEvent *event ){
 
-    if( !playListCollectionFile.exists() ){
-        saveSettingsAs();
-    }else{
-        saveCollection( playListCollectionFile );
+    updateCollection();
+
+    if( !(lastSavedCollection_==collection_) ){
+        int ret = QMessageBox::warning(this,"","Save existing collection first?",QMessageBox::Yes,QMessageBox::No);
+        if(ret==QMessageBox::Yes){
+            saveCollection();
+        }
     }
+
     writeGUISettings();
 }
 
 void PlaylistManager::clearRulesAndFolders(){
+    //clears shon playList data
 
     QList<QWidget*> children = optionsFrame->findChildren<QWidget*>();
     for(int i=0;i<children.size();i++){
@@ -873,72 +778,108 @@ void PlaylistManager::showRulesAndFolders(){
 }
 
 
-Global::fileReadResult PlaylistManager::readCollection( const QFileInfo &file ){
+void PlaylistManager::loadCollection( const QFileInfo &file ){
     qDebug()<<"Reading settings...";
 
+    PlayListCollection collection;
+
+    qDebug()<<file.filePath()<<PlayListCollection::defaultCollectionName();
     if( !file.exists() ){
-        return Global::DOESNOTEXIST;
+        if( file!=QFileInfo(PlayListCollection::defaultCollectionName()) ){
+            QMessageBox::critical(this, "",
+                                  file.absoluteFilePath()+" does not exist",
+                                  QMessageBox::Ok, QMessageBox::Ok);
+        }
+    }else{
+
+        QSettings playListCollection( file.absoluteFilePath(), QSettings::IniFormat, this );
+        QVariant tmp = playListCollection.value("collection");
+        if( !tmp.canConvert<PlayListCollection>() ){
+            QMessageBox::critical(this, "",
+                                  file.absoluteFilePath()+" is not a valid " + qApp->applicationName() + " file",
+                                  QMessageBox::Ok, QMessageBox::Ok);
+        }else{
+            collection = tmp.value<PlayListCollection>();
+            qDebug()<<"successfully loaded collection "<<file.fileName();
+            qDebug()<<collection_.playLists().size();
+        }
     }
 
-    playListCollection = new QSettings( file.absoluteFilePath(), QSettings::IniFormat, this );
-    /*bool valid = playListSettings->value( "playListGeneratorFile", false ).toBool(); //identifier
-    if(!valid){
-        return NOTVALID;
+    collection_ = collection;
+    lastSavedCollection_=collection_;
+    playListTable->clear();
+    QList<PlayList> playLists = collection_.playLists();
+    for(int i=0;i<playLists.size();i++){
+        PlayList *p = new PlayList;
+        *p = playLists[i];
+        playListTable->addItem( p );
     }
-    */
-
-    QStringList playListNames = playListCollection->allKeys();
-    for(int i=0;i<playListNames.size();i++){
-        PlayList p = playListCollection->value(playListNames[i]).value< PlayList >();
-        PlayList *p2 = new PlayList(p);
-        p2->setFlags(p2->flags () | Qt::ItemIsEditable);
-        playListTable->addItem( p2 );
-    }
-
-
-    return Global::EXISTS;
 
 }
 
-void PlaylistManager::saveSettingsAs(){
+void PlaylistManager::saveCollectionAs(){
 
-    QString dir = playListCollectionFile.absoluteFilePath();
-    if(dir.isEmpty()){
-        dir = qApp->applicationDirPath();//QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
+    QDir dir(collection_.name());
+    if(!dir.exists()){
+        dir = QDir(QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
     }
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save file as..."), dir, "*"+Global::ext);
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save file as..."), dir.absolutePath(), "*"+Global::ext);
 
     if( fileName.isNull() || fileName.isEmpty() ){
         return;
     }
-    qDebug()<<"New filename: "<<fileName;
-    QFileInfo file = QFileInfo( fileName );
-    saveCollection( file );
-    initialize( file );
+
+    qDebug()<<"PlaylistManager::saveCollectionAs "<<fileName;
+    collection_.setName(fileName);
+    qDebug()<<"PlaylistManager::saveCollectionAs "<<collection_.name();
+    saveCollection(false);
 
 }
 
-void PlaylistManager::saveCurrentCollection(){
-    saveCollection( playListCollectionFile );
-}
-
-void PlaylistManager::saveCollection( const QFileInfo &file ){
-
-    if( !file.absoluteDir().exists() || file.fileName().isEmpty() ){
-        saveSettingsAs();
-        return;
+PlayList* PlaylistManager::playListItem( int row ){
+    if(row>=playListTable->count() || row<0){
+        return 0;
     }
+    return static_cast<PlayList*>(playListTable->item(row));
+}
 
-    playListCollection->clear();
+void PlaylistManager::updateCollection(){
+
+    QList<PlayList> playLists;
     for(int i=0;i<playListTable->count();i++){
-        PlayList *p = static_cast<PlayList*>(playListTable->item(i));
-        playListCollection->setValue(p->name(),*p);
+        PlayList *tmp = playListItem(i);
+        qDebug()<<tmp;
+        PlayList p = *tmp;
+        playLists.append(p);
+
+    }
+    collection_.setPlayLists(playLists);
+
+}
+
+
+void PlaylistManager::saveCollection( bool checkExistence ){
+
+    QFileInfo file(collection_.name());
+
+    if( checkExistence ){
+        if( !file.exists() ){
+            saveCollectionAs();
+            return;
+        }
     }
 
+    qDebug()<<"PlaylistManager::saveCollection "<<collection_.name();
 
-    playListCollection->sync();
+    updateCollection();
 
-    statusBar()->showMessage("'"+file.baseName()+"' saved!", 8000);
+    QSettings playListCollection(collection_.name(),QSettings::IniFormat,this);
+    playListCollection.clear();
+    playListCollection.setValue("collection",collection_);
+    playListCollection.sync();
+    lastSavedCollection_=collection_;
+
+    statusBar()->showMessage(file.baseName()+" saved", 8000);
 
 }
 
@@ -983,7 +924,7 @@ void PlaylistManager::generatePlayLists( const QList<int> &inds ){
 
     guiSettings->sync();
 
-    QString defOut = guiSettings->value("defaultOutputFolder").toString();
+    QString defOut = guiSettings->value("outPutPath").toString();
     QDir d(defOut);
     if( defOut.isEmpty() || !d.exists() ){
         QMessageBox::critical(this, "",
@@ -992,7 +933,6 @@ void PlaylistManager::generatePlayLists( const QList<int> &inds ){
         return;
     }
 
-    //writeGUISettings();
 
     QString log;
     time_t Start_t, End_t;
@@ -1003,21 +943,7 @@ void PlaylistManager::generatePlayLists( const QList<int> &inds ){
 
         PlayList *p = static_cast<PlayList*>(playListTable->item(i));
         names.append( p->name() );
-        log.append("Info for generation of playlist '"+p->name()+"'\n");
-
-        bool ok=true;
-        if( p->copyFiles() ){
-            QDir c(p->copyFilesToDir());
-            if( !c.exists() ){
-                QDir newDir;
-                ok = newDir.mkpath( p->copyFilesToDir().absolutePath() );
-                if(ok){
-                    log.append("Created directory "+p->copyFilesToDir().absolutePath()+"\n");
-                }else{
-                    log.append("Could not create directory "+p->copyFilesToDir().absolutePath()+", no copying performed\n");
-                }
-            }
-        }
+        log.append("Info for generation of playlist '"+p->name()+"'\n");       
 
         QList<M3uEntry> songs;
         bool wasCanceled = p->generate( &songs, &log, &tags_ );
@@ -1025,7 +951,8 @@ void PlaylistManager::generatePlayLists( const QList<int> &inds ){
             log.append("\n\nAborted by user");
             break;
         }
-        if( p->copyFiles() && ok ){
+
+        if( p->copyFiles() ){
             p->copyFoundFiles( songs, &log );
         }
         log.append("\n----------------------------------------------------------\n");
@@ -1046,47 +973,10 @@ void PlaylistManager::generatePlayLists( const QList<int> &inds ){
     }
 }
 
-/*
-void PlaylistManager::copyFiles( PlayList p, QList<M3uEntry> songs, QString *log ){
 
-    log->append("\nResult from file copy:\n");
-    int nCopied=0;
-
-    qDebug()<<"starting to copy "<<songs.size()<<" files!";
-    QProgressDialog pr("Copying files for playlist "+p.name()+" to "+p.copyFilesToDir(), "Abort", 0, songs.size(), this);
-    pr.setWindowModality(Qt::WindowModal);
-    QPushButton *cancelButton = new QPushButton;
-    pr.setCancelButton(cancelButton);
-    pr.setCancelButtonText("Cancel");
-    pr.setLabelText("Copying files");
-    for(int j=0;j<songs.size();j++){
-        pr.setValue(j);
-        if (pr.wasCanceled()){
-            break;
-        }
-        QFile f( songs[j].originalFile() );
-        QString newname = p.copyFilesToDir() + "/" + songs[j].file();
-        bool okf = f.copy( newname );
-        //qDebug()<<"copy result of "<<songs[j].originalfile<<" -> "<<newname<<": "<<okf;
-        if(!okf){
-            QFile f2(newname);
-            if( f2.exists() ){
-                log->append( songs[j].file() + " was not copied as it already exists in "+p.copyFilesToDir()+"\n" );
-            }else{
-                log->append( songs[j].file() + " could not be copied to "+p.copyFilesToDir()+"\n" );
-            }
-        }else{
-            nCopied++;
-        }
-    }
-    pr.setValue(songs.size());
-    pr.close();
-    log->append(QString::number(nCopied)+" of "+QString::number(songs.size())+" files copied to "+p.copyFilesToDir()+"\n");
-
-}
-*/
 
 QString PlaylistManager::newUniqePlayListName(){
+    //generate a new and unique playlist name
 
     QString name = "New Playlist";
     int k=0;
@@ -1112,6 +1002,7 @@ QString PlaylistManager::newUniqePlayListName(){
 
 
 void PlaylistManager::addPlayList(){
+    //add a new playlist to the table
 
     QString name = newUniqePlayListName();
     PlayList *p = new PlayList(name);
@@ -1222,7 +1113,7 @@ void PlaylistManager::showSettings(){
 
         updateUseScript();
 
-        if(guiSettings->value("keepTags").toBool()){
+        if(!guiSettings->value("keepTags").toBool()){
             tags_.clear();
         }
     }

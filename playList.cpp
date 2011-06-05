@@ -20,12 +20,14 @@ PlayList::PlayList( const QString &name, QListWidget *parent ) : QListWidgetItem
 
 }
 
+/*
 PlayList::~PlayList(){
     if(guiSettings!=0){
         delete guiSettings;
         guiSettings=0;
     }
 }
+*/
 
 bool PlayList::operator==(const PlayList &other) const{
 
@@ -41,33 +43,28 @@ bool PlayList::operator==(const PlayList &other) const{
     return res;
 }
 
-/*
-PlayList::PlayList( const PlayList &other ){
 
-    QListWidgetItem::operator =(other);
-    setName(other.name());
-    rules_ = other.rules();
-    folders_ = other.folders();
-    extensions_ = other.extensions();
-    randomize_ = other.randomize();
-    includeSubFolders_ = other.includeSubFolders();
-    relativePath_ = other.relativePath();
-    allRulesTrue_ = other.allRulesTrue();
-    includeExtInf_ = other.includeExtInf();
-    makeUnique_ = other.makeUnique();
-    copyFilesToDir_ = other.copyFilesToDir();
-    copyFiles_ = other.copyFiles();
-    individualFiles_ = other.individualFiles();
-    script_ = other.script();
-    outPutFolder_ = other.outPutFolder();
-    scriptVariables_<<"ARTIST"<<"ALBUM"<<"TITLE"<<"GENRE"<<"TRACK"<<"YEAR"<<"COMMENT"<<"LENGTH"<<"SAMPLERATE"<<"BITRATE"<<"CHANNELS";
-
-}
-*/
 void PlayList::copyFoundFiles( QList<M3uEntry> songs, QString *log ){
 
     log->append("\nResult from file copy:\n");
     int nCopied=0;
+
+    bool ok=true;
+
+    //check if main directory to copy files to exist.
+    //if not, try to create it
+    QDir c(copyFilesToDir_);
+    if( !c.exists() ){
+        ok = c.mkpath( copyFilesToDir_.absolutePath() );
+        if(ok){
+            log->append("Created directory "+copyFilesToDir_.absolutePath()+"\n");
+        }else{
+            log->append("Could not create directory "+copyFilesToDir_.absolutePath()+", no copying performed\n");
+            return;
+        }
+    }
+
+    //bool keepFolderStructure = guiSettings->value("keepFolderStructure").toBool();
 
     qDebug()<<"starting to copy "<<songs.size()<<" files!";
     QProgressDialog pr("Copying files for playlist "+name()+" to "+copyFilesToDir_.absolutePath(), "Abort", 0, songs.size(), 0);
@@ -82,6 +79,11 @@ void PlayList::copyFoundFiles( QList<M3uEntry> songs, QString *log ){
             break;
         }
         QFile f( songs[j].originalFile() );
+
+        //QFileInfo f(songs[j].originalFile());
+        //QString root = f.absoluteDir().rootPath();
+
+
         QString newname = copyFilesToDir_.absolutePath() + "/" + songs[j].file();
         bool okf = f.copy( newname );
         //qDebug_<<"copy result of "<<songs[j].originalfile<<" -> "<<newname<<": "<<okf;

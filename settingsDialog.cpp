@@ -30,13 +30,13 @@ SettingsDialog::~SettingsDialog(){
 void SettingsDialog::onFinish( int result ){
 
     if(result==QDialog::Accepted){
-        QString out = outputPath->text();
+        QString out = outPutPath->text();
         QString last = out.right(1);
         if( last!="\\" && last!="/"){
             out.append("/");
         }
 
-        settings->setValue("outputPath",out);
+        settings->setValue("outPutPath",out);
         settings->setValue("defaultExtensions",DefaultExtensions->text().split(";"));
         settings->setValue("useScript", UseScript->isChecked() );
         settings->setValue("format", Format->text() );
@@ -49,6 +49,7 @@ void SettingsDialog::onFinish( int result ){
         settings->setValue("trackEmpty", Track->isChecked() );
         settings->setValue("yearEmpty", Year->isChecked() );
         settings->setValue("useCopyFilesToPath", useCopyFilesToPathCheckBox->isChecked() );
+        settings->setValue("keepFolderStructure", keepFolderStructureCheckBox->isChecked() );
         settings->setValue("keepTags", keepTagsCheckBox->isChecked() );
         settings->sync();
     }
@@ -59,7 +60,7 @@ void SettingsDialog::onFinish( int result ){
 
 void SettingsDialog::setSettings(){
 
-    outputPath->setText( settings->value("outputPath").toString() );
+    outPutPath->setText( settings->value("outPutPath").toString() );
     DefaultExtensions->setText( settings->value("defaultExtensions").toStringList().join(";") );
     Format->setText( settings->value("format").toString() );
     UseScript->setChecked( settings->value("useScript").toBool() );
@@ -72,6 +73,7 @@ void SettingsDialog::setSettings(){
     Track->setChecked( settings->value("trackEmpty").toBool() );
     Year->setChecked( settings->value("yearEmpty").toBool() );
     useCopyFilesToPathCheckBox->setChecked( settings->value("useCopyFilesToPath").toBool() );
+    keepFolderStructureCheckBox->setChecked( settings->value("keepFolderStructure").toBool() );
     keepTagsCheckBox->setChecked( settings->value("keepTags").toBool() );
 
 
@@ -81,7 +83,7 @@ void SettingsDialog::setSettings(){
 
 QString SettingsDialog::chooseDir(){
 
-    QString dir = outputPath->text();
+    QString dir = outPutPath->text();
     if(dir.isEmpty()){
         dir = QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation);
     }
@@ -103,7 +105,7 @@ void SettingsDialog::setOutPutDir(){
 
     QString dir = chooseDir();
     if(!dir.isEmpty()){
-        outputPath->setText( dir );
+        outPutPath->setText( dir );
     }
 
 }

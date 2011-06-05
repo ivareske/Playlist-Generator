@@ -11,14 +11,19 @@
 #I know a lot of the design could have been done better, but this was one of my first larger programs. And it works...
 #prøve å kompilere taglib med qt? pro file ligge ved
 #fix const correctness and implement stream operators
+#when renaming files in tag editor, specify a list of files to rename the renamed files.
+#fix stylesheet actions/checked etc.
+#set value for several playlists at the time
+#keep folder structure when copying files?
+#remove unnescessary copy/assignment constructors
 
 # The application version
 VERSION = 1.0
-
+TARGET = PlayListGenerator
 
 TEMPLATE=app
-TARGET = PlayListGenerator
-CONFIG += qt release warn_on 
+CONFIG += qt
+# release
 #CONFIG += static
 CONFIG += console
 #QT += script
@@ -37,8 +42,8 @@ SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp RuleDialog.cpp PlayLi
 RC_FILE = PlaylistManager.rc
 
 
-DEFINES += APP_VERSION=$$VERSION
-DEFINES += APP_NAME=$$TARGET
+DEFINES += APP_VERSION=\\\"$$VERSION\\\"
+DEFINES += APP_NAME=\\\"$$TARGET\\\"
 
 
 

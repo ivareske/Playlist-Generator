@@ -23,8 +23,8 @@
 class PlayList : public QListWidgetItem{
 
 public:
-    explicit PlayList( const QString &name = "New playlist", QListWidget *parent = 0 );
-    ~PlayList();
+    PlayList( const QString &name = "New playlist", QListWidget *parent = 0 );
+    //~PlayList();
     //PlayList( const PlayList &other );
     bool generate( QList<M3uEntry> *songsOut, QString *log, QHash<QString,Tag> *tags );
     void copyFoundFiles( QList<M3uEntry> songs, QString *log );
