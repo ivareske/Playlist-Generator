@@ -1,21 +1,10 @@
 #generate other playlist formats?
-#http://nsis.sourceforge.net/Category:Real_World_Installers
-#//http://doc.trolltech.com/4.5/widgets-stylesheet-stylesheeteditor-cpp.html
 #make scripting work
-#generate one playlist for each unique combination of artist and album (with number of songs larger than a specified limit)... nødvendig? kommer dette til å bli brukt?
-#edit extensions for multiple lists
+#generate one playlist for each artist
 #foo fighters music videos, får feilmelding om S:/Min Musikk/F/Foo Fighters/Foo Fighters music videos/Foo Fighters - Walking After You.mpg, TagLib: FileRef::tag() - Called without a valid file., TagLib: FileRef::audioProperties() - Called without a valid file.
 #om ingen folder funnet, får aborted by user. som jo ikke er tilfelle
-#implement stream operators for classes for easy saving with qsettings...
-#cleanup so only source files are in folder
-#I know a lot of the design could have been done better, but this was one of my first larger programs. And it works...
-#prøve å kompilere taglib med qt? pro file ligge ved
-#fix const correctness and implement stream operators
 #when renaming files in tag editor, specify a list of files to rename the renamed files.
-#fix stylesheet actions/checked etc.
-#set value for several playlists at the time
-#keep folder structure when copying files?
-#remove unnescessary copy/assignment constructors
+#fix stylesheet actions/checked etc. when style menu is triggered, check the correct action
 #fix textviewer
 
 # The application version

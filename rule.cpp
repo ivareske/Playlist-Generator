@@ -1,9 +1,10 @@
 #include "Rule.h"
 
 
-Rule::Rule(){
+Rule::Rule( RuleType type, const QString &value ){
     
-    type_ = UNKNOWN;
+    type_ = type;
+    value_ = value;
     shouldBeTrue_ = true;
     caseSensitive_ = true;
 }

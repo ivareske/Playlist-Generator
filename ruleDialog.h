@@ -13,8 +13,8 @@ class RuleDialog : public QDialog, private Ui::RuleDialog{
  
 public:
 
-        RuleDialog( Rule *r=0, QWidget *parent = 0 );
-	
+        RuleDialog( const Rule &r=Rule(), QWidget *parent = 0 );
+        void hideValueFrame();
 	
 public slots:
 

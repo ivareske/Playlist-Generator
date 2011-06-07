@@ -2,24 +2,24 @@
 
 
 
-RuleDialog::RuleDialog( Rule *r, QWidget *parent ) : QDialog(parent){
+RuleDialog::RuleDialog( const Rule &r, QWidget *parent ) : QDialog(parent){
     setupUi(this); // this sets up GUI
 
     //ShouldBeTrue->hide();
     setSettings();
-    if(r){
-        value->setText(r->value());
-        valueLabel->setText( "Value (Ex: "+getRuleExample(r->type())+")" );
+    if(r.type()!=Rule::UNKNOWN){
+        value->setText(r.value());
+        valueLabel->setText( "Value (Ex: "+getRuleExample(r.type())+")" );
         int ind=0;
         for(int i=0;i<ruleComboBox->count();i++){
-            if( ruleComboBox->itemData(i).toInt()==r->type() ){
+            if( ruleComboBox->itemData(i).toInt()==r.type() ){
                 ind=i;
                 break;
             }
         }
         ruleComboBox->setCurrentIndex( ind );
-        ShouldBeTrue->setChecked( r->shouldBeTrue() );
-        CaseSensitive->setChecked( r->caseSensitive() );
+        ShouldBeTrue->setChecked( r.shouldBeTrue() );
+        CaseSensitive->setChecked( r.caseSensitive() );
     }
 
     // signals/slots mechanism in action
@@ -29,6 +29,11 @@ RuleDialog::RuleDialog( Rule *r, QWidget *parent ) : QDialog(parent){
 
 
 }
+
+void RuleDialog::hideValueFrame(){
+    valueFrame->hide();
+}
+
 
 void RuleDialog::finito(){
     if(value->text().isEmpty()){

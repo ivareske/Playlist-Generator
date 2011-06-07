@@ -419,7 +419,7 @@ void PlaylistManager::initialize(){
     //initialize the collection_ (private member)
 
     qDebug()<<"Initializing";    
-    enableOptions( false );        
+    //enableOptions( false );
     updateUseScript();
     showRulesAndFolders();
 
@@ -494,18 +494,48 @@ void PlaylistManager::addIndividualFiles(){
 
 void PlaylistManager::enableOptions( bool state ){
 
-    /*
+
     foldersGroupBox->setEnabled( state );
     rulesGroupBox->setEnabled( state );
     optionsGroupBox->setEnabled( state );
     addFilesButton->setEnabled( state );
     copyFilesFrame->setEnabled( state );
-    */
+
 }
 
 PlayList* PlaylistManager::currentPlayList(){
     PlayList *p = static_cast<PlayList*>(playListTable->currentItem());
     return p;
+}
+
+QList<QDir> PlaylistManager::selectFolders(){
+
+    QList<QDir> dirs;
+
+    QFileDialog dialog;
+    dialog.setFileMode(QFileDialog::DirectoryOnly);
+    //dialog.setOption(QFileDialog::ShowDirsOnly, true);
+    QString lastFolder = guiSettings->value("lastFolder",QDesktopServices::storageLocation(QDesktopServices::MusicLocation)).toString();
+    if(!lastFolder.isEmpty()){
+        dialog.setDirectory( lastFolder );
+    }
+    QListView *l = dialog.findChild<QListView*>("listView");
+    if (l) {
+        l->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    }
+    if( dialog.exec()!=QDialog::Accepted ){
+        return dirs;
+    }
+    QStringList d = dialog.selectedFiles();
+    for(int i=0;i<d.size();i++){
+        if(i==0){
+            QFileInfo f(d[i]);
+            guiSettings->setValue("lastFolder",f.absolutePath());
+        }
+        dirs.append(QDir(d[i]));
+    }
+    return dirs;
+
 }
 
 
@@ -523,28 +553,9 @@ void PlaylistManager::addFolder(){
         }
     }
 
-    QFileDialog dialog;
-    dialog.setFileMode(QFileDialog::DirectoryOnly);
-    //dialog.setOption(QFileDialog::ShowDirsOnly, true);
-    QString lastFolder = guiSettings->value("lastFolder",QDesktopServices::storageLocation(QDesktopServices::MusicLocation)).toString();
-    if(!lastFolder.isEmpty()){
-        dialog.setDirectory( lastFolder );
-    }
-    QListView *l = dialog.findChild<QListView*>("listView");
-    if (l) {
-        l->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    }
-    if( dialog.exec()!=QDialog::Accepted ){
+    QList<QDir> dirs = selectFolders();
+    if(dirs.size()==0){
         return;
-    }
-    QStringList d = dialog.selectedFiles();
-    QList<QDir> dirs;
-    for(int i=0;i<d.size();i++){
-        if(i==0){
-            QFileInfo f(d[i]);
-            guiSettings->setValue("lastFolder",f.absolutePath());
-        }
-        dirs.append(QDir(d[i]));
     }
 
     for(int i=0;i<selected.size();i++){
@@ -629,7 +640,22 @@ void PlaylistManager::removeFolder(){
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
     if(selected.size()>1){
-        QMessageBox::critical(this,"","Not allowed when more than one playlist is selected...");
+        int ret = QMessageBox::critical(this,"","More than one playlist selected:\nThe folders you choose will be removed from all selected playlists, continue?",QMessageBox::Yes,QMessageBox::No);
+        if(ret!=QMessageBox::Yes){
+            return;
+        }
+        QList<QDir> dirs = selectFolders();
+        if(dirs.size()==0){
+            return;
+        }
+        for(int i=0;i<selected.size();i++){
+            PlayList *p = static_cast<PlayList*>(selected[i]);
+            QList<QDir> folders = p->folders();
+            for(int j=0;j<dirs.size();j++){
+                folders.removeAll( dirs[j] );
+            }
+            p->setFolders(folders);
+        }
         showRulesAndFolders();
         return;
     }
@@ -694,8 +720,11 @@ void PlaylistManager::showRulesAndFolders(){
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
     if(selected.size()==0){
+        enableOptions(false);
         return;
     }
+
+    enableOptions(true);
 
     PlayList *p = static_cast<PlayList*>(selected[0]);//currentPlayList();
 
@@ -1003,16 +1032,18 @@ void PlaylistManager::removePlayList(){
     }
 
     qDebug()<<"indexes.size() "<<indexes.size();
+
     enableOptions( false );
     clearRulesAndFolders();
     playListTable->blockSignals(true);
     for(int i=indexes.size()-1;i>=0;i--){                        
         delete playListTable->takeItem( indexes[i].row() );                        
     }
-    playListTable->blockSignals(false);
+    playListTable->blockSignals(false);    
     if( playListTable->count()>0 ){
-        playListTable->setCurrentRow(0);
+        playListTable->setCurrentRow(0);                
     }
+    showRulesAndFolders();
 
 
 }
@@ -1073,7 +1104,7 @@ void PlaylistManager::editRule(){
     }
     QVector<Rule> rules = p->rules();
     Rule r = rules[rind];
-    RuleDialog rd( &r, this );
+    RuleDialog rd( r, this );
 
     if( rd.exec()!=QDialog::Accepted ){
         return;
@@ -1095,7 +1126,29 @@ void PlaylistManager::removeRule(){
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
     if(selected.size()>1){
-        QMessageBox::critical(this,"","Not allowed when more than one playlist is selected...");
+        int ret = QMessageBox::critical(this,"","More than one playlist selected:\nThe rule type (regardless of value) you choose will be removed from all selected playlists, continue?",QMessageBox::Yes,QMessageBox::No);
+        if(ret!=QMessageBox::Yes){
+            return;
+        }
+        Rule r(Rule::FILENAME_CONTAINS,"tmp"); //keep, unless you get error about empty value in RuleDialog
+        RuleDialog rd(r,0); rd.hideValueFrame(); //dont show valueFrame, just choose rule type
+        if(rd.exec()!=QDialog::Accepted){
+            return;
+        }
+        r = rd.getRule();
+
+        for(int i=0;i<selected.size();i++){
+            PlayList *p = static_cast<PlayList*>(selected[i]);
+            QVector<Rule> rules = p->rules();
+            QVector<Rule> newRules;
+            for(int j=0;j<rules.size();j++){
+                qDebug()<<Rule::getRuleName(rules[j].type())<<Rule::getRuleName(r.type());
+                if(rules[j].type()!=r.type()){
+                    newRules.append( rules[j] );
+                }
+            }
+            p->setRules(newRules);
+        }
         showRulesAndFolders();
         return;
     }
