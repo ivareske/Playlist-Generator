@@ -2,14 +2,10 @@
 #define GLOBALFUNCTIONS_H
 
 #include <QtGui>
-#include "Rule.h"
-#include "M3uEntry.h"
-#include "PlayList.h"
-
-class PlayList;
 
 namespace Global{
 
+    QString versionCheck( QDataStream *in, bool *ok, QString *log );
     QSettings* guiSettings();
     bool checkIntValue( QVector<int> *intvals, const QString &val );
     bool stringLessThan( const QString &s1, const QString &s2 );
@@ -23,7 +19,7 @@ namespace Global{
 
 }
 
-uint qHash(const M3uEntry &key);
 uint qHash( const QFileInfo &key );
+int qHash(const QDir &dir);
 
 #endif

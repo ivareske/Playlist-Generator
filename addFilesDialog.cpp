@@ -49,8 +49,8 @@ void AddFilesDialog::chooseFiles(){
     }
 
     for(int i=0;i<files.size();i++){
-        QFileInfo f = QFileInfo(files[i]);
-        files[i] = f.fileName();
+        //QFileInfo f = QFileInfo(files[i]);
+        //files[i] = f.fileName();
         fileList->addItem( files[i] );
     }
 

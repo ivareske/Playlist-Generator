@@ -86,6 +86,8 @@ QString Rule::getRuleName( const Rule::RuleType &type ){
         ans = "Audio channels is";
     }else if( type==Rule::AUDIO_LENGTH_IS ){
         ans = "Audio lenght is";
+    }else{
+        qDebug()<<"UNKOWN RULE TYPE IN Rule::getRuleName "<<type;
     }
 
     return ans;
@@ -98,6 +100,18 @@ Rule::operator QVariant () const{
 }
 
 QDataStream &operator>>(QDataStream &in, Rule &r){
+
+    bool ok; QString log;
+    QString version = Global::versionCheck( &in, &ok, &log );
+    if(!ok){
+        QMessageBox::critical(0,"",log);
+    }
+
+    if(version!="1.0"){
+        in.setStatus(QDataStream::ReadCorruptData);
+        return in;
+    }
+
     quint32 type;
     QString value;
     bool shouldBeTrue;
@@ -109,6 +123,10 @@ QDataStream &operator>>(QDataStream &in, Rule &r){
 }
 
 QDataStream &operator<<(QDataStream &out, const Rule &r){
+
+    out << out.version();
+    out << qApp->applicationVersion();
+
     out << static_cast<quint32>(r.type()) << r.value() << r.caseSensitive() << r.shouldBeTrue();
     return out;
 }

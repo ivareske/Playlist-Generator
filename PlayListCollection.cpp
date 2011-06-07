@@ -37,6 +37,17 @@ PlayListCollection::operator QVariant() const{
 
 QDataStream &operator>>(QDataStream &in, PlayListCollection &p){
 
+    bool ok; QString log;
+    QString version = Global::versionCheck( &in, &ok, &log );
+    if(!ok){
+        QMessageBox::critical(0,"",log);
+    }
+
+    if(version!="1.0"){
+        in.setStatus(QDataStream::ReadCorruptData);
+        return in;
+    }
+
     QString name;
     QList<PlayList> playLists;
     in >> name >> playLists;
@@ -46,6 +57,9 @@ QDataStream &operator>>(QDataStream &in, PlayListCollection &p){
 }
 
 QDataStream &operator<<(QDataStream &out, const PlayListCollection &p){
+
+    out << out.version();
+    out << qApp->applicationVersion();
 
     out << p.name() << p.playLists();
     return out;

@@ -2,6 +2,7 @@
 #define M3UENTRY_H
 
 #include <QtGui>
+#include "globalFunctions.h"
 
 class M3uEntry{
 	
@@ -9,24 +10,21 @@ class M3uEntry{
 	M3uEntry();
 
         QString extInf() const;
-        QString file() const;
-        QString fullFile() const;
-        QString originalFile() const;
-        void setExtInf( const QString &extInf );
-        void setFile( const QString &file );
-        void setFullFile( const QString &fullFile );
-        void setOriginalFile( const QString &originalFile );
+        QFileInfo originalFile() const;
+        void setExtInf( const QString &extInf );        
+        void setOriginalFile( const QFileInfo &originalFile );
 
 	bool operator==(const M3uEntry &e1) const;	
 
 private:
         QString extInf_;
-        QString file_;
-        QString fullFile_;
-        QString originalFile_;
+        //QString file_;
+        QFileInfo playListEntryFile_;
+        QFileInfo originalFile_;
 	
 };
 
+uint qHash(const M3uEntry &key);
 
 
 #endif

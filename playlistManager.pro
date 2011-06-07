@@ -16,6 +16,7 @@
 #set value for several playlists at the time
 #keep folder structure when copying files?
 #remove unnescessary copy/assignment constructors
+#fix textviewer
 
 # The application version
 VERSION = 1.0

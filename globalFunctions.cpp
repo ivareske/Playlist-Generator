@@ -4,6 +4,37 @@
 namespace Global{
 
 
+QString versionCheck( QDataStream *in, bool *ok, QString *log ){
+    //check Qt version of datastream, and version of application
+    //The datastream must be at a position in the stream where the two version
+    //number should be located (first in stream)
+    //The Qt QDatastream version is checked and set, the application version is returned
+    //ok is set to false if the QDataStream version found is larger than
+    //the current Qt version
+
+    bool res=true;
+    quint32 qversion;
+    in->operator >>(qversion);
+    QDataStream::Version v = static_cast<QDataStream::Version>(qversion);
+    if( v>in->version() ){
+        log->append("\nError using the QDataStream operators, the datastream you are trying to read("+QString::number(v)+") was created with a greater version of Qt than the current("+QString::number(in->version())+")");
+        res = false;
+    }else{
+        in->setVersion( v );
+    }
+    QString version;
+
+    (*in) >> version;
+
+    if(ok!=0){
+        *ok = res;
+    }
+
+    return version;
+
+}
+
+
 QSettings* guiSettings(){
 
     return new QSettings(qApp->applicationDirPath()+"/settings"+Global::ext,QSettings::IniFormat,0);
@@ -203,14 +234,15 @@ int naturalCompare( const QString &_a, const QString &_b, Qt::CaseSensitivity ca
 
 }
 
-uint qHash( const M3uEntry &key ){
-    //QString tmp = key.file;
-    uint val = qHash( key.file() );
-    return val;
-}
+
 
 uint qHash( const QFileInfo &key ){
 
     uint val = qHash( key.absoluteFilePath() );
     return val;
+}
+
+int qHash(const QDir &dir){
+
+    return qHash(dir.absolutePath());
 }

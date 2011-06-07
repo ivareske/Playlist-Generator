@@ -2,6 +2,7 @@
 #define RULE_H
 
 #include <QtGui>
+#include "globalFunctions.h"
 
 class Rule{
 

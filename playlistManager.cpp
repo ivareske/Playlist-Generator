@@ -203,14 +203,17 @@ void PlaylistManager::createActions(){
     connect( rulesTable, SIGNAL( itemDoubleClicked ( QListWidgetItem * ) ), this, SLOT( editRule() ) );
 
     //playlist settings
-    connect( extensions, SIGNAL( textEdited( const QString & )   ), this, SLOT( updateExtensions(const QString &) ) );
-    connect( RuleScript, SIGNAL( textChanged()   ), this, SLOT( updateScript() ) );
-    connect( randomize, SIGNAL( stateChanged ( int ) ), this, SLOT( updateRandomize( int ) ) );
-    connect( allRulesTrue, SIGNAL( stateChanged ( int ) ), this, SLOT( updateAllRulesTrue( int ) ) );
-    connect( searchSubFolders, SIGNAL( stateChanged ( int ) ), this, SLOT( updateSearchSubfolders( int ) ) );
-    connect( includeExtInf, SIGNAL( stateChanged ( int ) ), this, SLOT( updateIncludeExtInf( int ) ) );
-    connect( relativePath, SIGNAL( stateChanged ( int ) ), this, SLOT( updateUseRelativePath( int ) ) );
-    connect( makeUnique, SIGNAL( stateChanged ( int ) ), this, SLOT( updateMakeUnique( int ) ) );
+    connect( extensions, SIGNAL( textEdited( const QString & )   ), this, SLOT( updatePlayList() ) );
+    connect( RuleScript, SIGNAL( textChanged()   ), this, SLOT( updatePlayList() ) );
+    connect( randomize, SIGNAL( stateChanged ( int ) ), this, SLOT( updatePlayList() ) );
+    connect( allRulesTrue, SIGNAL( stateChanged ( int ) ), this, SLOT( updatePlayList() ) );
+    connect( searchSubFolders, SIGNAL( stateChanged ( int ) ), this, SLOT( updatePlayList() ) );
+    connect( includeExtInf, SIGNAL( stateChanged ( int ) ), this, SLOT( updatePlayList() ) );
+    connect( relativePath, SIGNAL( stateChanged ( int ) ), this, SLOT( updatePlayList() ) );
+    connect( makeUnique, SIGNAL( stateChanged ( int ) ), this, SLOT( updatePlayList() ) );
+    connect( copyFilesToButton, SIGNAL( clicked() ), this, SLOT( getCopyDir() ) );
+    connect( copyFilesText, SIGNAL( textEdited( const QString & ) ), this, SLOT( updatePlayList() ) );
+    connect( copyFilesCheckBox, SIGNAL( stateChanged( int ) ), this, SLOT( updatePlayList() ) );
 
     connect( actionSettings, SIGNAL( triggered() ), this, SLOT( showSettings() ) );
     connect( actionSave, SIGNAL( triggered() ), this, SLOT( saveCollection() ) );
@@ -220,9 +223,6 @@ void PlaylistManager::createActions(){
     connect( actionClearTags, SIGNAL( triggered() ), this, SLOT( clearTags() ) );
     connect( actionAbout, SIGNAL( triggered() ), this, SLOT( showAbout() ) );
 
-    connect( copyFilesToButton, SIGNAL( clicked() ), this, SLOT( getCopyDir() ) );
-    connect( copyFilesText, SIGNAL( textEdited( const QString & ) ), this, SLOT( updateCopyFiles( const QString & ) ) );
-    connect( copyFilesCheckBox, SIGNAL( stateChanged( int ) ), this, SLOT( updateCopyTo( int ) ) );
 
     //styles
 
@@ -244,6 +244,7 @@ void PlaylistManager::createActions(){
 
 }
 
+
 void PlaylistManager::showAbout(){
     QString text = qApp->applicationName()+" version "+qApp->applicationVersion();
     text += "\nAuthor: Ivar Eskerud Smith / ivar.eskerud@gmail.com";
@@ -259,6 +260,18 @@ void PlaylistManager::clearTags(){
 
 void PlaylistManager::getCopyDir(){
 
+    QList<QListWidgetItem*> selected = playListTable->selectedItems();
+    if(selected.size()==0){
+        return;
+    }
+
+    if(selected.size()>1){
+        int ret = QMessageBox::warning(this,"","This will set the directory to copy files to for all selected playlists, continue?",QMessageBox::Yes,QMessageBox::No);
+        if(ret==QMessageBox::No){
+            return;
+        }
+    }
+
     QFileDialog dialog;
     dialog.setFileMode(QFileDialog::Directory);
     dialog.setOption(QFileDialog::ShowDirsOnly, true);
@@ -270,40 +283,61 @@ void PlaylistManager::getCopyDir(){
     if( dialog.exec() ){
         QStringList d = dialog.selectedFiles();
         copyFilesText->setText( d[0] );
-        PlayList *p = currentPlayList();
-        if(p){
+
+        for(int i=0;i<selected.size();i++){
+            PlayList *p = static_cast<PlayList*>(selected[i]);
+
             p->setCopyFilesToDir(d[0]);
         }
     }
 }
 
-void PlaylistManager::updateCopyFiles( const QString &text ){
+void PlaylistManager::updatePlayList(){
 
-    PlayList *p = currentPlayList();
-    if(!p){
-        QMessageBox::critical(this, "",
-                              "Please choose a playlist before editing the extensions",
-                              QMessageBox::Ok,
-                              QMessageBox::Ok);
+    QList<QListWidgetItem*> selected = playListTable->selectedItems();
+    if(selected.size()==0){
         return;
     }
-    qDebug()<<"copy files dir set to "<<text<<" for "<<p->name();
-    p->setCopyFilesToDir(copyFilesText->text());
-}
 
-void PlaylistManager::updateCopyTo( int state ){
-
-    PlayList *p = currentPlayList();
-    if(!p){
-        QMessageBox::critical(this, "",
-                              "Please choose a playlist before editing the extensions",
-                              QMessageBox::Ok,
-                              QMessageBox::Ok);
-        return;
+    if(selected.size()>1){
+        int ret = QMessageBox::warning(this,"","This will set the edited value for all selected playlists, continue?",QMessageBox::Yes,QMessageBox::No);
+        if(ret==QMessageBox::No){
+            return;
+        }
     }
-    qDebug()<<"copy files set to "<<state<<" for "<<p->name();
-    p->setCopyFiles(copyFilesCheckBox->isChecked());
+
+    QObject *s = QObject::sender();
+    for(int i=0;i<selected.size();i++){
+        PlayList *p = static_cast<PlayList*>(selected[i]);
+
+        if(s==extensions){
+            p->setExtensions( extensions->text().split(";") );
+        }else if(s==RuleScript){
+            p->setScript( RuleScript->toPlainText() );
+        }else if(s==randomize){
+            p->setRandomize( randomize->isChecked() );
+        }else if(s==allRulesTrue){
+            p->setAllRulesTrue( allRulesTrue->isChecked() );
+        }else if(s==searchSubFolders){
+            p->setIncludeSubFolders( searchSubFolders->isChecked() );
+        }else if(s==includeExtInf){
+            p->setIncludeExtInf( includeExtInf->isChecked() );
+        }else if(s==relativePath){
+            p->setRelativePath( relativePath->isChecked() );
+        }else if(s==makeUnique){
+            p->setMakeUnique( makeUnique->isChecked() );
+        }else if(s==copyFilesText){
+            p->setCopyFilesToDir( QDir(copyFilesText->text()) );
+        }else if(s==copyFilesCheckBox){
+            p->setCopyFiles( copyFilesCheckBox->isChecked() );
+        }else{
+            qDebug()<<"BUG, unknown sender to updatePlayList";
+        }
+    }
+
+    showRulesAndFolders();
 }
+
 
 void PlaylistManager::newCollection(){
 
@@ -410,51 +444,63 @@ void PlaylistManager::updateUseScript(){
 
 void PlaylistManager::addIndividualFiles(){
 
-    PlayList *p = currentPlayList();
-    if(!p){
+    QList<QListWidgetItem*> selected = playListTable->selectedItems();
+    if(selected.size()==0){
         return;
     }
 
-    AddFilesDialog d(p->individualFiles());
+    if(selected.size()>1){
+        int ret = QMessageBox::warning(this,"","This will add/merge the files you select for all selected playlists\nSelecting 0 files will clear the files for all selected playlists. Continue?",QMessageBox::Yes,QMessageBox::No);
+        if(ret==QMessageBox::No){
+            return;
+        }
+    }
+
+    QList<QFileInfo> files;
+    if( selected.size()==1 ){
+        files = currentPlayList()->individualFiles();
+    }
+    AddFilesDialog d(files,this);
     if( d.exec()!=QDialog::Accepted ){
         return;
-    }    
-
-    p->setIndividualFiles(d.getFiles());
-
-    //show bold text on "add individual files" if individual files exist
-    QFont f = addFilesButton->font();
-    if( p->individualFiles().size()>0 ){
-        f.setBold(true);
-    }else{
-        f.setBold(false);
     }
-    addFilesButton->setFont(f);
 
+    files = d.getFiles();
+
+    for(int i=0;i<selected.size();i++){
+        PlayList *p = static_cast<PlayList*>(selected[i]);
+
+        QList<QFileInfo> files2 = files;
+        if(selected.size()>1 && !files.isEmpty() ){
+            //merge with existing if more than one PlayList chosen
+            //and if more than one files selected. 0 selected = clear
+            files2 += p->individualFiles();
+            files2 = files2.toSet().toList(); //unique
+        }
+        p->setIndividualFiles(files2);
+
+        //show bold text on "add individual files" if individual files exist
+        QFont f = addFilesButton->font();
+        if( p->individualFiles().size()>0 ){
+            f.setBold(true);
+        }else{
+            f.setBold(false);
+        }
+        addFilesButton->setFont(f);
+
+    }
 }
 
 
 void PlaylistManager::enableOptions( bool state ){
 
+    /*
     foldersGroupBox->setEnabled( state );
     rulesGroupBox->setEnabled( state );
     optionsGroupBox->setEnabled( state );
     addFilesButton->setEnabled( state );
     copyFilesFrame->setEnabled( state );
-}
-
-void PlaylistManager::updateRandomize( int state ){
-
-    PlayList *p = currentPlayList();
-    if(!p){
-        QMessageBox::critical(this, "",
-                              "Please choose a playlist first",
-                              QMessageBox::Ok,
-                              QMessageBox::Ok);
-        return;
-    }
-    p->setRandomize(randomize->isChecked());
-
+    */
 }
 
 PlayList* PlaylistManager::currentPlayList(){
@@ -463,116 +509,20 @@ PlayList* PlaylistManager::currentPlayList(){
 }
 
 
-void PlaylistManager::updateAllRulesTrue( int state ){
-
-    PlayList *p = currentPlayList();
-    if(!p){
-        QMessageBox::critical(this, "",
-                              "Please choose a playlist first",
-                              QMessageBox::Ok,
-                              QMessageBox::Ok);
-        return;
-    }
-    p->setAllRulesTrue(allRulesTrue->isChecked());
-
-}
-
-void PlaylistManager::updateSearchSubfolders( int state ){
-
-    PlayList *p = currentPlayList();
-    if(!p){
-        QMessageBox::critical(this, "",
-                              "Please choose a playlist first",
-                              QMessageBox::Ok,
-                              QMessageBox::Ok);
-        return;
-    }
-    p->setIncludeSubFolders(searchSubFolders->isChecked());
-
-}
-
-void PlaylistManager::updateIncludeExtInf( int state ){
-
-    PlayList *p = currentPlayList();
-    if(!p){
-        QMessageBox::critical(this, "",
-                              "Please choose a playlist first",
-                              QMessageBox::Ok,
-                              QMessageBox::Ok);
-        return;
-    }
-    p->setIncludeExtInf(includeExtInf->isChecked());
-
-}
-
-void PlaylistManager::updateUseRelativePath( int state ){
-
-    PlayList *p = currentPlayList();
-    if(!p){
-        QMessageBox::critical(this, "",
-                              "Please choose a playlist first",
-                              QMessageBox::Ok,
-                              QMessageBox::Ok);
-        return;
-    }
-    p->setRelativePath(relativePath->isChecked());
-
-}
-
-
-void PlaylistManager::updateMakeUnique( int state ){
-
-    PlayList *p = currentPlayList();
-    if(!p){
-        QMessageBox::critical(this, "",
-                              "Please choose a playlist first",
-                              QMessageBox::Ok,
-                              QMessageBox::Ok);
-        return;
-    }
-    p->setMakeUnique(makeUnique->isChecked());
-
-}
-
-void PlaylistManager::updateScript(){
-
-    PlayList *p = currentPlayList();
-    if(!p){
-        QMessageBox::critical(this, "",
-                              "Please choose a playlist before editing the script",
-                              QMessageBox::Ok,
-                              QMessageBox::Ok);
-        return;
-    }
-    p->setScript(RuleScript->toPlainText());
-
-}
-
-void PlaylistManager::updateExtensions( const QString & exts ){
-
-    PlayList *p = currentPlayList();
-    if(!p){
-        QMessageBox::critical(this, "",
-                              "Please choose a playlist before editing the extensions",
-                              QMessageBox::Ok,
-                              QMessageBox::Ok);
-        return;
-    }
-    p->setExtensions(exts.split(";"));
-}
-
 void PlaylistManager::addFolder(){
 
-    PlayList *p = currentPlayList();
-    if(!p){
-        QMessageBox::critical(this, "",
-                              "Please choose a playlist first",
-                              QMessageBox::Ok,
-                              QMessageBox::Ok);
+    QList<QListWidgetItem*> selected = playListTable->selectedItems();
+    if(selected.size()==0){
         return;
     }
 
-    QString dir;
+    if(selected.size()>1){
+        int ret = QMessageBox::warning(this,"","This will add/merge the folders you select for all selected playlists, continue?",QMessageBox::Yes,QMessageBox::No);
+        if(ret==QMessageBox::No){
+            return;
+        }
+    }
+
     QFileDialog dialog;
     dialog.setFileMode(QFileDialog::DirectoryOnly);
     //dialog.setOption(QFileDialog::ShowDirsOnly, true);
@@ -588,23 +538,34 @@ void PlaylistManager::addFolder(){
         return;
     }
     QStringList d = dialog.selectedFiles();
-
-    QList<QDir> folders = p->folders();
+    QList<QDir> dirs;
     for(int i=0;i<d.size();i++){
         if(i==0){
             QFileInfo f(d[i]);
             guiSettings->setValue("lastFolder",f.absolutePath());
-        }        
-        QListWidgetItem *item = new QListWidgetItem();
-        item->setText( d[i] );
-        item->setFlags(item->flags () & ~Qt::ItemIsEditable);
-        folderTable->addItem( item );
-        folders.append(QDir(d[i]));
+        }
+        dirs.append(QDir(d[i]));
     }
-    p->setFolders(folders);
+
+    for(int i=0;i<selected.size();i++){
+        PlayList *p = static_cast<PlayList*>(selected[i]);
+
+        QList<QDir> folders = p->folders();
+        folders += dirs; folders = folders.toSet().toList();
+        p->setFolders(folders);
+    }
+
+    showRulesAndFolders();
 }
 
 void PlaylistManager::renameFolder(QListWidgetItem *item){
+
+    QList<QListWidgetItem*> selected = playListTable->selectedItems();
+    if(selected.size()>1){
+        QMessageBox::critical(this,"","Not allowed when more than one playlist is selected...");
+        showRulesAndFolders();
+        return;
+    }
 
     PlayList *p = currentPlayList();
     if( !p || !folderTable->currentItem() ){
@@ -638,6 +599,13 @@ void PlaylistManager::renameFolder(QListWidgetItem *item){
 
 void PlaylistManager::changeFolder(QListWidgetItem *item){
 
+    QList<QListWidgetItem*> selected = playListTable->selectedItems();
+    if(selected.size()>1){
+        QMessageBox::critical(this,"","Not allowed when more than one playlist is selected...");
+        showRulesAndFolders();
+        return;
+    }
+
     PlayList *p = currentPlayList();
     if(!p){
         return;
@@ -658,6 +626,13 @@ void PlaylistManager::changeFolder(QListWidgetItem *item){
 }
 
 void PlaylistManager::removeFolder(){
+
+    QList<QListWidgetItem*> selected = playListTable->selectedItems();
+    if(selected.size()>1){
+        QMessageBox::critical(this,"","Not allowed when more than one playlist is selected...");
+        showRulesAndFolders();
+        return;
+    }
 
     PlayList *p = currentPlayList();
     int ind = folderTable->currentRow();    
@@ -684,13 +659,20 @@ void PlaylistManager::closeEvent( QCloseEvent *event ){
     writeGUISettings();
 }
 
-void PlaylistManager::clearRulesAndFolders(){
-    //clears shon playList data
+void PlaylistManager::blockPlayListSignals( bool block ){
 
     QList<QWidget*> children = optionsFrame->findChildren<QWidget*>();
     for(int i=0;i<children.size();i++){
-        children[i]->blockSignals(true);
+        children[i]->blockSignals(block);
     }
+
+}
+
+
+void PlaylistManager::clearRulesAndFolders(){
+    //clears shon playList data
+
+    blockPlayListSignals(true);
 
     folderTable->clear();
     extensions->clear();
@@ -704,32 +686,25 @@ void PlaylistManager::clearRulesAndFolders(){
     relativePath->setChecked(false);
     makeUnique->setChecked(false);
 
-    for(int i=0;i<children.size();i++){
-        children[i]->blockSignals(false);
-    }
+    blockPlayListSignals(false);
 
 }
 
 void PlaylistManager::showRulesAndFolders(){
 
-    folderTable->clear();
-    rulesTable->clear();
-    extensions->setText("");
-    qDebug()<<"a";
-    //don`t show rules & folders if more than one playlist is selected
-    QList<QListWidgetItem*>  tmp = playListTable->selectedItems();
-    if(tmp.size()>1){ //for some reason 0 is given when 1 item is selected
-        enableOptions( false );
-        return;
-    }
-    qDebug()<<"b";
-    PlayList *p = currentPlayList();
-    if( !p ){
-        enableOptions( false );
+    QList<QListWidgetItem*> selected = playListTable->selectedItems();
+    if(selected.size()==0){
         return;
     }
 
-    enableOptions( true );
+    PlayList *p = static_cast<PlayList*>(selected[0]);//currentPlayList();
+
+
+    blockPlayListSignals(true);
+
+    folderTable->clear();
+    rulesTable->clear();
+    extensions->setText("");
 
     //folders    
     QList<QDir> folders = p->folders();
@@ -751,7 +726,7 @@ void PlaylistManager::showRulesAndFolders(){
     makeUnique->setChecked( p->makeUnique() );
     copyFilesCheckBox->setChecked( p->copyFiles() );
     copyFilesText->setText( p->copyFilesToDir().absolutePath() );
-    qDebug()<<"f";
+
     //show bold text on "add individual files" if individual files exist
     QFont f = addFilesButton->font();
     if( p->individualFiles().size()>0 ){
@@ -767,6 +742,7 @@ void PlaylistManager::showRulesAndFolders(){
     for(int i=0;i<rules.size();i++){
         Rule::RuleType t = rules[i].type();
         QListWidgetItem *item = new QListWidgetItem();
+        item->setData(Qt::UserRole,t);
         if(!rules[i].shouldBeTrue()){
             QFont f = item->font(); f.setItalic(true);
             item->setFont(f);
@@ -775,6 +751,9 @@ void PlaylistManager::showRulesAndFolders(){
         rulesTable->addItem( item );
     }
 
+    infoLabel->setText( p->name() );
+
+    blockPlayListSignals(false);
 }
 
 
@@ -844,6 +823,8 @@ PlayList* PlaylistManager::playListItem( int row ){
 }
 
 void PlaylistManager::updateCollection(){
+    //must be called before saving! The playlists in the PlayListCollection is
+    //not updated as the playlists in the playListTable change.
 
     QList<PlayList> playLists;
     for(int i=0;i<playListTable->count();i++){
@@ -1038,21 +1019,34 @@ void PlaylistManager::removePlayList(){
 
 void PlaylistManager::newRule(){
 
-    PlayList *p = currentPlayList();
-    if(!p){
-        QMessageBox::information(this, "",
-                                 "Please select a playlist first",
-                                 QMessageBox::Ok, QMessageBox::Ok);
+    QList<QListWidgetItem*> selected = playListTable->selectedItems();
+    if(selected.size()==0){
         return;
     }
+
+    if(selected.size()>1){
+        int ret = QMessageBox::warning(this,"","This will add/merge the rule you create for all selected playlists, continue?",QMessageBox::Yes,QMessageBox::No);
+        if(ret==QMessageBox::No){
+            return;
+        }
+    }
+
+
     RuleDialog rd;
     if( rd.exec()!=QDialog::Accepted ){
         return;
     }
-    Rule r = rd.getSettings();
-    QVector<Rule> rules = p->rules();
-    rules.append( r );
-    p->setRules(rules);
+    Rule r = rd.getRule();
+
+    for(int i=0;i<selected.size();i++){
+        PlayList *p = static_cast<PlayList*>(selected[i]);
+
+        QVector<Rule> rules = p->rules();
+        if(!rules.contains(r)){
+            rules.append( r );
+        }
+        p->setRules(rules);
+    }
 
     showRulesAndFolders();
 
@@ -1061,8 +1055,16 @@ void PlaylistManager::newRule(){
 
 void PlaylistManager::editRule(){
 
+    QList<QListWidgetItem*> selected = playListTable->selectedItems();
+    if(selected.size()>1){
+        QMessageBox::critical(this,"","Not allowed when more than one playlist is selected...");
+        showRulesAndFolders();
+        return;
+    }
+
     PlayList *p = currentPlayList();
     int rind = rulesTable->currentRow();
+    QListWidgetItem *ruleItem = rulesTable->currentItem();
     if(rind==-1 || !p){
         QMessageBox::information(this, "",
                                  "Please select a Rule first",
@@ -1076,16 +1078,27 @@ void PlaylistManager::editRule(){
     if( rd.exec()!=QDialog::Accepted ){
         return;
     }
-    Rule newr = rd.getSettings();
-    rules.append(newr);
+    Rule newr = rd.getRule();
+    rules[rind] = newr;
     p->setRules(rules);
+
+    ruleItem->setText( Rule::getRuleName( newr.type() )+": "+newr.value() );
+    /*
     delete rulesTable->takeItem(rind);
     rulesTable->insertItem( rind, Rule::getRuleName( newr.type() )+": "+newr.value() );
+    */
     showRulesAndFolders();
 
 }
 
 void PlaylistManager::removeRule(){
+
+    QList<QListWidgetItem*> selected = playListTable->selectedItems();
+    if(selected.size()>1){
+        QMessageBox::critical(this,"","Not allowed when more than one playlist is selected...");
+        showRulesAndFolders();
+        return;
+    }
 
     PlayList *p = currentPlayList();
     int rind = rulesTable->currentRow();

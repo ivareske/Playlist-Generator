@@ -11,7 +11,7 @@ class AddFilesDialog : public QDialog, private Ui::AddFilesDialog
  
 public:
 
-    AddFilesDialog( const QList<QFileInfo> &files,  QWidget *parent = 0 );
+    AddFilesDialog( const QList<QFileInfo> &files = QList<QFileInfo>(),  QWidget *parent = 0 );
     QList<QFileInfo> getFiles() const;
 	
 private slots:

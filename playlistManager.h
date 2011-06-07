@@ -49,6 +49,7 @@ private slots:
     void removeRule();
     void showRulesAndFolders();
     void clearRulesAndFolders();
+    void blockPlayListSignals( bool block );
     void showSettings();
     void removeFolder();
     void renameFolder(QListWidgetItem *item);
@@ -57,25 +58,26 @@ private slots:
     void open();
     void newCollection();
     void openStyleSheet();
-    void updateExtensions( const QString & exts );
-    void updateRandomize( int state );
-    void updateAllRulesTrue( int state );
-    void updateSearchSubfolders( int state );
-    void updateIncludeExtInf( int state );
-    void updateUseRelativePath( int state );
-    void updateMakeUnique( int state );
+    //void updateExtensions( const QString & exts );
+    //void updateRandomize( int state );
+    //void updateAllRulesTrue( int state );
+    //void updateSearchSubfolders( int state );
+    //void updateIncludeExtInf( int state );
+    //void updateUseRelativePath( int state );
+    //void updateMakeUnique( int state );
     void initialize();
     void writeGUISettings();
     void readGUISettings();
     void uncheckStyleActions();
     void checkStyleAction( const QString &actionText, bool state );
     void getCopyDir();
-    void updateCopyFiles( const QString &text );
-    void updateCopyTo( int state );
+    //void updateCopyFiles( const QString &text );
+    //void updateCopyTo( int state );
     //void copyFiles( PlayList p, QList<M3uEntry> songs, QString *log );
     void enableOptions( bool state );
     void clearTags();
-    void updateScript();
+//    void updateScript();
+    void updatePlayList();
 
 
 private:

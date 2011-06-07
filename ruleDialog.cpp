@@ -10,7 +10,14 @@ RuleDialog::RuleDialog( Rule *r, QWidget *parent ) : QDialog(parent){
     if(r){
         value->setText(r->value());
         valueLabel->setText( "Value (Ex: "+getRuleExample(r->type())+")" );
-        ruleComboBox->setCurrentIndex( r->type() );
+        int ind=0;
+        for(int i=0;i<ruleComboBox->count();i++){
+            if( ruleComboBox->itemData(i).toInt()==r->type() ){
+                ind=i;
+                break;
+            }
+        }
+        ruleComboBox->setCurrentIndex( ind );
         ShouldBeTrue->setChecked( r->shouldBeTrue() );
         CaseSensitive->setChecked( r->caseSensitive() );
     }
@@ -31,7 +38,7 @@ void RuleDialog::finito(){
         return;
     }
     int ind = ruleComboBox->currentIndex();
-    Rule::RuleType t = static_cast<Rule::RuleType>(ind);
+    Rule::RuleType t = static_cast<Rule::RuleType>(ruleComboBox->itemData(ind).toInt());
     if( t==Rule::TAG_YEAR_IS || t==Rule::TAG_TRACK_IS || t==Rule::AUDIO_BITRATE_IS || \
             t==Rule::AUDIO_SAMPLERATE_IS || t==Rule::AUDIO_CHANNELS_IS || t==Rule::AUDIO_LENGTH_IS ){
         QVector<int> intvals;
@@ -55,21 +62,22 @@ void RuleDialog::indexChanged( int ind ){
 
 void RuleDialog::setSettings(){
 
-    QStringList list;
     for(int i=0;i<Rule::NUMBEROFRULES;i++){
-        list.append( Rule::getRuleName( static_cast<Rule::RuleType>(i) ) );
-    }
-    ruleComboBox->addItems( list );
+        Rule::RuleType type = static_cast<Rule::RuleType>(i);
+        if( type!=Rule::UNKNOWN ){
+            ruleComboBox->addItem( Rule::getRuleName( type ), type );
+        }
+    }    
     ShouldBeTrue->setChecked(true);
     CaseSensitive->setChecked(true);
 
 }
 
-Rule RuleDialog::getSettings(){
+Rule RuleDialog::getRule(){
 
     Rule r;
     int ind = ruleComboBox->currentIndex();
-    r.setType(static_cast<Rule::RuleType>(ind));
+    r.setType(static_cast<Rule::RuleType>(ruleComboBox->itemData(ind).toInt()));
     r.setValue(value->text());
     r.setShouldBeTrue(ShouldBeTrue->isChecked());
     r.setCaseSensitive(CaseSensitive->isChecked());

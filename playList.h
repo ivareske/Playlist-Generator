@@ -43,8 +43,9 @@ public:
     QDir copyFilesToDir() const;
     bool copyFiles() const;
     QList<QFileInfo> individualFiles() const;
-    QString script() const;
-    QDir outPutFolder() const;
+    QString script() const;    
+    QString playListEntry( const M3uEntry &e ) const;
+
 
     void setName( const QString &name );
     void setRules( const QVector<Rule> &rules );
@@ -60,7 +61,6 @@ public:
     void setCopyFiles( bool copyFiles );
     void setIndividualFiles( const QList<QFileInfo> &individualFiles );
     void setScript( const QString &script );
-    void setOutPutFolder( const QDir &outPutFolder );
 
     operator QVariant () const;
     bool operator==(const PlayList &other) const;
@@ -70,7 +70,7 @@ private:
     QList<M3uEntry> findFiles( bool *canceled, QString *log, QHash<QString,Tag> *tags ) const;
     QList<QFileInfo> getDirContent( const QString& aPath ) const;
     void checkRange( const QVector<int> &intvals, int value, bool *allOk, bool *anyOk, bool shouldBeTrue ) const;
-    bool writeM3U( const QList<M3uEntry> &songs, QString *log=0 ) const;
+    bool writeM3U( const QString &file, const QList<M3uEntry> &songs, QString *log=0 ) const;
     void checkRule( bool value, bool *allOk, bool *anyOk, bool shouldBeTrue ) const;
     QList<M3uEntry> processFile( const QFileInfo &fileInfo, bool hasTagRule, bool hasAudioRule, QString *log, QHash<QString,Tag> *tags, QHash<QString,Tag> *tagsCopy ) const;
     QString createExtInfString( const Tag &tag, const QString &file, const QString &format_ ) const;
@@ -90,7 +90,7 @@ private:
     bool copyFiles_;
     QList<QFileInfo> individualFiles_;
     QString script_;
-    QDir outPutFolder_;
+    //QDir outPutFolder_;
     QStringList scriptVariables_;
     QSettings *guiSettings;
 

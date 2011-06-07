@@ -19,7 +19,7 @@ public:
 public slots:
 
         void setSettings();
-	Rule getSettings();
+	Rule getRule();
 	void indexChanged(int ind);
 	void disableRuleChange();
 	void finito();
