@@ -22,13 +22,25 @@ PlaylistManager::PlaylistManager(QWidget *parent) : QMainWindow(parent){
 
 }
 
+void PlaylistManager::editStyleDialog(){
+
+    QString style = guiSettings->value("style").toString();
+    StyleSheetEditor s(style,this);
+    QString styleSheet = guiSettings->value("styleSheet").toString();
+    s.setStyleSheetText( styleSheet );
+    s.exec();
+    guiSettings->setValue("style",s.currentStyle()); qDebug()<<"s.currentStyle() "<<s.currentStyle();
+    guiSettings->setValue("styleSheet",s.styleSheetText()); qDebug()<<s.styleSheetText();
+    guiSettings->sync();
+}
+
 void PlaylistManager::initGuiSettings(){
     if(guiSettings==0){
         guiSettings = Global::guiSettings();
     }
 
     if( !guiSettings->value("style").canConvert(QVariant::String)  ){
-        guiSettings->setValue("style","Plastique");
+        guiSettings->setValue("style",qApp->style()->metaObject()->className());
     }
     if( !guiSettings->value("artistEmpty").canConvert(QVariant::Bool) ){
         guiSettings->setValue("artistEmpty",true);
@@ -79,7 +91,7 @@ void PlaylistManager::initGuiSettings(){
 
 }
 
-
+/*
 
 void PlaylistManager::openStyleSheet(){
 
@@ -177,6 +189,7 @@ void PlaylistManager::setGUIStyle( const QString &s ){
     }
 
 }
+*/
 
 void PlaylistManager::createActions(){
 
@@ -215,6 +228,8 @@ void PlaylistManager::createActions(){
     connect( copyFilesText, SIGNAL( textEdited( const QString & ) ), this, SLOT( updatePlayList() ) );
     connect( copyFilesCheckBox, SIGNAL( stateChanged( int ) ), this, SLOT( updatePlayList() ) );
 
+
+    connect( actionEditStyle, SIGNAL( triggered() ), this, SLOT( editStyleDialog() ) );
     connect( actionSettings, SIGNAL( triggered() ), this, SLOT( showSettings() ) );
     connect( actionSave, SIGNAL( triggered() ), this, SLOT( saveCollection() ) );
     connect( actionSaveAs, SIGNAL( triggered() ), this, SLOT( saveCollectionAs() ) );
@@ -224,8 +239,8 @@ void PlaylistManager::createActions(){
     connect( actionAbout, SIGNAL( triggered() ), this, SLOT( showAbout() ) );
 
 
+    /*
     //styles
-
     QSignalMapper *styleMapper = new QSignalMapper(this);
     QStringList styles = QStyleFactory::keys();
     for(int i=0;i<styles.size();i++){
@@ -241,7 +256,7 @@ void PlaylistManager::createActions(){
     connect(actionCustomStyleSheet, SIGNAL(triggered()), this, SLOT(openStyleSheet()));
     menuStyle->addAction( actionCustomStyleSheet );
     connect(styleMapper, SIGNAL(mapped(const QString &)), this, SLOT(setGUIStyle(const QString &)));
-
+    */
 }
 
 
@@ -360,12 +375,12 @@ void PlaylistManager::newCollection(){
 
 void PlaylistManager::writeGUISettings(){
 
-    guiSettings->clear();
+    //guiSettings->clear();
     guiSettings->beginGroup("MainWindow");
     guiSettings->setValue("size", this->size());
     guiSettings->setValue("pos", this->pos());
     guiSettings->endGroup();
-    guiSettings->setValue("collection", collection_.name() );
+    guiSettings->setValue("collection", collection_.name() );       
 
     guiSettings->sync();
     //delete guiSettings;
@@ -380,7 +395,10 @@ void PlaylistManager::readGUISettings(){
     this->resize(guiSettings->value("size", QSize(400, 400)).toSize());
     this->move(guiSettings->value("pos", QPoint(200, 200)).toPoint());
     guiSettings->endGroup();
-    setGUIStyle( guiSettings->value("style").toString() );
+    //setGUIStyle( guiSettings->value("style").toString() );
+
+    qApp->setStyle( QStyleFactory::create ( guiSettings->value("style").toString() ) ); qDebug()<<guiSettings->value("style").toString();
+    qApp->setStyleSheet( guiSettings->value("styleSheet").toString() ); //qDebug()<<guiSettings->value("styleSheet").toString();
 
     QFileInfo collectionFile(guiSettings->value("collection",QDesktopServices::storageLocation(QDesktopServices::MusicLocation)+"/New collection"+Global::ext ).toString());
     loadCollection( collectionFile );

@@ -24,10 +24,10 @@ LIBS += -L./ libtag
 
 
 HEADERS = PlaylistManager.h SettingsDialog.h RuleDialog.h PlayList.h Rule.h globalFunctions.h M3uEntry.h AddFilesDialog.h TextViewer.h Tag.h \
-    PlayListCollection.h
-FORMS   = PlaylistManager.ui SettingsDialog.ui RuleDialog.ui AddFilesDialog.ui TextViewer.ui
+    PlayListCollection.h StyleSheetEditor.h
+FORMS   = PlaylistManager.ui SettingsDialog.ui RuleDialog.ui AddFilesDialog.ui TextViewer.ui StyleSheetEditor.ui
 SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp RuleDialog.cpp PlayList.cpp Rule.cpp globalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp \
-    PlayListCollection.cpp
+    PlayListCollection.cpp StyleSheetEditor.cpp
 
 RC_FILE = PlaylistManager.rc
 

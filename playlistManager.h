@@ -11,6 +11,7 @@
 #include "TextViewer.h"
 #include "RuleDialog.h"
 #include "PlayListCollection.h"
+#include "StyleSheetEditor.h"
 #include "ui_playlistManager.h"
 
 
@@ -27,6 +28,7 @@ protected:
     void closeEvent( QCloseEvent *event );
 
 private slots:
+    void editStyleDialog();
     void initGuiSettings();
     void showAbout();
     QString newUniqePlayListName();
@@ -43,7 +45,7 @@ private slots:
     void addPlayList();
     void removePlayList();
     void changeFolder(QListWidgetItem *item);
-    bool loadStyleSheet( const QString &file );
+
     void newRule();
     void editRule();
     void removeRule();
@@ -53,16 +55,19 @@ private slots:
     void showSettings();
     void removeFolder();
     void renameFolder(QListWidgetItem *item);
-    void addFolder();
-    void setGUIStyle( const QString &style );
+    void addFolder();    
     void open();
-    void newCollection();
-    void openStyleSheet();
+    void newCollection();    
     void initialize();
     void writeGUISettings();
     void readGUISettings();
+    /*
     void uncheckStyleActions();
     void checkStyleAction( const QString &actionText, bool state );
+    bool loadStyleSheet( const QString &file );
+    void setGUIStyle( const QString &style );
+    void openStyleSheet();
+    */
     void getCopyDir();
     void enableOptions( bool state );
     void clearTags();
