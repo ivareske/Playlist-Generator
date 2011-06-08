@@ -2,7 +2,7 @@
 #include "PlaylistManager.h"
 
 
-int main(int argc, char *argv[]){
+int main(int argc, char* argv[]) {
 
     QApplication app(argc, argv);
     app.setApplicationVersion(APP_VERSION);

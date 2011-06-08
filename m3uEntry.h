@@ -4,27 +4,27 @@
 #include <QtGui>
 #include "globalFunctions.h"
 
-class M3uEntry{
-	
-	public:
-	M3uEntry();
+class M3uEntry {
+
+    public:
+        M3uEntry();
 
         QString extInf() const;
         QFileInfo originalFile() const;
-        void setExtInf( const QString &extInf );        
-        void setOriginalFile( const QFileInfo &originalFile );
+        void setExtInf(const QString& extInf);
+        void setOriginalFile(const QFileInfo& originalFile);
 
-	bool operator==(const M3uEntry &e1) const;	
+        bool operator==(const M3uEntry& e1) const;
 
-private:
+    private:
         QString extInf_;
         //QString file_;
         QFileInfo playListEntryFile_;
         QFileInfo originalFile_;
-	
+
 };
 
-uint qHash(const M3uEntry &key);
+uint qHash(const M3uEntry& key);
 
 
 #endif

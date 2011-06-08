@@ -8,25 +8,24 @@
 #include "ui_settingsDialog.h"
 
 
-class SettingsDialog : public QDialog, private Ui::SettingsDialog
-{
-    Q_OBJECT
+class SettingsDialog : public QDialog, private Ui::SettingsDialog {
+        Q_OBJECT
 
-public:
+    public:
 
-    SettingsDialog( QWidget *parent = 0);
-    ~SettingsDialog();
+        SettingsDialog(QWidget* parent = 0);
+        ~SettingsDialog();
 
 
-protected:
+    protected:
 
-private:
-    QSettings *settings;
-    void setSettings();
-    QString chooseDir();    
-private slots:
-    void onFinish( int result );
-    void setOutPutDir();
+    private:
+        QSettings* settings;
+        void setSettings();
+        QString chooseDir();
+    private slots:
+        void onFinish(int result);
+        void setOutPutDir();
 
 };
 

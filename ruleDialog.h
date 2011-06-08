@@ -8,27 +8,27 @@
 #include "ui_ruleDialog.h"
  
  
-class RuleDialog : public QDialog, private Ui::RuleDialog{
-    Q_OBJECT
- 
-public:
+class RuleDialog : public QDialog, private Ui::RuleDialog {
+        Q_OBJECT
 
-        RuleDialog( const Rule &r=Rule(), QWidget *parent = 0 );
+    public:
+
+        RuleDialog(const Rule& r = Rule(), QWidget* parent = 0);
         void hideValueFrame();
-	
-public slots:
+
+    public slots:
 
         void setSettings();
-	Rule getRule();
-	void indexChanged(int ind);
-	void disableRuleChange();
-	void finito();
+        Rule getRule();
+        void indexChanged(int ind);
+        void disableRuleChange();
+        void finito();
 
-protected:
+    protected:
 
-private:
-        QString getRuleExample( const Rule::RuleType &type );
-	
+    private:
+        QString getRuleExample(const Rule::RuleType& type);
+
 };
  
  

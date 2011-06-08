@@ -6,13 +6,13 @@
 #include <taglib.h>
 #include <fileref.h>
 
-class Tag{
-	
-	public:
-    enum TagField{ ARTIST, ALBUM, TITLE, GENRE, TRACK, YEAR, COMMENT, LENGTH, BITRATE, SAMPLERATE, CHANNELS };
-        Tag( const QString &fullfile="" );
-	void clearTags();
-	void readTags();
+class Tag {
+
+    public:
+        enum TagField { ARTIST, ALBUM, TITLE, GENRE, TRACK, YEAR, COMMENT, LENGTH, BITRATE, SAMPLERATE, CHANNELS };
+        Tag(const QString& fullfile = "");
+        void clearTags();
+        void readTags();
         //QVariant getTag( Tag::TagField field );
         bool tagIsRead() const;
         bool tagOk() const;
@@ -27,13 +27,13 @@ class Tag{
         QString genre() const;
         uint year() const;
         uint track() const;
-	
+
         uint length() const;
         uint bitRate() const;
         uint sampleRate() const;
         uint channels() const;
 
-private:
+    private:
         QString filename_;
         QString artist_;
         QString title_;
@@ -45,12 +45,12 @@ private:
         bool tagIsRead_;
         bool tagOk_;
         bool audioPropertiesOk_;
-	
+
         uint length_;
         uint bitRate_;
         uint sampleRate_;
         uint channels_;
-	
+
 };
 
 
