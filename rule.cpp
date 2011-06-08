@@ -1,6 +1,12 @@
 #include "Rule.h"
 
 
+/*!
+ \brief
+
+ \param type
+ \param value
+*/
 Rule::Rule(RuleType type, const QString& value) {
 
     type_ = type;
@@ -9,45 +15,97 @@ Rule::Rule(RuleType type, const QString& value) {
     caseSensitive_ = true;
 }
 
+/*!
+ \brief
+
+ \param other
+ \return bool Rule::operator
+*/
 bool Rule::operator==(const Rule& other) const {
     bool res = type_ == other.type() && value_ == other.value();
     res &= shouldBeTrue_ == other.shouldBeTrue() && caseSensitive_ == other.caseSensitive();
     return res;
 }
 
+/*!
+ \brief
+
+ \return Rule::RuleType
+*/
 Rule::RuleType Rule::type() const {
     return type_;
 }
 
+/*!
+ \brief
+
+ \return QString
+*/
 QString Rule::value() const {
     return value_;
 }
 
+/*!
+ \brief
+
+ \return bool
+*/
 bool Rule::shouldBeTrue() const {
     return shouldBeTrue_;
 }
 
+/*!
+ \brief
+
+ \return bool
+*/
 bool Rule::caseSensitive() const {
     return caseSensitive_;
 }
 
 
+/*!
+ \brief
+
+ \param type
+*/
 void Rule::setType(RuleType type) {
     type_ = type;
 }
 
+/*!
+ \brief
+
+ \param value
+*/
 void Rule::setValue(const QString& value) {
     value_ = value;
 }
 
+/*!
+ \brief
+
+ \param shouldBeTrue
+*/
 void Rule::setShouldBeTrue(bool shouldBeTrue) {
     shouldBeTrue_ = shouldBeTrue;
 }
 
+/*!
+ \brief
+
+ \param caseSensitive
+*/
 void Rule::setCaseSensitive(bool caseSensitive) {
     caseSensitive_ = caseSensitive;
 }
 
+/*!
+ \brief
+
+ \param type
+ \return QString
+*/
 QString Rule::getRuleName(const Rule::RuleType& type) {
 
     QString ans = "";
@@ -114,10 +172,22 @@ QString Rule::getRuleName(const Rule::RuleType& type) {
 }
 
 
+/*!
+ \brief
+
+ \return Rule::operator
+*/
 Rule::operator QVariant() const {
     return QVariant::fromValue(*this);
 }
 
+/*!
+ \brief
+
+ \param in
+ \param r
+ \return QDataStream & operator >>
+*/
 QDataStream& operator>>(QDataStream& in, Rule& r) {
 
     bool ok;
@@ -145,6 +215,13 @@ QDataStream& operator>>(QDataStream& in, Rule& r) {
     return in;
 }
 
+/*!
+ \brief
+
+ \param out
+ \param r
+ \return QDataStream & operator
+*/
 QDataStream& operator<<(QDataStream& out, const Rule& r) {
 
     out << out.version();

@@ -2,6 +2,12 @@
 
 
 
+/*!
+ \brief
+
+ \param r
+ \param parent
+*/
 RuleDialog::RuleDialog(const Rule& r, QWidget* parent) : QDialog(parent) {
     setupUi(this); // this sets up GUI
 
@@ -30,11 +36,19 @@ RuleDialog::RuleDialog(const Rule& r, QWidget* parent) : QDialog(parent) {
 
 }
 
+/*!
+ \brief
+
+*/
 void RuleDialog::hideValueFrame() {
     valueFrame->hide();
 }
 
 
+/*!
+ \brief
+
+*/
 void RuleDialog::finito() {
     if (value->text().isEmpty()) {
         QMessageBox::information(this, "",
@@ -58,6 +72,11 @@ void RuleDialog::finito() {
     this->accept();
 }
 
+/*!
+ \brief
+
+ \param ind
+*/
 void RuleDialog::indexChanged(int ind) {
 
     valueLabel->setText("Value (Ex: " + getRuleExample(static_cast<Rule::RuleType>(ind)) + ")");
@@ -65,6 +84,10 @@ void RuleDialog::indexChanged(int ind) {
 }
 
 
+/*!
+ \brief
+
+*/
 void RuleDialog::setSettings() {
 
     for (int i = 0; i < Rule::NUMBEROFRULES; i++) {
@@ -78,6 +101,11 @@ void RuleDialog::setSettings() {
 
 }
 
+/*!
+ \brief
+
+ \return Rule
+*/
 Rule RuleDialog::getRule() {
 
     Rule r;
@@ -91,11 +119,21 @@ Rule RuleDialog::getRule() {
 }
 
 
+/*!
+ \brief
+
+*/
 void RuleDialog::disableRuleChange() {
     ruleComboBox->setDisabled(true);
 }
 
 
+/*!
+ \brief
+
+ \param type
+ \return QString
+*/
 QString RuleDialog::getRuleExample(const Rule::RuleType& type) {
 
 

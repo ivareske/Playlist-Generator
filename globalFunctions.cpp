@@ -4,6 +4,14 @@
 namespace Global {
 
 
+    /*!
+     \brief
+
+     \param in
+     \param ok
+     \param log
+     \return QString
+    */
     QString versionCheck(QDataStream* in, bool* ok, QString* log) {
         //check Qt version of datastream, and version of application
         //The datastream must be at a position in the stream where the two version
@@ -36,6 +44,11 @@ namespace Global {
     }
 
 
+    /*!
+     \brief
+
+     \return QSettings *
+    */
     QSettings* guiSettings() {
 
         return new QSettings(qApp->applicationDirPath() + "/settings" + Global::ext, QSettings::IniFormat, 0);
@@ -43,11 +56,25 @@ namespace Global {
     }
 
 
+    /*!
+     \brief
+
+     \param s1
+     \param s2
+     \return bool
+    */
     bool stringLessThan(const QString& s1, const QString& s2) {
         return naturalCompare(s1, s2, Qt::CaseSensitive) < 0 ;
     }
 
 
+    /*!
+     \brief
+
+     \param intvals
+     \param val
+     \return bool
+    */
     bool checkIntValue(QVector<int> *intvals, const QString& val) {
         //val should be a single value (e.g. 500),
         //or a range: 500-1000
@@ -85,6 +112,14 @@ namespace Global {
 
 
 
+    /*!
+     \brief
+
+     \param _a
+     \param _b
+     \param caseSensitivity
+     \return int
+    */
     int naturalCompare(const QString& _a, const QString& _b, Qt::CaseSensitivity caseSensitivity) {
         // This method chops the input a and b into pieces of
         // digits and non-digits (a1.05 becomes a | 1 | . | 05)
@@ -254,12 +289,24 @@ namespace Global {
 
 
 
+/*!
+ \brief
+
+ \param key
+ \return uint
+*/
 uint qHash(const QFileInfo& key) {
 
     uint val = qHash(key.absoluteFilePath());
     return val;
 }
 
+/*!
+ \brief
+
+ \param dir
+ \return int
+*/
 int qHash(const QDir& dir) {
 
     return qHash(dir.absolutePath());

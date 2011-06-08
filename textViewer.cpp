@@ -1,6 +1,12 @@
 #include "TextViewer.h"
 
  
+/*!
+ \brief
+
+ \param parent
+ \param text
+*/
 TextViewer::TextViewer(QWidget* parent, QString* text) {
     setupUi(this); // this sets up GUI
     if (!text->isNull()) {
@@ -8,10 +14,20 @@ TextViewer::TextViewer(QWidget* parent, QString* text) {
     }
 }
 
+/*!
+ \brief
+
+ \return QTextEdit *
+*/
 QTextEdit* TextViewer::getTextEdit() {
     return textEdit;
 }
 
+/*!
+ \brief
+
+ \param text
+*/
 void TextViewer::setText(QString text) {
     textEdit->setText(text);
 }

@@ -2,6 +2,12 @@
 #include "PlayList.h"
 
 
+/*!
+ \brief
+
+ \param name
+ \param parent
+*/
 PlayList::PlayList(const QString& name, QListWidget* parent) : QListWidgetItem(parent) {
 
     guiSettings = Global::guiSettings();
@@ -29,6 +35,12 @@ PlayList::~PlayList(){
 }
 */
 
+/*!
+ \brief
+
+ \param other
+ \return bool PlayList::operator
+*/
 bool PlayList::operator==(const PlayList& other) const {
 
     bool res = name() == other.name();
@@ -58,6 +70,12 @@ QString PlayList::copyFilesName( const QString &fileName ){
 }
 */
 
+/*!
+ \brief
+
+ \param e
+ \return QString
+*/
 QString PlayList::playListEntry(const M3uEntry& e) const {
     //obtain the filename to be used in the m3u playlist
     //not nescessary the same name as the original file
@@ -92,6 +110,12 @@ QString PlayList::playListEntry(const M3uEntry& e) const {
 }
 
 
+/*!
+ \brief
+
+ \param songs
+ \param log
+*/
 void PlayList::copyFoundFiles(QList<M3uEntry> songs, QString* log) {
 
     log->append("\nResult from file copy:\n");
@@ -163,6 +187,15 @@ void PlayList::copyFoundFiles(QList<M3uEntry> songs, QString* log) {
 }
 
 
+/*!
+ \brief
+
+ \param songsOut
+ \param log
+ \param QHash<QString
+ \param tags
+ \return bool
+*/
 bool PlayList::generate(QList<M3uEntry> *songsOut, QString* log, QHash<QString, Tag> *tags) {
 
 
@@ -200,6 +233,14 @@ bool PlayList::generate(QList<M3uEntry> *songsOut, QString* log, QHash<QString, 
     return canceled;
 }
 
+/*!
+ \brief
+
+ \param file
+ \param songs
+ \param log
+ \return bool
+*/
 bool PlayList::writeM3U(const QString& file, const QList<M3uEntry> &songs, QString* log) const {
 
     QFile f(file);
@@ -226,6 +267,15 @@ bool PlayList::writeM3U(const QString& file, const QList<M3uEntry> &songs, QStri
     return true;
 }
 
+/*!
+ \brief
+
+ \param canceled
+ \param log
+ \param QHash<QString
+ \param tags
+ \return QList<M3uEntry>
+*/
 QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString, Tag> *tags) const {
 
     qDebug() << "finding files...";
@@ -363,6 +413,12 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
 
 
 
+/*!
+ \brief
+
+ \param aPath
+ \return QList<QFileInfo>
+*/
 QList<QFileInfo> PlayList::getDirContent(const QString& aPath) const {
 
     // append the filtered files to this list
@@ -394,6 +450,19 @@ QList<QFileInfo> PlayList::getDirContent(const QString& aPath) const {
     return fileInfo;
 }
 
+/*!
+ \brief
+
+ \param fileInfo
+ \param hasTagRule
+ \param hasAudioRule
+ \param log
+ \param QHash<QString
+ \param tags
+ \param QHash<QString
+ \param tagsCopy
+ \return QList<M3uEntry>
+*/
 QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRule, bool hasAudioRule, QString* log, QHash<QString, Tag> *tags, QHash<QString, Tag> *tagsCopy) const {
 
     QList<M3uEntry> list;
@@ -484,6 +553,14 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
     return list;
 }
 
+/*!
+ \brief
+
+ \param tag
+ \param file
+ \param allOk
+ \param anyOk
+*/
 void PlayList::evaluateRules(const Tag& tag, const QString& file, bool* allOk, bool* anyOk) const {
 
     bool ok;
@@ -582,6 +659,14 @@ void PlayList::evaluateRules(const Tag& tag, const QString& file, bool* allOk, b
 }
 
 
+/*!
+ \brief
+
+ \param tag
+ \param file
+ \param format_
+ \return QString
+*/
 QString PlayList::createExtInfString(const Tag& tag, const QString& file, const QString& format_) const {
 
     QString format = format_;
@@ -643,6 +728,14 @@ QString PlayList::createExtInfString(const Tag& tag, const QString& file, const 
     return result;
 }
 
+/*!
+ \brief
+
+ \param value
+ \param allOk
+ \param anyOk
+ \param shouldBeTrue
+*/
 void PlayList::checkRule(bool value, bool* allOk, bool* anyOk, bool shouldBeTrue) const {
     if (value) {
         *allOk = *allOk && shouldBeTrue;
@@ -654,6 +747,15 @@ void PlayList::checkRule(bool value, bool* allOk, bool* anyOk, bool shouldBeTrue
     }
 }
 
+/*!
+ \brief
+
+ \param intvals
+ \param value
+ \param allOk
+ \param anyOk
+ \param shouldBeTrue
+*/
 void PlayList::checkRange(const QVector<int> &intvals, int value, bool* allOk, bool* anyOk, bool shouldBeTrue) const {
 
 
@@ -680,129 +782,286 @@ void PlayList::checkRange(const QVector<int> &intvals, int value, bool* allOk, b
 }
 
 
+/*!
+ \brief
+
+ \return QString
+*/
 QString PlayList::fileNameWithoutExtension() const {
     return guiSettings->value("outPutPath").toString() + "/" + name();
 }
 
+/*!
+ \brief
+
+ \return QString
+*/
 QString PlayList::name() const {
     return this->text();
 }
 
+/*!
+ \brief
+
+ \return QVector<Rule>
+*/
 QVector<Rule> PlayList::rules() const {
     return rules_;
 }
 
+/*!
+ \brief
+
+ \return QList<QDir>
+*/
 QList<QDir> PlayList::folders() const {
     return folders_;
 }
 
+/*!
+ \brief
+
+ \return QStringList
+*/
 QStringList PlayList::extensions() const {
     return extensions_;
 }
 
+/*!
+ \brief
+
+ \return bool
+*/
 bool PlayList::randomize() const {
     return randomize_;
 }
 
+/*!
+ \brief
+
+ \return bool
+*/
 bool PlayList::includeSubFolders() const {
     return includeSubFolders_;
 }
 
+/*!
+ \brief
+
+ \return bool
+*/
 bool PlayList::relativePath() const {
     return relativePath_;
 }
 
+/*!
+ \brief
+
+ \return bool
+*/
 bool PlayList::allRulesTrue() const {
     return allRulesTrue_;
 }
 
+/*!
+ \brief
+
+ \return bool
+*/
 bool PlayList::includeExtInf() const {
     return includeExtInf_;
 }
 
+/*!
+ \brief
+
+ \return bool
+*/
 bool PlayList::makeUnique() const {
     return makeUnique_;
 }
 
+/*!
+ \brief
+
+ \return QDir
+*/
 QDir PlayList::copyFilesToDir() const {
     return copyFilesToDir_;
 }
 
+/*!
+ \brief
+
+ \return bool
+*/
 bool PlayList::copyFiles() const {
     return copyFiles_;
 }
 
+/*!
+ \brief
+
+ \return QList<QFileInfo>
+*/
 QList<QFileInfo> PlayList::individualFiles() const {
     return individualFiles_;
 }
 
+/*!
+ \brief
+
+ \return QString
+*/
 QString PlayList::script() const {
     return script_;
 }
 
 
+/*!
+ \brief
+
+ \param name
+*/
 void PlayList::setName(const QString& name) {
     this->setText(name);
 }
 
+/*!
+ \brief
+
+ \param rules
+*/
 void PlayList::setRules(const QVector<Rule> &rules) {
     rules_ = rules;
 }
 
+/*!
+ \brief
+
+ \param folders
+*/
 void PlayList::setFolders(const QList<QDir> &folders) {
     folders_ = folders;
 }
 
+/*!
+ \brief
+
+ \param extensions
+*/
 void PlayList::setExtensions(const QStringList& extensions) {
     extensions_ = extensions;
 }
 
+/*!
+ \brief
+
+ \param randomize
+*/
 void PlayList::setRandomize(bool randomize) {
     randomize_ = randomize;
 }
 
+/*!
+ \brief
+
+ \param includeSubFolders
+*/
 void PlayList::setIncludeSubFolders(bool includeSubFolders) {
     includeSubFolders_ = includeSubFolders;
 }
 
+/*!
+ \brief
+
+ \param relativePath
+*/
 void PlayList::setRelativePath(bool relativePath) {
     relativePath_ = relativePath;
 }
 
+/*!
+ \brief
+
+ \param allRulesTrue
+*/
 void PlayList::setAllRulesTrue(bool allRulesTrue) {
     allRulesTrue_ = allRulesTrue;
 }
 
+/*!
+ \brief
+
+ \param includeExtInf
+*/
 void PlayList::setIncludeExtInf(bool includeExtInf) {
     includeExtInf_ = includeExtInf;
 }
 
+/*!
+ \brief
+
+ \param makeUnique
+*/
 void PlayList::setMakeUnique(bool makeUnique) {
     makeUnique_ = makeUnique;
 }
 
 
+/*!
+ \brief
+
+ \param copyFilesToDir
+*/
 void PlayList::setCopyFilesToDir(const QDir& copyFilesToDir) {
     copyFilesToDir_ = copyFilesToDir;
 }
 
+/*!
+ \brief
+
+ \param copyFiles
+*/
 void PlayList::setCopyFiles(bool copyFiles) {
     copyFiles_ = copyFiles;
 }
 
+/*!
+ \brief
+
+ \param individualFiles
+*/
 void PlayList::setIndividualFiles(const QList<QFileInfo> &individualFiles) {
     individualFiles_ = individualFiles;
 }
 
+/*!
+ \brief
+
+ \param script
+*/
 void PlayList::setScript(const QString& script) {
     script_ = script;
 }
 
 
+/*!
+ \brief
+
+ \return PlayList::operator
+*/
 PlayList::operator QVariant() const {
     return QVariant::fromValue(*this);
 }
 
+/*!
+ \brief
+
+ \param in
+ \param p
+ \return QDataStream & operator >>
+*/
 QDataStream& operator>>(QDataStream& in, PlayList& p) {
 
     bool ok;
@@ -864,6 +1123,13 @@ QDataStream& operator>>(QDataStream& in, PlayList& p) {
     return in;
 }
 
+/*!
+ \brief
+
+ \param out
+ \param p
+ \return QDataStream & operator
+*/
 QDataStream& operator<<(QDataStream& out, const PlayList& p) {
 
     out << out.version();

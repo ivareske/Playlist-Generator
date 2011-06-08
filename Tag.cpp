@@ -1,6 +1,11 @@
 #include "Tag.h"
 
 
+/*!
+ \brief
+
+ \param fullfile
+*/
 Tag::Tag(const QString& fullfile) {
     artist_ = "";
     title_ = "";
@@ -21,64 +26,139 @@ Tag::Tag(const QString& fullfile) {
 }
 
 
+/*!
+ \brief
+
+ \return QString
+*/
 QString Tag::artist() const {
     return artist_;
 }
 
+/*!
+ \brief
+
+ \return QString
+*/
 QString Tag::title() const {
     return title_;
 }
 
+/*!
+ \brief
+
+ \return QString
+*/
 QString Tag::album() const {
     return album_;
 }
 
+/*!
+ \brief
+
+ \return QString
+*/
 QString Tag::comment() const {
     return comment_;
 }
 
+/*!
+ \brief
+
+ \return QString
+*/
 QString Tag::genre() const {
     return genre_;
 }
 
+/*!
+ \brief
+
+ \return uint
+*/
 uint Tag::year() const {
     return year_;
 }
 
+/*!
+ \brief
+
+ \return uint
+*/
 uint Tag::track() const {
     return track_;
 }
 
+/*!
+ \brief
+
+ \return uint
+*/
 uint Tag::length() const {
     return length_;
 }
 
+/*!
+ \brief
+
+ \return uint
+*/
 uint Tag::bitRate() const {
     return bitRate_;
 }
 
+/*!
+ \brief
+
+ \return uint
+*/
 uint Tag::sampleRate() const {
     return sampleRate_;
 }
 
+/*!
+ \brief
+
+ \return uint
+*/
 uint Tag::channels() const {
     return channels_;
 }
 
 
 
+/*!
+ \brief
+
+ \return QString
+*/
 QString Tag::fileName() const {
     return filename_;
 }
 
+/*!
+ \brief
+
+ \return bool
+*/
 bool Tag::tagOk() const {
     return tagOk_;
 }
 
+/*!
+ \brief
+
+ \return bool
+*/
 bool Tag::tagIsRead() const {
     return tagIsRead_;
 }
 
+/*!
+ \brief
+
+ \return bool
+*/
 bool Tag::audioPropertiesOk() const {
     return audioPropertiesOk_;
 }
@@ -118,6 +198,10 @@ QVariant Tag::getTag( Tag::TagField field ){
 }
 */
 
+/*!
+ \brief
+
+*/
 void Tag::readTags() {
 
     tagIsRead_ = true;
@@ -143,6 +227,10 @@ void Tag::readTags() {
 }
 
 
+/*!
+ \brief
+
+*/
 void Tag::clearTags() {
     artist_ = "";
     title_ = "";

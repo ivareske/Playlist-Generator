@@ -2,6 +2,11 @@
 #include "PlaylistManager.h"
 
 
+/*!
+ \brief
+
+ \param parent
+*/
 PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
     setupUi(this); // this sets up GUI
 
@@ -22,6 +27,10 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
 
 }
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::editStyleDialog() {
 
     QString style = guiSettings->value("style").toString();
@@ -36,6 +45,10 @@ void PlaylistManager::editStyleDialog() {
     guiSettings->sync();
 }
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::initGuiSettings() {
     if (guiSettings == 0) {
         guiSettings = Global::guiSettings();
@@ -95,6 +108,10 @@ void PlaylistManager::initGuiSettings() {
 }
 
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::createActions() {
 
     //connect( actionRunScript, SIGNAL( triggered() ), this, SLOT( runscript() ) );
@@ -146,6 +163,10 @@ void PlaylistManager::createActions() {
 }
 
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::showAbout() {
     QString text = qApp->applicationName() + " version " + qApp->applicationVersion();
     text += "\nAuthor: Ivar Eskerud Smith / ivar.eskerud@gmail.com";
@@ -153,12 +174,20 @@ void PlaylistManager::showAbout() {
 }
 
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::clearTags() {
 
     tags_.clear();
     statusBar()->showMessage("Tags cleared", 8000);
 }
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::getCopyDir() {
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
@@ -193,6 +222,10 @@ void PlaylistManager::getCopyDir() {
     }
 }
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::updatePlayList() {
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
@@ -250,6 +283,10 @@ void PlaylistManager::updatePlayList() {
 }
 
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::newCollection() {
 
     updateCollection();
@@ -269,6 +306,10 @@ void PlaylistManager::newCollection() {
 }
 
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::writeGUISettings() {
 
     //guiSettings->clear();
@@ -285,6 +326,10 @@ void PlaylistManager::writeGUISettings() {
 
 }
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::readGUISettings() {
 
     guiSettings->beginGroup("MainWindow");
@@ -303,6 +348,10 @@ void PlaylistManager::readGUISettings() {
 }
 
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::open() {
 
     updateCollection();
@@ -330,6 +379,10 @@ void PlaylistManager::open() {
 
 }
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::initialize() {
     //initialize the collection_ (private member)
 
@@ -342,6 +395,10 @@ void PlaylistManager::initialize() {
 
 }
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::updateUseScript() {
     //switch between using script or a set of rules
 
@@ -358,6 +415,10 @@ void PlaylistManager::updateUseScript() {
 }
 
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::addIndividualFiles() {
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
@@ -409,6 +470,11 @@ void PlaylistManager::addIndividualFiles() {
 }
 
 
+/*!
+ \brief
+
+ \param state
+*/
 void PlaylistManager::enableOptions(bool state) {
 
 
@@ -420,11 +486,21 @@ void PlaylistManager::enableOptions(bool state) {
 
 }
 
+/*!
+ \brief
+
+ \return PlayList *
+*/
 PlayList* PlaylistManager::currentPlayList() {
     PlayList* p = static_cast<PlayList*>(playListTable->currentItem());
     return p;
 }
 
+/*!
+ \brief
+
+ \return QList<QDir>
+*/
 QList<QDir> PlaylistManager::selectFolders() {
 
     QList<QDir> dirs;
@@ -456,6 +532,10 @@ QList<QDir> PlaylistManager::selectFolders() {
 }
 
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::addFolder() {
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
@@ -487,6 +567,11 @@ void PlaylistManager::addFolder() {
     showRulesAndFolders();
 }
 
+/*!
+ \brief
+
+ \param item
+*/
 void PlaylistManager::renameFolder(QListWidgetItem* item) {
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
@@ -526,6 +611,11 @@ void PlaylistManager::renameFolder(QListWidgetItem* item) {
 
 }
 
+/*!
+ \brief
+
+ \param item
+*/
 void PlaylistManager::changeFolder(QListWidgetItem* item) {
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
@@ -554,6 +644,10 @@ void PlaylistManager::changeFolder(QListWidgetItem* item) {
 
 }
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::removeFolder() {
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
@@ -589,6 +683,11 @@ void PlaylistManager::removeFolder() {
     p->setFolders(folders);
 }
 
+/*!
+ \brief
+
+ \param event
+*/
 void PlaylistManager::closeEvent(QCloseEvent* event) {
 
     updateCollection();
@@ -603,6 +702,11 @@ void PlaylistManager::closeEvent(QCloseEvent* event) {
     writeGUISettings();
 }
 
+/*!
+ \brief
+
+ \param block
+*/
 void PlaylistManager::blockPlayListSignals(bool block) {
 
     QList<QWidget*> children = optionsFrame->findChildren<QWidget*>();
@@ -613,6 +717,10 @@ void PlaylistManager::blockPlayListSignals(bool block) {
 }
 
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::clearRulesAndFolders() {
     //clears shon playList data
 
@@ -634,6 +742,10 @@ void PlaylistManager::clearRulesAndFolders() {
 
 }
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::showRulesAndFolders() {
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
@@ -706,6 +818,11 @@ void PlaylistManager::showRulesAndFolders() {
 }
 
 
+/*!
+ \brief
+
+ \param file
+*/
 void PlaylistManager::loadCollection(const QFileInfo& file) {
     qDebug() << "Reading settings...";
 
@@ -747,6 +864,10 @@ void PlaylistManager::loadCollection(const QFileInfo& file) {
 
 }
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::saveCollectionAs() {
 
     QDir dir(collection_.name());
@@ -766,6 +887,12 @@ void PlaylistManager::saveCollectionAs() {
 
 }
 
+/*!
+ \brief
+
+ \param row
+ \return PlayList *
+*/
 PlayList* PlaylistManager::playListItem(int row) {
     if (row >= playListTable->count() || row < 0) {
         return 0;
@@ -773,6 +900,10 @@ PlayList* PlaylistManager::playListItem(int row) {
     return static_cast<PlayList*>(playListTable->item(row));
 }
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::updateCollection() {
     //must be called before saving! The playlists in the PlayListCollection is
     //not updated as the playlists in the playListTable change.
@@ -790,6 +921,11 @@ void PlaylistManager::updateCollection() {
 }
 
 
+/*!
+ \brief
+
+ \param checkExistence
+*/
 void PlaylistManager::saveCollection(bool checkExistence) {
 
     QFileInfo file(collection_.name());
@@ -816,6 +952,10 @@ void PlaylistManager::saveCollection(bool checkExistence) {
 }
 
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::generateSelectedPlayLists() {
 
     //int ind = playListTable->currentRow();
@@ -836,6 +976,10 @@ void PlaylistManager::generateSelectedPlayLists() {
 
 }
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::generateAllPlayLists() {
 
     QList<int> inds;
@@ -848,6 +992,11 @@ void PlaylistManager::generateAllPlayLists() {
 }
 
 
+/*!
+ \brief
+
+ \param inds
+*/
 void PlaylistManager::generatePlayLists(const QList<int> &inds) {
 
     if (inds.size() == 0) {
@@ -908,6 +1057,11 @@ void PlaylistManager::generatePlayLists(const QList<int> &inds) {
 
 
 
+/*!
+ \brief
+
+ \return QString
+*/
 QString PlaylistManager::newUniqePlayListName() {
     //generate a new and unique playlist name
 
@@ -934,6 +1088,10 @@ QString PlaylistManager::newUniqePlayListName() {
 }
 
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::addPlayList() {
     //add a new playlist to the table
 
@@ -946,6 +1104,10 @@ void PlaylistManager::addPlayList() {
 
 }
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::removePlayList() {
 
     QModelIndexList indexes = playListTable->selectionModel()->selectedIndexes();
@@ -971,6 +1133,10 @@ void PlaylistManager::removePlayList() {
 
 }
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::newRule() {
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
@@ -1007,6 +1173,10 @@ void PlaylistManager::newRule() {
 
 }
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::editRule() {
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
@@ -1045,6 +1215,10 @@ void PlaylistManager::editRule() {
 
 }
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::removeRule() {
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
@@ -1094,6 +1268,10 @@ void PlaylistManager::removeRule() {
 
 
 
+/*!
+ \brief
+
+*/
 void PlaylistManager::showSettings() {
 
     guiSettings->sync();

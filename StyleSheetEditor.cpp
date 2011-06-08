@@ -1,5 +1,11 @@
 #include "StyleSheetEditor.h"
 
+/*!
+ \brief
+
+ \param currentStyle
+ \param parent
+*/
 StyleSheetEditor::StyleSheetEditor(const QString& currentStyle, QWidget* parent) : QDialog(parent) {
     setupUi(this);
 
@@ -16,14 +22,28 @@ StyleSheetEditor::StyleSheetEditor(const QString& currentStyle, QWidget* parent)
 
 }
 
+/*!
+ \brief
+
+*/
 void StyleSheetEditor::styleTextChanged() {
     applyButton->setEnabled(true);
 }
 
+/*!
+ \brief
+
+ \return QString
+*/
 QString StyleSheetEditor::styleSheetText() {
     return styleTextEdit->toPlainText();
 }
 
+/*!
+ \brief
+
+ \return QString
+*/
 QString StyleSheetEditor::currentStyle() {
     //return the style choosen in the combobox. If a stylesheet has
     //been applied over a style (on top of for instance plastique),
@@ -34,17 +54,31 @@ QString StyleSheetEditor::currentStyle() {
 
 
 
+/*!
+ \brief
+
+ \param styleSheet
+*/
 void StyleSheetEditor::setStyleSheetText(const QString& styleSheet) {
     styleTextEdit->setPlainText(styleSheet);
 }
 
 
+/*!
+ \brief
+
+ \param styleName
+*/
 void StyleSheetEditor::on_styleCombo_activated(const QString& styleName) {
     qApp->setStyle(styleName);
     applyButton->setEnabled(false);
     currentStyle_ = styleName;
 }
 
+/*!
+ \brief
+
+*/
 void StyleSheetEditor::applyClicked() {
     qApp->setStyleSheet(styleTextEdit->toPlainText());
     applyButton->setEnabled(false);

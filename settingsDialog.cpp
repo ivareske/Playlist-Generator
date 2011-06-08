@@ -2,6 +2,11 @@
 
 
 
+/*!
+ \brief
+
+ \param parent
+*/
 SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     setupUi(this); // this sets up GUI
 
@@ -20,6 +25,10 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     UseScript->hide();
 }
 
+/*!
+ \brief
+
+*/
 SettingsDialog::~SettingsDialog() {
     if (settings != 0) {
         delete settings;
@@ -27,6 +36,11 @@ SettingsDialog::~SettingsDialog() {
     }
 }
 
+/*!
+ \brief
+
+ \param result
+*/
 void SettingsDialog::onFinish(int result) {
 
     if (result == QDialog::Accepted) {
@@ -58,6 +72,10 @@ void SettingsDialog::onFinish(int result) {
 }
 
 
+/*!
+ \brief
+
+*/
 void SettingsDialog::setSettings() {
 
     outPutPath->setText(settings->value("outPutPath").toString());
@@ -81,6 +99,11 @@ void SettingsDialog::setSettings() {
 
 
 
+/*!
+ \brief
+
+ \return QString
+*/
 QString SettingsDialog::chooseDir() {
 
     QString dir = outPutPath->text();
@@ -102,6 +125,10 @@ QString SettingsDialog::chooseDir() {
 
 }
 
+/*!
+ \brief
+
+*/
 void SettingsDialog::setOutPutDir() {
 
     QString dir = chooseDir();

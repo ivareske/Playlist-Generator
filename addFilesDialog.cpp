@@ -1,6 +1,12 @@
 #include "AddFilesDialog.h"
 
 
+/*!
+ \brief
+
+ \param files
+ \param parent
+*/
 AddFilesDialog::AddFilesDialog(const QList<QFileInfo> &files, QWidget* parent) : QDialog(parent) {
     setupUi(this); // this sets up GUI
 
@@ -17,6 +23,11 @@ AddFilesDialog::AddFilesDialog(const QList<QFileInfo> &files, QWidget* parent) :
 }
 
 
+/*!
+ \brief
+
+ \return QList<QFileInfo>
+*/
 QList<QFileInfo> AddFilesDialog::getFiles() const {
 
     QList<QFileInfo> files;
@@ -26,6 +37,10 @@ QList<QFileInfo> AddFilesDialog::getFiles() const {
     return files;
 }
 
+/*!
+ \brief
+
+*/
 void AddFilesDialog::removeFiles() {
 
     qDeleteAll(fileList->selectedItems());
@@ -33,6 +48,10 @@ void AddFilesDialog::removeFiles() {
 }
 
 
+/*!
+ \brief
+
+*/
 void AddFilesDialog::chooseFiles() {
 
 
