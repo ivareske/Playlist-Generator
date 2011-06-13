@@ -23,6 +23,8 @@ PlayList::PlayList(const QString& name, QListWidget* parent) : QListWidgetItem(p
     copyFiles_ = false;
     script_ = "";    
 
+    setFlags( flags() | Qt::ItemIsEditable );
+
 }
 
 /*
@@ -91,10 +93,13 @@ QString PlayList::playListEntry(const M3uEntry& e) const {
         playListEntryName = copyFilesToDir_.absolutePath() + "/" + file.fileName();
         bool keepFolderStructure = guiSettings->value("keepFolderStructure").toBool();
         if (keepFolderStructure) {
+            qDebug()<<"file.absolutePath() "<<file.absolutePath();
             QStringList dirs = file.absolutePath().replace("\\", "/").split("/");
             QString root = dirs[0];
-            //qDebug()<<"root: "<<root;
+            qDebug()<<"root: "<<root;
+            qDebug()<<"copyFilesToDir_.absolutePath() "<<copyFilesToDir_.absolutePath();
             playListEntryName = file.absoluteFilePath().replace(root, copyFilesToDir_.absolutePath());
+
         }
     }
 
@@ -135,7 +140,13 @@ void PlayList::copyFoundFiles(QList<M3uEntry> songs, QString* log) {
         }
     }
 
+    QTime time;
+    time.start();
 
+    //set the use of relative paths to false while copying, to
+    //get the absolute name from the playListEntry function
+    bool originalRelativePath_ = relativePath_;
+    relativePath_ = false;
 
     qDebug() << "starting to copy " << songs.size() << " files!";
     QProgressDialog pr("Copying files for playlist " + name() + " to " + copyFilesToDir_.absolutePath(), "Abort", 0, songs.size(), 0);
@@ -143,7 +154,7 @@ void PlayList::copyFoundFiles(QList<M3uEntry> songs, QString* log) {
     QPushButton* cancelButton = new QPushButton;
     pr.setCancelButton(cancelButton);
     pr.setCancelButtonText("Cancel");
-    pr.setLabelText("Copying files");
+    pr.setLabelText("Copying files for playlist "+name());
     for (int j = 0; j < songs.size(); j++) {
         pr.setValue(j);
         if (pr.wasCanceled()) {
@@ -158,13 +169,15 @@ void PlayList::copyFoundFiles(QList<M3uEntry> songs, QString* log) {
             if (!createPathOk) {
                 log->append("\nCould not create path: " + fi.dir().absolutePath());
                 continue;
+            }else{
+                qDebug()<<"Created path "<<fi.dir().absolutePath();
             }
         }
 
 
         QFile f(songs[j].originalFile().absoluteFilePath());
+        //pr.setLabelText("Copying "+songs[j].originalFile().absoluteFilePath()+" to\n"+playListEntryName);
         bool okf = f.copy(playListEntryName);
-        //qDebug_<<"copy result of "<<songs[j].originalfile<<" -> "<<newname<<": "<<okf;
         if (!okf) {
             QFile f2(playListEntryName);
             if (f2.exists()) {
@@ -180,8 +193,13 @@ void PlayList::copyFoundFiles(QList<M3uEntry> songs, QString* log) {
     }
     pr.setValue(songs.size());
     pr.close();
-    log->append(QString::number(nCopied) + " of " + QString::number(songs.size()) + " files copied to " + copyFilesToDir_.absolutePath() + "\n");
 
+    int secs = time.elapsed();
+
+    log->append(QString::number(nCopied) + " of " + QString::number(songs.size()) + " files copied to " + copyFilesToDir_.absolutePath() + "\n");
+    log->append("Time used copying files: "+QString::number(secs)+" seconds\n");
+
+    relativePath_ = originalRelativePath_; // set the use of relative paths back
 }
 
 
@@ -543,6 +561,10 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
  \param log
 */
 bool PlayList::evaluateScript( const Tag& tag, const QFileInfo& fileInfo, QString *log ) const {
+
+    if(script_.isEmpty()){
+        return true;
+    }
 
     QScriptEngine engine;
 

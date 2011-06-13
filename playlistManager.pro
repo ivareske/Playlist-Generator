@@ -7,6 +7,9 @@
 #fix stylesheet actions/checked etc. when style menu is triggered, check the correct action
 #fix textviewer
 #add id3 tags
+#optins to overwrite files on copy or not
+#switch to PlayList pointers in playListManager generate functions
+#qstring bindings for qtscript
 
 # The application version
 VERSION = 1.0

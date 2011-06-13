@@ -11,7 +11,7 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
     setupUi(this); // this sets up GUI
     RuleScript = new TextEdit(this);
     rulesGroupBox->layout()->addWidget(RuleScript);
-    QString tip = "Use QtScript. The result of the script should return true or false, to determine if the file being processed should be included or not\n";
+    QString tip = "Use QtScript. The result of the script should return true or false, to determine if the file being processed should be included or not.\n";
     tip += "Available parameters:\n";
     tip += "String: FILENAME, FILEPATH, ARTIST, ALBUM, TITLE, GENRE, COMMENT\n";
     tip += "Unsigned int: YEAR, TRACK, LENGTH (seconds), BITRATE (kb/s), SAMPLERATE (Hz), CHANNELS \n";
@@ -866,8 +866,9 @@ void PlaylistManager::loadCollection(const QFileInfo& file) {
     playListTable->clear();
     QList<PlayList> playLists = collection_.playLists();
     for (int i = 0; i < playLists.size(); i++) {
-        PlayList* p = new PlayList;
+        PlayList* p = new PlayList;        
         *p = playLists[i];
+        p->setFlags( p->flags() | Qt::ItemIsEditable );
         playListTable->addItem(p);
     }
 
@@ -1108,7 +1109,7 @@ void PlaylistManager::addPlayList() {
     PlayList* p = new PlayList(name);
     p->setFlags(p->flags() | Qt::ItemIsEditable);
     playListTable->addItem(p);
-    playListTable->setCurrentItem(p);
+    playListTable->setCurrentItem(p);    
 
 
 }
