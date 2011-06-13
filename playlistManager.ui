@@ -562,9 +562,6 @@
           <bool>false</bool>
          </property>
          <layout class="QGridLayout" name="gridLayout">
-          <item row="1" column="0" colspan="2">
-           <widget class="QTextEdit" name="RuleScript"/>
-          </item>
           <item row="0" column="0">
            <widget class="QFrame" name="rulesFrame">
             <property name="frameShape">
@@ -714,6 +711,9 @@
     </item>
     <item row="0" column="1">
      <widget class="QLabel" name="infoLabel">
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
       <property name="text">
        <string/>
       </property>

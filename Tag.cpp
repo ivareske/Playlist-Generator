@@ -163,12 +163,19 @@ bool Tag::audioPropertiesOk() const {
     return audioPropertiesOk_;
 }
 
-/*
+
+/*!
+ \brief
+ \param field
+ \return QVariant
+*/
 QVariant Tag::getTag( Tag::TagField field ){
 
+    /*
     if(!tagIsRead_){
         readTags();
     }
+    */
 
     QVariant result;
     if(field==Tag::ARTIST){
@@ -196,7 +203,7 @@ QVariant Tag::getTag( Tag::TagField field ){
     }
     return result;
 }
-*/
+
 
 /*!
  \brief

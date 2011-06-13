@@ -18,6 +18,7 @@
 #include <cstdlib>
 #include "M3uEntry.h"
 #include "globalFunctions.h"
+#include <QtScript>
 
 
 class PlayList : public QListWidgetItem {
@@ -72,9 +73,10 @@ class PlayList : public QListWidgetItem {
         void checkRange(const QVector<int> &intvals, int value, bool* allOk, bool* anyOk, bool shouldBeTrue) const;
         bool writeM3U(const QString& file, const QList<M3uEntry> &songs, QString* log = 0) const;
         void checkRule(bool value, bool* allOk, bool* anyOk, bool shouldBeTrue) const;
-        QList<M3uEntry> processFile(const QFileInfo& fileInfo, bool hasTagRule, bool hasAudioRule, QString* log, QHash<QString, Tag> *tags, QHash<QString, Tag> *tagsCopy) const;
+        QList<M3uEntry> processFile(const QFileInfo& fileInfo, bool hasTagRule, bool hasAudioRule, QString* log, QHash<QString, Tag> *tags, QHash<QString, Tag> *tagsCopy, bool *wasCanceled) const;
         QString createExtInfString(const Tag& tag, const QString& file, const QString& format_) const;
         void evaluateRules(const Tag& tag, const QString& file, bool* allOk, bool* anyOk) const;
+        bool evaluateScript( const Tag& tag, const QFileInfo& fileInfo, QString *log ) const;
 
         //QString name_;
         QVector<Rule> rules_;
@@ -90,8 +92,7 @@ class PlayList : public QListWidgetItem {
         bool copyFiles_;
         QList<QFileInfo> individualFiles_;
         QString script_;
-        //QDir outPutFolder_;
-        QStringList scriptVariables_;
+        //QDir outPutFolder_;        
         QSettings* guiSettings;
 
 

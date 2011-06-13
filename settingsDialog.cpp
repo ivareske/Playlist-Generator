@@ -21,8 +21,8 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     connect(this, SIGNAL(finished(int)), this, SLOT(onFinish(int)));
 
     setSettings();
-    UseScript->setChecked(false);
-    UseScript->hide();
+    //UseScript->setChecked(false);
+    //UseScript->hide();
 }
 
 /*!

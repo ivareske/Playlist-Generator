@@ -21,8 +21,7 @@ PlayList::PlayList(const QString& name, QListWidget* parent) : QListWidgetItem(p
     includeExtInf_ = true;
     makeUnique_ = false;
     copyFiles_ = false;
-    script_ = "";
-    scriptVariables_ << "ARTIST" << "ALBUM" << "TITLE" << "GENRE" << "TRACK" << "YEAR" << "COMMENT" << "LENGTH" << "SAMPLERATE" << "BITRATE" << "CHANNELS";
+    script_ = "";    
 
 }
 
@@ -49,8 +48,7 @@ bool PlayList::operator==(const PlayList& other) const {
     res &= extensions_ == other.extensions() && randomize_ == other.randomize() && includeSubFolders_ == other.includeSubFolders();
     res &= relativePath_ == other.relativePath() && allRulesTrue_ == other.allRulesTrue() && includeExtInf_ == other.includeExtInf();
     res &= makeUnique_ == other.makeUnique() && copyFilesToDir_ == other.copyFilesToDir() && copyFiles_ == other.copyFiles();
-    res &= individualFiles_ == other.individualFiles() && script_ == other.script();
-    res &= scriptVariables_ == other.scriptVariables_;
+    res &= individualFiles_ == other.individualFiles() && script_ == other.script();    
 
     return res;
 }
@@ -287,16 +285,10 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
 
     bool hasTagRule = false;
     bool hasAudioRule = false;
-    if (guiSettings->value("useScript").toBool()) {
-        for (int i = 0; i < scriptVariables_.size(); i++) {
-            if (script_.contains(scriptVariables_[i])) {
-                hasAudioRule = true;
-                hasTagRule = true;
-                break;
-            }
-        }
-    }
-    else {
+    if (guiSettings->value("useScript").toBool()) {       
+        hasAudioRule = true;
+        hasTagRule = true;
+    } else {
         for (int i = 0; i < rules_.size(); i++) {
             Rule r = rules_[i];
             Rule::RuleType t = r.type();
@@ -379,7 +371,7 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
             break;
         }
 
-        tmplist = processFile(fileInfo[i], hasTagRule, hasAudioRule, log, tags, &tagsCopy);
+        tmplist = processFile(fileInfo[i], hasTagRule, hasAudioRule, log, tags, &tagsCopy, &wasCanceled );
 
         if (wasCanceled) {
             break;
@@ -463,7 +455,7 @@ QList<QFileInfo> PlayList::getDirContent(const QString& aPath) const {
  \param tagsCopy
  \return QList<M3uEntry>
 */
-QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRule, bool hasAudioRule, QString* log, QHash<QString, Tag> *tags, QHash<QString, Tag> *tagsCopy) const {
+QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRule, bool hasAudioRule, QString* log, QHash<QString, Tag> *tags, QHash<QString, Tag> *tagsCopy, bool *wasCanceled ) const {
 
     QList<M3uEntry> list;
 
@@ -512,45 +504,77 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
             break;
         }
     }
-    bool scriptok = guiSettings->value("useScript").toBool();
+    bool useScript = guiSettings->value("useScript").toBool();
     if (!skipRules) {
-        evaluateRules(tag, file, &allOk, &anyOk);
+        if( useScript ){
+            QString errorLog;
+            bool scriptOk = evaluateScript( tag, fileInfo, &errorLog );
+            allOk = scriptOk; //both will be either false or true
+            anyOk = scriptOk;
+            if( !errorLog.isEmpty() ){
+                //cancel generation if an error is found in the script
+                *wasCanceled = true;
+                log->append("\nError occurred in script: "+errorLog);
+                return list;
+            }
+        }else{
+            evaluateRules(tag, file, &allOk, &anyOk);
+        }
     }
     //decide to include or not
     M3uEntry e;
-    if ((allRulesTrue_ && allOk) || (!allRulesTrue_ && anyOk) || scriptok) {
+    if ( (allRulesTrue_ && allOk) || (!allRulesTrue_ && anyOk) ) {
         //extinf info for m3u
         if (includeExtInf_) {
             e.setExtInf(createExtInfString(tag, file, guiSettings->value("format").toString()));
         }
-        e.setOriginalFile(fullfile);
-        /*
-        static QDir tmp;
-        if( tmp.absolutePath()!=guiSettings->value("copyFilesToDir").toString() ){
-            tmp = QDir(guiSettings->value("copyFilesToDir").toString());
-        }
-        static const QDir d( guiSettings->value("outPutPath") .toString());
-
-        if( relativePath_ ){
-            if( guiSettings->value("useCopyFilesToPath").toBool() && copyFiles_ && tmp.exists() ){
-                QString tmpfullfile = tmp.absolutePath()+"/"+file;
-                e.setPlayListEntryFile( d.relativeFilePath( tmpfullfile ) );
-            }else{
-                e.setPlayListEntryFile( d.relativeFilePath( fullfile ) );
-            }
-        }else{
-            if( guiSettings->value("useCopyFilesToPath").toBool() && copyFiles_ && tmp.exists() ){
-                e.setPlayListEntryFile( tmp.absolutePath()+"/"+file );
-            }else{
-                e.setPlayListEntryFile( fullfile );
-            }
-        }
-        */
-        //e.setFile( file );
+        e.setOriginalFile(fileInfo);
         list.append(e);
     }
 
     return list;
+}
+
+/*!
+ \brief
+
+ \param tag
+ \param fileInfo
+ \param log
+*/
+bool PlayList::evaluateScript( const Tag& tag, const QFileInfo& fileInfo, QString *log ) const {
+
+    QScriptEngine engine;
+
+    engine.globalObject().setProperty("ARTIST",tag.artist());
+    engine.globalObject().setProperty("ALBUM",tag.album());
+    engine.globalObject().setProperty("GENRE",tag.genre());
+    engine.globalObject().setProperty("TITLE",tag.title());
+    engine.globalObject().setProperty("COMMENT",tag.comment());
+    engine.globalObject().setProperty("YEAR",tag.year());
+    engine.globalObject().setProperty("TRACK",tag.track());
+    engine.globalObject().setProperty("LENGTH",tag.length());
+    engine.globalObject().setProperty("BITRATE",tag.bitRate());
+    engine.globalObject().setProperty("SAMPLERATE",tag.sampleRate());
+    engine.globalObject().setProperty("CHANNELS",tag.channels());
+
+    engine.globalObject().setProperty("FILENAME",fileInfo.fileName());
+    engine.globalObject().setProperty("FILEPATH",fileInfo.filePath());
+
+    QScriptValue result = engine.evaluate( script_ );
+    if( engine.hasUncaughtException() ){
+        QString err = engine.uncaughtExceptionBacktrace().join("\n");
+        log->append(err);
+        return false;
+    }
+    bool res=false;
+    if( result.isBool() ){
+        res = result.toBool();
+    }else{
+        log->append("\nResult of evaluated script is not boolean");
+    }
+    return res;
+
 }
 
 /*!

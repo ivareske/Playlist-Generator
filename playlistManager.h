@@ -12,6 +12,7 @@
 #include "RuleDialog.h"
 #include "PlayListCollection.h"
 #include "StyleSheetEditor.h"
+#include "TextEdit.h"
 #include "ui_playlistManager.h"
 
 
@@ -70,7 +71,7 @@ class PlaylistManager : public QMainWindow, private Ui::playListGenerator {
 
     private:
         PlayList* playListItem(int row);
-
+        TextEdit *RuleScript;
         PlayList* currentPlayList();
         PlayListCollection collection_, lastSavedCollection_;
         QSettings* guiSettings;

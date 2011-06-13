@@ -9,11 +9,11 @@
 class Tag {
 
     public:
-        enum TagField { ARTIST, ALBUM, TITLE, GENRE, TRACK, YEAR, COMMENT, LENGTH, BITRATE, SAMPLERATE, CHANNELS };
+        enum TagField { ARTIST, ALBUM, TITLE, GENRE, TRACK, YEAR, COMMENT, LENGTH, BITRATE, SAMPLERATE, CHANNELS, NTAGFIELDS };
         Tag(const QString& fullfile = "");
         void clearTags();
         void readTags();
-        //QVariant getTag( Tag::TagField field );
+        QVariant getTag( Tag::TagField field );
         bool tagIsRead() const;
         bool tagOk() const;
         bool audioPropertiesOk() const;

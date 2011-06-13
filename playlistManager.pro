@@ -6,6 +6,7 @@
 #when renaming files in tag editor, specify a list of files to rename the renamed files.
 #fix stylesheet actions/checked etc. when style menu is triggered, check the correct action
 #fix textviewer
+#add id3 tags
 
 # The application version
 VERSION = 1.0
@@ -16,18 +17,19 @@ CONFIG += qt
 # release
 #CONFIG += static
 CONFIG += console
-#QT += script
+QT += script
  
 INCLUDEPATH  += ./taglib
 LIBS += -L./ libtag
-#LIBS += $$quote(C:/Qt/4.6.3/plugins/script/qtscript_cored.dll)
 
 
 HEADERS = PlaylistManager.h SettingsDialog.h RuleDialog.h PlayList.h Rule.h globalFunctions.h M3uEntry.h AddFilesDialog.h TextViewer.h Tag.h \
-    PlayListCollection.h StyleSheetEditor.h
+    PlayListCollection.h StyleSheetEditor.h \
+    TextEdit.h
 FORMS   = PlaylistManager.ui SettingsDialog.ui RuleDialog.ui AddFilesDialog.ui TextViewer.ui StyleSheetEditor.ui
 SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp RuleDialog.cpp PlayList.cpp Rule.cpp globalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp \
-    PlayListCollection.cpp StyleSheetEditor.cpp
+    PlayListCollection.cpp StyleSheetEditor.cpp \
+    TextEdit.cpp
 
 RC_FILE = PlaylistManager.rc
 

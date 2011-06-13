@@ -9,6 +9,15 @@
 */
 PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
     setupUi(this); // this sets up GUI
+    RuleScript = new TextEdit(this);
+    rulesGroupBox->layout()->addWidget(RuleScript);
+    QString tip = "Use QtScript. The result of the script should return true or false, to determine if the file being processed should be included or not\n";
+    tip += "Available parameters:\n";
+    tip += "String: FILENAME, FILEPATH, ARTIST, ALBUM, TITLE, GENRE, COMMENT\n";
+    tip += "Unsigned int: YEAR, TRACK, LENGTH (seconds), BITRATE (kb/s), SAMPLERATE (Hz), CHANNELS \n";
+    tip += "Example to return all Beatles or Elvis music with length between 120 and 200 seconds, and a high bitrate (>300 kb/s):\n";
+    tip += "LENGTH>120 && LENGTH<200 && BITRATE>300 && (ARTIST==\"Beatles\" || ARTIST==\"Elvis\")\n";
+    RuleScript->setToolTip(tip);
 
     createActions();
 
@@ -138,7 +147,7 @@ void PlaylistManager::createActions() {
 
     //playlist settings
     connect(extensions, SIGNAL(textEdited(const QString&)), this, SLOT(updatePlayList()));
-    connect(RuleScript, SIGNAL(textChanged()), this, SLOT(updatePlayList()));
+    connect(RuleScript, SIGNAL(editingFinished()), this, SLOT(updatePlayList()));
     connect(randomize, SIGNAL(stateChanged(int)), this, SLOT(updatePlayList()));
     connect(allRulesTrue, SIGNAL(stateChanged(int)), this, SLOT(updatePlayList()));
     connect(searchSubFolders, SIGNAL(stateChanged(int)), this, SLOT(updatePlayList()));
