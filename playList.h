@@ -30,7 +30,6 @@ class PlayList : public QListWidgetItem {
         bool generate(QList<M3uEntry> *songsOut, QString* log, QHash<QString, Tag> *tags);
         void copyFoundFiles(QList<M3uEntry> songs, QString* log);
 
-        QString fileNameWithoutExtension() const;
         QString name() const;
         QVector<Rule> rules() const;
         QList<QDir> folders() const;
@@ -46,6 +45,7 @@ class PlayList : public QListWidgetItem {
         QList<QFileInfo> individualFiles() const;
         QString script() const;
         QString playListEntry(const M3uEntry& e) const;
+        QString copyFilesName(const M3uEntry& e);
 
 
         void setName(const QString& name);
@@ -68,12 +68,12 @@ class PlayList : public QListWidgetItem {
 
     private:
 
-        QList<M3uEntry> findFiles(bool* canceled, QString* log, QHash<QString, Tag> *tags) const;
-        QList<QFileInfo> getDirContent(const QString& aPath) const;
+        QList<M3uEntry> findFiles(bool* canceled, QString* log, QHash<QString, Tag> *tags);
+        QList<QFileInfo> getDirContent(const QString& aPath, bool *canceled=false) const;
         void checkRange(const QVector<int> &intvals, int value, bool* allOk, bool* anyOk, bool shouldBeTrue) const;
         bool writeM3U(const QString& file, const QList<M3uEntry> &songs, QString* log = 0) const;
         void checkRule(bool value, bool* allOk, bool* anyOk, bool shouldBeTrue) const;
-        QList<M3uEntry> processFile(const QFileInfo& fileInfo, bool hasTagRule, bool hasAudioRule, QString* log, QHash<QString, Tag> *tags, QHash<QString, Tag> *tagsCopy, bool *wasCanceled) const;
+        QList<M3uEntry> processFile(const QFileInfo& fileInfo, bool hasTagRule, bool hasAudioRule,bool keepTags, const QString &format, bool useScript, QString* log, QHash<QString, Tag> *tags, QHash<QString, Tag> *tagsCopy, bool *wasCanceled) const;
         QString createExtInfString(const Tag& tag, const QString& file, const QString& format_) const;
         void evaluateRules(const Tag& tag, const QString& file, bool* allOk, bool* anyOk) const;
         bool evaluateScript( const Tag& tag, const QFileInfo& fileInfo, QString *log ) const;
@@ -94,6 +94,10 @@ class PlayList : public QListWidgetItem {
         QString script_;
         //QDir outPutFolder_;        
         QSettings* guiSettings;
+
+        QStringList ID3v2Fields,apeItemKeys;
+        bool artistEmpty,titleEmpty,albumEmpty,commentEmpty,genreEmpty,trackEmpty,yearEmpty;
+
 
 
 

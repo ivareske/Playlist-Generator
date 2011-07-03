@@ -2,13 +2,7 @@
 #include "PlaylistManager.h"
 
 
-/*!
- \brief
 
- \param argc
- \param argv[]
- \return int
-*/
 int main(int argc, char* argv[]) {
 
     QApplication app(argc, argv);

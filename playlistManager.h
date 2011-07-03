@@ -2,6 +2,7 @@
 #define PLAYLISTMANAGER_H
 
 #include <time.h>
+#include <stdio.h>
 #include <QtGui>
 #include "Rule.h"
 #include "PlayList.h"
@@ -41,7 +42,7 @@ class PlaylistManager : public QMainWindow, private Ui::playListGenerator {
         void saveCollectionAs();
         void generateAllPlayLists();
         void generateSelectedPlayLists();
-        void generatePlayLists(const QList<int> &inds);
+        void generatePlayLists( const QList<PlayList*> &playLists );
         void addPlayList();
         void removePlayList();
         void changeFolder(QListWidgetItem* item);

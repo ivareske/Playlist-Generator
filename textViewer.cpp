@@ -7,11 +7,26 @@
  \param parent
  \param text
 */
-TextViewer::TextViewer(QWidget* parent, QString* text) {
+TextViewer::TextViewer(QWidget* parent, QString* text) : QDialog(parent) {
     setupUi(this); // this sets up GUI
-    if (!text->isNull()) {
+
+    if (text!=0) {
         textEdit->setText(*text);
     }
+    QFont f = Global::guiSettings()->value("textViewer/font",textEdit->font()).value<QFont>();
+    textEdit->setFont(f);
+
+    connect(editFontButton,SIGNAL(clicked()),this,SLOT(editFont()));
+    connect(okButton,SIGNAL(clicked()),this,SLOT(accept()));
+    connect(cancelButton,SIGNAL(clicked()),this,SLOT(reject()));
+}
+
+/*!
+ \brief
+*/
+void TextViewer::editFont() {
+    textEdit->setFont(QFontDialog::getFont(0, textEdit->font()));
+    Global::guiSettings()->setValue("textViewer/font",textEdit->font());
 }
 
 /*!
@@ -21,6 +36,15 @@ TextViewer::TextViewer(QWidget* parent, QString* text) {
 */
 QTextEdit* TextViewer::getTextEdit() {
     return textEdit;
+}
+
+/*!
+ \brief
+
+ \param text
+*/
+QLabel *TextViewer::label(){
+    return label_;
 }
 
 /*!

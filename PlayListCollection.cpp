@@ -53,12 +53,31 @@ QList<PlayList> PlayListCollection::playLists() const {
 /*!
  \brief
 
+ \return QDir
+*/
+QDir PlayListCollection::outPutPath() const{
+    return outPutPath_;
+}
+
+/*!
+ \brief
+
+ \param outPutPath
+*/
+void PlayListCollection::setOutPutPath( const QDir &outPutPath ){
+    outPutPath_ = outPutPath;
+}
+
+/*!
+ \brief
+
  \param other
  \return bool PlayListCollection::operator
 */
 bool PlayListCollection::operator ==(const PlayListCollection& other) const {
     bool res = name_ == other.name();
     res &= playLists_ == other.playLists();
+    res &= outPutPath_ == other.outPutPath();
     return res;
 }
 
@@ -94,9 +113,11 @@ QDataStream& operator>>(QDataStream& in, PlayListCollection& p) {
 
     QString name;
     QList<PlayList> playLists;
-    in >> name >> playLists;
+    QString outPutPath;
+    in >> name >> playLists >> outPutPath ;
     p = PlayListCollection(name);
     p.setPlayLists(playLists);
+    p.setOutPutPath(QDir(outPutPath));
     return in;
 }
 
@@ -112,7 +133,7 @@ QDataStream& operator<<(QDataStream& out, const PlayListCollection& p) {
     out << out.version();
     out << qApp->applicationVersion();
 
-    out << p.name() << p.playLists();
+    out << p.name() << p.playLists() << p.outPutPath().absolutePath();
     return out;
 }
 

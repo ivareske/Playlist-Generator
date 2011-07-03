@@ -1,18 +1,17 @@
 #generate other playlist formats?
-#make scripting work
-#generate one playlist for each artist
-#foo fighters music videos, får feilmelding om S:/Min Musikk/F/Foo Fighters/Foo Fighters music videos/Foo Fighters - Walking After You.mpg, TagLib: FileRef::tag() - Called without a valid file., TagLib: FileRef::audioProperties() - Called without a valid file.
-#om ingen folder funnet, får aborted by user. som jo ikke er tilfelle
+#generate one playlist for each artist?
+#foo fighters music videos, fileref blir 0, får ikke tag eller audioproperties
 #when renaming files in tag editor, specify a list of files to rename the renamed files.
-#fix stylesheet actions/checked etc. when style menu is triggered, check the correct action
 #fix textviewer
 #add id3 tags
-#optins to overwrite files on copy or not
-#switch to PlayList pointers in playListManager generate functions
 #qstring bindings for qtscript
+#subclass qsettings to check/make error message when non-existing value is asked for? all qsettings values should be initialized at startup
+#test freopen stdout
+#TEST READING OF APE TAGS/ITEMS
 
 # The application version
 VERSION = 1.0
+#NAME = $$quote(Playlist Generator)
 TARGET = PlayListGenerator
 
 TEMPLATE=app
@@ -46,20 +45,22 @@ DEFINES += APP_NAME=\\\"$$TARGET\\\"
 #http://developer.kde.org/~wheeler/taglib.html
 #Download the Zlib source (zlib125.zip) and unpack it with unzip or 7zip. Then, compile Zlib like this:
 #cd zlib-1.2.5/ 
-#make -f win32/Makefile.gcc
+#mingw32-make -f win32/Makefile.gcc
 #Manually copy the files as follows:
-#cp -iv zlib1.dll c:/mingw/bin
-#cp -iv zconf.h zlib.h c:/mingw/include
-#cp -iv libz.a c:/mingw/lib
-#cp -iv libzdll.a c:/mingw/lib/libz.dll.a
+#copy zlib1.dll c:\mingw\bin
+#copy zlib.h c:\mingw\include
+#copy zconf.h c:\mingw\include
+#copy libz.a c:\mingw\lib
+#copy libzdll.a c:\mingw\lib\libz.dll.a
 #install cmake, choose where the source code is (e.g. C:\taglib-1.6.3) and where to build
 #prews configure, choose mingw makefiles and "use default native compilers"
 #toggle advanced view
 #set CMAKE_INSTALL_DIR to where you want to install, and set ZLIB_INCLUDE_DIR to c:/mingw/include
 #and ZLIB_LIBRARY to C:/MinGW/bin/zlib1.dll
+#check build_examples
 #check with_asf and with_mp4
 #In CMAKE_EXE_LINKER_FLAGS and CMAKE_SHARED_LINKER_FLAGS add the following text: -Wl,--enable-auto-import
 #press configure again
-#press generate. in the build directory you choose, type make, and then make install
+#press generate. in the build directory you choose, type mingw32-make, and then mingw32-make install
 #you can now delete the taglib source and binaries
-#build qt static: configure -static -no-exceptions; make sub-src
+#build qt static: configure -static -no-exceptions; mingw32-make sub-src

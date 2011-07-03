@@ -27,14 +27,6 @@ PlayList::PlayList(const QString& name, QListWidget* parent) : QListWidgetItem(p
 
 }
 
-/*
-PlayList::~PlayList(){
-    if(guiSettings!=0){
-        delete guiSettings;
-        guiSettings=0;
-    }
-}
-*/
 
 /*!
  \brief
@@ -76,6 +68,21 @@ QString PlayList::copyFilesName( const QString &fileName ){
  \param e
  \return QString
 */
+QString PlayList::copyFilesName(const M3uEntry& e){
+
+    bool tmp = relativePath_;
+    relativePath_ = false;
+    QString name = playListEntry(e);
+    relativePath_ = tmp;
+    return name;
+}
+
+/*!
+ \brief
+
+ \param e
+ \return QString
+*/
 QString PlayList::playListEntry(const M3uEntry& e) const {
     //obtain the filename to be used in the m3u playlist
     //not nescessary the same name as the original file
@@ -85,7 +92,7 @@ QString PlayList::playListEntry(const M3uEntry& e) const {
 
     const QDir outPutPath(guiSettings->value("outPutPath") .toString());
     const QFileInfo file = e.originalFile();
-    qDebug() << "original file: " << file.absoluteFilePath();
+    //qDebug() << "original file: " << file.absoluteFilePath();
     QString playListEntryName = file.absoluteFilePath();
 
     bool useCopyFilesToPath = guiSettings->value("useCopyFilesToPath").toBool();
@@ -93,11 +100,11 @@ QString PlayList::playListEntry(const M3uEntry& e) const {
         playListEntryName = copyFilesToDir_.absolutePath() + "/" + file.fileName();
         bool keepFolderStructure = guiSettings->value("keepFolderStructure").toBool();
         if (keepFolderStructure) {
-            qDebug()<<"file.absolutePath() "<<file.absolutePath();
+            //qDebug()<<"file.absolutePath() "<<file.absolutePath();
             QStringList dirs = file.absolutePath().replace("\\", "/").split("/");
             QString root = dirs[0];
-            qDebug()<<"root: "<<root;
-            qDebug()<<"copyFilesToDir_.absolutePath() "<<copyFilesToDir_.absolutePath();
+            //qDebug()<<"root: "<<root;
+            //qDebug()<<"copyFilesToDir_.absolutePath() "<<copyFilesToDir_.absolutePath();
             playListEntryName = file.absoluteFilePath().replace(root, copyFilesToDir_.absolutePath());
 
         }
@@ -107,7 +114,7 @@ QString PlayList::playListEntry(const M3uEntry& e) const {
         playListEntryName = outPutPath.relativeFilePath(playListEntryName);
     }
 
-    qDebug() << "playListEntryName: " << playListEntryName;
+    //qDebug() << "playListEntryName: " << playListEntryName;
 
     return playListEntryName;
 }
@@ -143,10 +150,8 @@ void PlayList::copyFoundFiles(QList<M3uEntry> songs, QString* log) {
     QTime time;
     time.start();
 
-    //set the use of relative paths to false while copying, to
-    //get the absolute name from the playListEntry function
-    bool originalRelativePath_ = relativePath_;
-    relativePath_ = false;
+
+    bool overWrite = guiSettings->value("overWriteFiles").toBool();
 
     qDebug() << "starting to copy " << songs.size() << " files!";
     QProgressDialog pr("Copying files for playlist " + name() + " to " + copyFilesToDir_.absolutePath(), "Abort", 0, songs.size(), 0);
@@ -161,8 +166,8 @@ void PlayList::copyFoundFiles(QList<M3uEntry> songs, QString* log) {
             break;
         }
 
-        QString playListEntryName = playListEntry(songs[j]);
-        QFileInfo fi(playListEntryName);
+        QString copyToName = copyFilesName(songs[j]);
+        QFileInfo fi(copyToName);
         if (!fi.absoluteDir().exists()) {
             QDir dir;
             bool createPathOk = dir.mkpath(fi.dir().absolutePath());
@@ -174,12 +179,17 @@ void PlayList::copyFoundFiles(QList<M3uEntry> songs, QString* log) {
             }
         }
 
-
+        QFile f2(copyToName);
+        if(overWrite && f2.exists()){
+            bool removeOk = f2.remove();
+            if(!removeOk){
+                log->append("\nCould not delete file "+copyToName);
+            }
+        }
         QFile f(songs[j].originalFile().absoluteFilePath());
         //pr.setLabelText("Copying "+songs[j].originalFile().absoluteFilePath()+" to\n"+playListEntryName);
-        bool okf = f.copy(playListEntryName);
-        if (!okf) {
-            QFile f2(playListEntryName);
+        bool okf = f.copy(copyToName);
+        if (!okf) {            
             if (f2.exists()) {
                 log->append(songs[j].originalFile().filePath() + " was not copied as it already exists in " + copyFilesToDir_.absolutePath() + "\n");
             }
@@ -199,7 +209,6 @@ void PlayList::copyFoundFiles(QList<M3uEntry> songs, QString* log) {
     log->append(QString::number(nCopied) + " of " + QString::number(songs.size()) + " files copied to " + copyFilesToDir_.absolutePath() + "\n");
     log->append("Time used copying files: "+QString::number(secs)+" seconds\n");
 
-    relativePath_ = originalRelativePath_; // set the use of relative paths back
 }
 
 
@@ -215,9 +224,8 @@ void PlayList::copyFoundFiles(QList<M3uEntry> songs, QString* log) {
 bool PlayList::generate(QList<M3uEntry> *songsOut, QString* log, QHash<QString, Tag> *tags) {
 
 
-    time_t Start_t, End_t;
-    int totaltime;
-    Start_t = time(0);
+    QTime timer;
+    timer.start();
 
     bool canceled = false;
     QList<M3uEntry> songs = findFiles(&canceled, log, tags);
@@ -227,13 +235,20 @@ bool PlayList::generate(QList<M3uEntry> *songsOut, QString* log, QHash<QString, 
         return canceled;
     }
 
+    int milliSecs = timer.elapsed();
+    qDebug() << "time used: " << milliSecs/1000;
+
+    log->append("\n Found " + QString::number(songs.size()) + " songs for " + name());
+    if(milliSecs>1000){
+        log->append("\nTime used: " + QString::number(double(milliSecs/1000),'f',1) + " seconds");
+    }else{
+        log->append("\nTime used: " + QString::number(milliSecs) + " milliseconds\n\n");
+    }
+
     if (songs.isEmpty()) {
         QMessageBox::information(0, "",
                                  "No songs matching your criteria were found for playlist " + name(),
-                                 QMessageBox::Ok, QMessageBox::Ok);
-        End_t = time(0);    //record time that task 1 ends
-        totaltime = difftime(End_t, Start_t);    //compute elapsed time of task 1
-        log->append("\n Found " + QString::number(songs.size()) + " songs. Time used: " + QString::number(totaltime) + " seconds\n");
+                                 QMessageBox::Ok, QMessageBox::Ok);                        
         return true;
     }
 
@@ -241,11 +256,6 @@ bool PlayList::generate(QList<M3uEntry> *songsOut, QString* log, QHash<QString, 
     QString file = outPutPath + "/" + name() + ".m3u";
     writeM3U(file, songs, log);
 
-    End_t = time(0);    //record time that task 1 ends
-    totaltime = difftime(End_t, Start_t);    //compute elapsed time of task 1
-    std::cout << "time used: " << totaltime << std::endl;
-
-    log->append("\n Found " + QString::number(songs.size()) + " songs for " + name() + ". Time used: " + QString::number(totaltime) + " seconds\n");
     return canceled;
 }
 
@@ -292,7 +302,7 @@ bool PlayList::writeM3U(const QString& file, const QList<M3uEntry> &songs, QStri
  \param tags
  \return QList<M3uEntry>
 */
-QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString, Tag> *tags) const {
+QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString, Tag> *tags){
 
     qDebug() << "finding files...";
 
@@ -359,8 +369,14 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
         }
 
         //get content from the specified folder(s)
-        fileInfo = fileInfo + getDirContent(folders_[i].absolutePath());
+        fileInfo = fileInfo + getDirContent(folders_[i].absolutePath(),canceled);
+        if(*canceled){
+            log->append("\n\nCanceled by user");
+            return plist;
+        }
     }
+    qDebug() << "found " << fileInfo.size() << " files to process";    
+
     //make unique
     fileInfo = fileInfo.toSet().toList();
 
@@ -369,45 +385,55 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
 
     int n = fileInfo.size();
     QList<M3uEntry> tmplist;
-    QProgressDialog p("Locating files for playlist " + name(), "Abort", 0, n, 0);
+    QProgressDialog p("Processing files for playlist " + name(), "Abort", 0, n, 0);
     p.setWindowModality(Qt::WindowModal);
-
-
     QPushButton* cancelButton = new QPushButton;
-    p.setCancelButton(cancelButton);
-    p.setCancelButtonText("Cancel");
-    p.setLabelText("Locating files for " + name());
-    bool wasCanceled = false;
+    p.setCancelButton(cancelButton);    
+    p.setCancelButtonText("Cancel");        
 
-    qDebug() << "found " << n << " files to process";
+    //GATHER SOME SETTINGS HERE SO WE DON`T HAVE TO READ THEM FROM QSETTINGS EVERY TIME IN THE LOOP
+    //UNSURE IF THAT WOULD HAVE SLOWED THINGS DOWN
 
+    //store the ID3v2 fields and APE item keys before processing files
+    ID3v2Fields = guiSettings->value("ID3v2Fields", QStringList()).toStringList();
+    apeItemKeys = guiSettings->value("apeItemKeys", QStringList()).toStringList();
 
+    bool keepTags = guiSettings->value("keepTags").toBool();
+    bool useScript = guiSettings->value("useScript").toBool();
+    QString format = guiSettings->value("format").toString();
+    artistEmpty = guiSettings->value("artistEmpty").toBool();
+    titleEmpty = guiSettings->value("titleEmpty").toBool();
+    albumEmpty = guiSettings->value("albumEmpty").toBool();
+    commentEmpty = guiSettings->value("commentEmpty").toBool();
+    genreEmpty = guiSettings->value("genreEmpty").toBool();
+    trackEmpty = guiSettings->value("trackEmpty").toBool();
+    yearEmpty = guiSettings->value("yearEmpty").toBool();
+
+    //process each of the files matching the specified extensions, and see if
+    //they matches the rules/script
     for (int i = 0; i < n; i++) {
         p.setValue(i);
         if (p.wasCanceled()) {
-            wasCanceled = true;
-            break;
+            *canceled = true;
+            log->append("\n\nCanceled by user");
+            return plist;
         }
 
-        tmplist = processFile(fileInfo[i], hasTagRule, hasAudioRule, log, tags, &tagsCopy, &wasCanceled );
+        tmplist = processFile(fileInfo[i], hasTagRule, hasAudioRule, keepTags, format, useScript, log, tags, &tagsCopy, canceled );
 
-        if (wasCanceled) {
-            break;
+        if (*canceled) {
+            return plist;
         }
         plist = plist + tmplist;
     }
-
     p.setValue(n);
-    if (wasCanceled) {
-        *canceled = true;
-        return plist;
-    }
+
+    qDebug() << "finished finding files";
 
     if (randomize_) {
         std::random_shuffle(plist.begin(), plist.end());
     }
 
-    qDebug() << "finished finding files";
 
     if (makeUnique_) {
         int size = plist.size();
@@ -429,7 +455,7 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
  \param aPath
  \return QList<QFileInfo>
 */
-QList<QFileInfo> PlayList::getDirContent(const QString& aPath) const {
+QList<QFileInfo> PlayList::getDirContent(const QString& aPath, bool *canceled) const {
 
     // append the filtered files to this list
 
@@ -450,11 +476,21 @@ QList<QFileInfo> PlayList::getDirContent(const QString& aPath) const {
 
 
     QList<QFileInfo> fileInfo;
+    QProgressDialog p("Locating files matching specified extensions..." + name(), "Abort", 0, 0, 0);
+    p.setWindowModality(Qt::WindowModal);
+
     while (dirIterator->hasNext()) {
+        if(p.wasCanceled()){
+            if(canceled!=0){
+                *canceled=true;
+            }
+            return fileInfo;
+        }
         dirIterator->next();
         fileInfo.append(dirIterator->fileInfo());
-    }
 
+    }
+    p.close();
     delete dirIterator;
     qDebug() << "Finished!";
     return fileInfo;
@@ -473,22 +509,26 @@ QList<QFileInfo> PlayList::getDirContent(const QString& aPath) const {
  \param tagsCopy
  \return QList<M3uEntry>
 */
-QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRule, bool hasAudioRule, QString* log, QHash<QString, Tag> *tags, QHash<QString, Tag> *tagsCopy, bool *wasCanceled ) const {
+QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRule, bool hasAudioRule, bool keepTags, const QString &format, bool useScript, QString* log, QHash<QString, Tag> *tags, QHash<QString, Tag> *tagsCopy, bool *wasCanceled ) const {
+
+    //qDebug()<<fileInfo.filePath();
 
     QList<M3uEntry> list;
 
     QString file = fileInfo.fileName();
     QString fullfile = fileInfo.absoluteFilePath();
 
+
     Tag tag;
     if (hasTagRule || hasAudioRule || includeExtInf_) {
         //take tag from the inital copy of tags. If it doesnt exist there, read it, and insert into
         //the original qhash of tags
-        tag = tagsCopy->take(fullfile);
+        tag = tagsCopy->take(fullfile);        
         if (tag.fileName().isEmpty()) {
-            tag = Tag(fullfile);
-            tag.readTags();
-            if (guiSettings->value("keepTags").toBool()) {
+            tag = Tag(fullfile);            
+            tag.readTags();            
+            tag.readFrames();            
+            if (keepTags) {
                 tags->insert(fullfile, tag);
             }
         }
@@ -496,6 +536,7 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
             log->append("Could not read tag for " + fullfile + "\n");
         }
     }
+
 
     //only these are needed
     bool anyOk;
@@ -509,11 +550,16 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
         anyOk = false;
     }
     //loop list of individual files. If file matches one of the indiviudally specified files, it is
-    //added. All rules_ ignored.
+    //added.
+
+    //if use script and nos cript specified, always include file
     bool skipRules = false;
-    if (guiSettings->value("useScript").toBool() && script_.isEmpty()) {
+    if (useScript && script_.isEmpty()) {
         skipRules = true;
     }
+
+    //if the file equals one of the specified individual files,
+    //always include it regardless of rules
     for (int i = 0; i < individualFiles_.size(); i++) {
         if (file == individualFiles_[i].absoluteFilePath()) {
             allOk = true;
@@ -522,11 +568,13 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
             break;
         }
     }
-    bool useScript = guiSettings->value("useScript").toBool();
+
+    //process script    
     if (!skipRules) {
         if( useScript ){
             QString errorLog;
             bool scriptOk = evaluateScript( tag, fileInfo, &errorLog );
+            //qDebug()<<"scriptOk: "<<scriptOk;
             allOk = scriptOk; //both will be either false or true
             anyOk = scriptOk;
             if( !errorLog.isEmpty() ){
@@ -544,7 +592,7 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
     if ( (allRulesTrue_ && allOk) || (!allRulesTrue_ && anyOk) ) {
         //extinf info for m3u
         if (includeExtInf_) {
-            e.setExtInf(createExtInfString(tag, file, guiSettings->value("format").toString()));
+            e.setExtInf(createExtInfString(tag, file, format));
         }
         e.setOriginalFile(fileInfo);
         list.append(e);
@@ -562,12 +610,34 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
 */
 bool PlayList::evaluateScript( const Tag& tag, const QFileInfo& fileInfo, QString *log ) const {
 
+    //qDebug()<<script_;
     if(script_.isEmpty()){
         return true;
     }
 
     QScriptEngine engine;
 
+    //add ID3v2 frames as variables in script
+    //qDebug()<<"size of ID3v2Fields in script "<<ID3v2Fields.size();
+    QHash<QString,QString> frames = tag.frames(); //returns both ID3v2 frames and APE items
+    //QStringList keys = frames.keys();
+    for(int i=0;i<ID3v2Fields.size();i++){
+        QString id = ID3v2Fields[i];
+        QString data = frames[id]; //will return empty string if non-existent
+        //qDebug()<<"ID3v2 script: "<<id<<data;
+        engine.globalObject().setProperty( id, data );
+    }
+
+    //add APE item keys as variables in script
+    //QStringList keys = frames.keys();
+    for(int i=0;i<apeItemKeys.size();i++){
+        QString id = apeItemKeys[i];
+        QString data = frames[id]; //will return empty string if non-existent
+        //qDebug()<<"APE SCRIPT: "<<id<<data;
+        engine.globalObject().setProperty( id, data );
+    }
+
+    //add tag data  as variables to script
     engine.globalObject().setProperty("ARTIST",tag.artist());
     engine.globalObject().setProperty("ALBUM",tag.album());
     engine.globalObject().setProperty("GENRE",tag.genre());
@@ -575,13 +645,13 @@ bool PlayList::evaluateScript( const Tag& tag, const QFileInfo& fileInfo, QStrin
     engine.globalObject().setProperty("COMMENT",tag.comment());
     engine.globalObject().setProperty("YEAR",tag.year());
     engine.globalObject().setProperty("TRACK",tag.track());
-    engine.globalObject().setProperty("LENGTH",tag.length());
+    engine.globalObject().setProperty("LENGTH",tag.length());    
     engine.globalObject().setProperty("BITRATE",tag.bitRate());
     engine.globalObject().setProperty("SAMPLERATE",tag.sampleRate());
     engine.globalObject().setProperty("CHANNELS",tag.channels());
 
     engine.globalObject().setProperty("FILENAME",fileInfo.fileName());
-    engine.globalObject().setProperty("FILEPATH",fileInfo.filePath());
+    engine.globalObject().setProperty("FILEPATH",fileInfo.filePath());    
 
     QScriptValue result = engine.evaluate( script_ );
     if( engine.hasUncaughtException() ){
@@ -735,29 +805,27 @@ QString PlayList::createExtInfString(const Tag& tag, const QString& file, const 
         format.replace(QString("%track%"), track);
         format.replace(QString("%filename%"), file);
 
-        int sum = guiSettings->value("artistEmpty").toBool() + guiSettings->value("titleEmpty").toBool() + guiSettings->value("albumEmpty").toBool() \
-                  + guiSettings->value("commentEmpty").toBool() + guiSettings->value("genreEmpty").toBool() + guiSettings->value("trackEmpty").toBool() \
-                  + guiSettings->value("yearEmpty").toBool();
+        int sum = artistEmpty+titleEmpty+albumEmpty+commentEmpty+genreEmpty+trackEmpty+yearEmpty;
         int sum2 = 0;
-        if (artist.isEmpty() && guiSettings->value("artistEmpty").toBool()) {
+        if (artist.isEmpty() && artistEmpty) {
             sum2++;
         }
-        if (title.isEmpty() && guiSettings->value("titleEmpty").toBool()) {
+        if (title.isEmpty() && titleEmpty) {
             sum2++;
         }
-        if (album.isEmpty() && guiSettings->value("albumEmpty").toBool()) {
+        if (album.isEmpty() && albumEmpty) {
             sum2++;
         }
-        if (comment.isEmpty() && guiSettings->value("commentEmpty").toBool()) {
+        if (comment.isEmpty() && commentEmpty) {
             sum2++;
         }
-        if (genre.isEmpty() && guiSettings->value("genreEmpty").toBool()) {
+        if (genre.isEmpty() && genreEmpty) {
             sum2++;
         }
-        if (track.isEmpty() && guiSettings->value("trackEmpty").toBool()) {
+        if (track.isEmpty() && trackEmpty) {
             sum2++;
         }
-        if (year.isEmpty() && guiSettings->value("yearEmpty").toBool()) {
+        if (year.isEmpty() && yearEmpty) {
             sum2++;
         }
         if (sum2 == sum) {
@@ -827,15 +895,6 @@ void PlayList::checkRange(const QVector<int> &intvals, int value, bool* allOk, b
 
 }
 
-
-/*!
- \brief
-
- \return QString
-*/
-QString PlayList::fileNameWithoutExtension() const {
-    return guiSettings->value("outPutPath").toString() + "/" + name();
-}
 
 /*!
  \brief

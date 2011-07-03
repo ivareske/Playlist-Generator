@@ -1,10 +1,20 @@
 #ifndef TAG_H
 #define TAG_H
 
+#include <iostream>
 #include <QtGui>
 #include <tag.h>
 #include <taglib.h>
 #include <fileref.h>
+
+#include <tbytevector.h>
+#include <mpegfile.h>
+#include <id3v2tag.h>
+#include <id3v2frame.h>
+#include <id3v2header.h>
+#include <id3v1tag.h>
+#include <apetag.h>
+
 
 class Tag {
 
@@ -33,7 +43,10 @@ class Tag {
         uint sampleRate() const;
         uint channels() const;
 
-    private:
+        void readFrames();
+        QHash<QString, QString> frames() const;
+private:
+        QHash<QString,QString> frames_;
         QString filename_;
         QString artist_;
         QString title_;

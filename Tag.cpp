@@ -19,10 +19,10 @@ Tag::Tag(const QString& fullfile) {
     tagOk_ = false;
     audioPropertiesOk_ = false;
 
-    length_ = -1;
-    bitRate_ = -1;
-    sampleRate_ = -1;
-    channels_ = -1;
+    length_ = 0;
+    bitRate_ = 0;
+    sampleRate_ = 0;
+    channels_ = 0;
 }
 
 
@@ -209,11 +209,70 @@ QVariant Tag::getTag( Tag::TagField field ){
  \brief
 
 */
+
+QHash<QString,QString> Tag::frames() const{
+    return frames_;
+}
+
+/*!
+ \brief
+
+*/
+void Tag::readFrames() {
+    //read all ID3v2 frames and APE items
+    //http://kid3.sourcearchive.com/documentation/0.8.1/taglibframelist_8cpp-source.html
+
+    //qDebug()<<filename_;
+
+
+    TagLib::MPEG::File f(filename_.toStdString().c_str());
+
+    frames_.clear();
+
+    //ID3v2 tag
+    TagLib::ID3v2::Tag *id3v2tag = f.ID3v2Tag();
+    if(id3v2tag) {
+
+        TagLib::ID3v2::FrameList::ConstIterator it = id3v2tag->frameList().begin();
+        for(; it != id3v2tag->frameList().end(); it++){
+            //cout << (*it)->frameID() << " - \"" << (*it)->toString() << "\"" << endl;
+            QString id = TStringToQString(TagLib::String((*it)->frameID()));
+            QString content = TStringToQString((*it)->toString());
+            //qDebug()<<id<<content;
+            frames_.insert(id,content);
+        }
+
+    }
+    //qDebug()<<"FINISHED READING FRAMES FOR "<<filename_;
+
+    TagLib::APE::Tag *ape = f.APETag();
+    //APE items
+    if(ape) {
+        for(TagLib::APE::ItemListMap::ConstIterator it = ape->itemListMap().begin(); it != ape->itemListMap().end(); ++it){
+
+            QString data = TStringToQString((*it).second.toString());
+            QString id = TStringToQString((*it).first);
+            //qDebug()<<id<<item.toString().toCString();
+            frames_.insert(id,data);
+        }
+    }
+
+}
+
+/*!
+ \brief
+
+*/
+
 void Tag::readTags() {
 
     tagIsRead_ = true;
+    //qDebug()<<"reading tags for "<<filename_;
     TagLib::FileRef f(filename_.toStdString().c_str());
-    if (!f.isNull() && f.tag() != 0) {
+    if(f.isNull()){
+        return;
+    }
+    if (f.tag()!= 0) {
         artist_ = f.tag()->artist().toCString();
         album_ = f.tag()->album().toCString();
         title_ = f.tag()->title().toCString();
@@ -223,7 +282,7 @@ void Tag::readTags() {
         track_ = f.tag()->track();
         tagOk_ = true;
     }
-    if (!f.isNull() && f.audioProperties() != 0) {
+    if (f.audioProperties() != 0) {
         length_ = f.audioProperties()->length();
         bitRate_ = f.audioProperties()->bitrate();
         sampleRate_ = f.audioProperties()->sampleRate();

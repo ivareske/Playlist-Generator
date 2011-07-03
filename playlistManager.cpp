@@ -17,6 +17,7 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
     tip += "Unsigned int: YEAR, TRACK, LENGTH (seconds), BITRATE (kb/s), SAMPLERATE (Hz), CHANNELS \n";
     tip += "Example to return all Beatles or Elvis music with length between 120 and 200 seconds, and a high bitrate (>300 kb/s):\n";
     tip += "LENGTH>120 && LENGTH<200 && BITRATE>300 && (ARTIST==\"Beatles\" || ARTIST==\"Elvis\")\n";
+    tip += "\nAvailable ID3v2 frames and APE item keys for the script can be edited in the settings dialog.";
     RuleScript->setToolTip(tip);
 
     createActions();
@@ -63,6 +64,25 @@ void PlaylistManager::initGuiSettings() {
         guiSettings = Global::guiSettings();
     }
 
+    QStringList ID3v2Fields;
+    ID3v2Fields<<"AENC"<<"APIC"<<"COMM"<<"COMR"<<"ENCR"<<"EQUA"<<"ETCO"<<"GEOB"<<"GRID"<<"IPLS"<<"LINK"<<"MCDI"<<"MLLT"<<"OWNE" \
+    <<"PRIV"<<"PCNT"<<"POPM"<<"POSS"<<"RBUF"<<"RVAD"<<"RVRB"<<"SYLT"<<"SYTC"<<"TALB"<<"TBPM"<<"TCOM"<<"TCON"<<"TCOP" \
+    <<"TDAT"<<"TDLY"<<"TENC"<<"TEXT"<<"TFLT"<<"TIME"<<"TIT1"<<"TIT2"<<"TIT3"<<"TKEY"<<"TLAN"<<"TLEN"<<"TMED"<<"TOAL"<< \
+    "TOFN"<<"TOLY"<<"TOPE"<<"TORY"<<"TOWN"<<"TPE1"<<"TPE2"<<"TPE3"<<"TPE4"<<"TPOS"<<"TPUB"<<"TRCK"<<"TRDA"<<"TRSN"<<"TRSO"\
+    <<"TSIZ"<<"TSRC"<<"TSSE"<<"TYER"<<"TXXX"<<"UFID"<<"USER"<<"USLT"<<"WCOM"<<"WCOP"<<"WOAF"<<"WOAR"<<"WOAS"<<"WORS"<<\
+    "WPAY"<<"WPUB"<<"WXXX"<<"ASPI"<<"EQU2"<<"RVA2"<<"SEEK"<<"SIGN"<<"TDEN"<<"TDOR"<<"TDRC"<<"TDRL"<<"TDTG"<<"TIPL"<<\
+    "TMCL"<<"TMOO"<<"TPRO"<<"TSOA"<<"TSOP"<<"TSOT"<<"TSST";
+    if (!guiSettings->value("ID3v2Fields").canConvert(QVariant::StringList)) {
+        guiSettings->setValue("ID3v2Fields", ID3v2Fields );
+    }
+    QStringList apeItemKeys;apeItemKeys<<"Title"<<"Subtitle"<<"Artist"<<"Album"<<"Debut"<<"album"<<"Publisher"<<\
+    "Conductor"<<"Track"<<"Composer"<<"Comment"<<"Copyright"<<"Publicationright"<<"File"<<"EAN/UPC"<<"ISBN"<<\
+    "Catalog"<<"LC"<<"Year"<<"Record Date"<<"Record Location"<<"Genre"<<"Media"<<"Index"<<"Related"<<"ISRC"<<"Abstract"\
+    <<"Language"<<"Bibliography"<<"Introplay"<<"Dummy";
+    if (!guiSettings->value("apeItemKeys").canConvert(QVariant::StringList)) {
+        guiSettings->setValue("apeItemKeys", apeItemKeys );
+    }
+
     if (!guiSettings->value("style").canConvert(QVariant::String)) {
         guiSettings->setValue("style", qApp->style()->metaObject()->className());
     }
@@ -84,9 +104,10 @@ void PlaylistManager::initGuiSettings() {
     if (!guiSettings->value("trackEmpty").canConvert(QVariant::Bool)) {
         guiSettings->setValue("trackEmpty", false);
     }
-    if (!guiSettings->value("outPutPath").canConvert(QVariant::String)) {
+    /*if (!guiSettings->value("outPutPath").canConvert(QVariant::String)) {
         guiSettings->setValue("outPutPath", QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
     }
+    */
     if (!guiSettings->value("defaultExtensions").canConvert(QVariant::List)) {
         QStringList defExts;
         defExts << "*.mp3" << "*.wma" << "*.wav" << "*.ogg" << "*.aac" << "*.ac3";
@@ -106,6 +127,9 @@ void PlaylistManager::initGuiSettings() {
     }
     if (!guiSettings->value("keepFolderStructure").canConvert(QVariant::Bool)) {
         guiSettings->setValue("keepFolderStructure", true);
+    }
+    if (!guiSettings->value("overWriteFiles").canConvert(QVariant::Bool)) {
+        guiSettings->setValue("overWriteFiles", true);
     }
     if (!guiSettings->value("keepTags").canConvert(QVariant::Bool)) {
         guiSettings->setValue("keepTags", true);
@@ -872,6 +896,10 @@ void PlaylistManager::loadCollection(const QFileInfo& file) {
         playListTable->addItem(p);
     }
 
+
+    guiSettings->setValue("outPutPath", collection.outPutPath().absolutePath());
+
+
 }
 
 /*!
@@ -977,12 +1005,12 @@ void PlaylistManager::generateSelectedPlayLists() {
         return;
     }
 
-    QList<int> inds;
+    QList<PlayList*> playLists;
     for (int i = 0; i < indexes.size(); i++) {
-        inds.append(indexes[i].row());
+        playLists.append( playListItem(indexes[i].row()) );
     }
 
-    generatePlayLists(inds);
+    generatePlayLists(playLists);
 
 }
 
@@ -992,12 +1020,12 @@ void PlaylistManager::generateSelectedPlayLists() {
 */
 void PlaylistManager::generateAllPlayLists() {
 
-    QList<int> inds;
+    QList<PlayList*> playLists;
     for (int i = 0; i < playListTable->count(); i++) {
-        inds.append(i);
+        playLists.append( playListItem(i) );
     }
 
-    generatePlayLists(inds);
+    generatePlayLists(playLists);
 
 }
 
@@ -1007,17 +1035,16 @@ void PlaylistManager::generateAllPlayLists() {
 
  \param inds
 */
-void PlaylistManager::generatePlayLists(const QList<int> &inds) {
+void PlaylistManager::generatePlayLists(const QList<PlayList*> &playLists) {
 
-    if (inds.size() == 0) {
+    if (playLists.size() == 0) {
         return;
     }
 
     guiSettings->sync();
 
-    QString defOut = guiSettings->value("outPutPath").toString();
-    QDir d(defOut);
-    if (defOut.isEmpty() || !d.exists()) {
+    QDir d(collection_.outPutPath());// guiSettings->value("outPutPath").toString();
+    if (!d.exists()) {
         QMessageBox::critical(this, "",
                               "Output folder is not a valid path",
                               QMessageBox::Ok, QMessageBox::Ok);
@@ -1026,21 +1053,20 @@ void PlaylistManager::generatePlayLists(const QList<int> &inds) {
 
 
     QString log;
-    time_t Start_t, End_t;
-    int totaltime;
     QStringList names;
-    Start_t = time(0);
+    QTime timer; timer.start();
 
-    for (int i = 0; i < inds.size(); i++) {
+    //freopen("log.txt","w",stdout);
+    for (int i = 0; i < playLists.size(); i++) {
 
-        PlayList* p = static_cast<PlayList*>(playListTable->item(i));
+        PlayList* p = playLists[i];
         names.append(p->name());
         log.append("Info for generation of playlist '" + p->name() + "'\n");
 
         QList<M3uEntry> songs;
         bool wasCanceled = p->generate(&songs, &log, &tags_);
         if (wasCanceled) {
-            log.append("\n\nAborted by user");
+            //log.append("\n\nAborted by user");
             break;
         }
 
@@ -1049,15 +1075,18 @@ void PlaylistManager::generatePlayLists(const QList<int> &inds) {
         }
         log.append("\n----------------------------------------------------------\n");
     }
-
-    End_t = time(0);
+    //fclose(stdout);
+    int milliSecs = timer.elapsed();
     if (names.size() != names.toSet().toList().size()) {
         //if some names are equal
         log.append("Warning, some playlists have identical names!\n");
     }
-    if (inds.size() > 1) {
-        totaltime = difftime(End_t, Start_t);
-        log.append("\n\n Total time used: " + QString::number(totaltime) + " seconds\n");
+    if (playLists.size() > 1) {
+        if(milliSecs>1000){
+            log.append("\n\n Total time used: " + QString::number(double(milliSecs/1000),'f',1) + " seconds\n");
+        }else{
+            log.append("\n\n Total time used: " + QString::number(milliSecs) + " milliseconds\n");
+        }
     }
     if (guiSettings->value("showLog").toBool()) {
         TextViewer t(this, &log);
@@ -1290,7 +1319,7 @@ void PlaylistManager::showSettings() {
     if (s.exec() == QDialog::Accepted) {
 
         updateUseScript();
-
+        collection_.setOutPutPath( QDir(guiSettings->value("outPutPath").toString()) );
         if (!guiSettings->value("keepTags").toBool()) {
             tags_.clear();
         }

@@ -15,6 +15,9 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     ShowTagLibDebug->hide(); // not implemented anymore
 
     // signals/slots mechanism in action
+
+    connect(ID3v2FramesButton, SIGNAL(clicked()), this, SLOT(editID3v2Frames()));
+    connect(apeItemKeysButton, SIGNAL(clicked()), this, SLOT(editAPEItemKeys()));
     connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
     connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
     connect(fileDialog, SIGNAL(clicked()), this, SLOT(setOutPutDir()));
@@ -25,6 +28,34 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     //UseScript->hide();
 }
 
+/*!
+  \brief
+
+*/
+void SettingsDialog::editID3v2Frames(){
+    TextViewer t;
+    t.label()->setText("Warning: Do not edit these values unless you know what you are doing!");
+    t.setText( settings->value("ID3v2Fields", QStringList()).toStringList().join("\n") );
+    if(t.exec()!=QDialog::Accepted){
+        return;
+    }
+    settings->setValue("ID3v2Fields",t.getTextEdit()->toPlainText().split("\n"));
+}
+
+/*!
+  \brief
+
+*/
+void SettingsDialog::editAPEItemKeys(){
+//KOMMET HIT, LEGG TIL DREFAULT VALUES VED STARTUP OG Og iMPLEMENTER I PLAYLIST
+    TextViewer t;
+    t.label()->setText("Warning: Do not edit these values unless you know what you are doing!");
+    t.setText( settings->value("apeItemKeys", QStringList()).toStringList().join("\n") );
+    if(t.exec()!=QDialog::Accepted){
+        return;
+    }
+    settings->setValue("apeItemKeys",t.getTextEdit()->toPlainText().split("\n"));
+}
 /*!
  \brief
 
@@ -64,6 +95,7 @@ void SettingsDialog::onFinish(int result) {
         settings->setValue("yearEmpty", Year->isChecked());
         settings->setValue("useCopyFilesToPath", useCopyFilesToPathCheckBox->isChecked());
         settings->setValue("keepFolderStructure", keepFolderStructureCheckBox->isChecked());
+        settings->setValue("overWriteFiles", overWriteFilesCheckBox->isChecked());
         settings->setValue("keepTags", keepTagsCheckBox->isChecked());
         settings->sync();
     }
@@ -92,6 +124,7 @@ void SettingsDialog::setSettings() {
     Year->setChecked(settings->value("yearEmpty").toBool());
     useCopyFilesToPathCheckBox->setChecked(settings->value("useCopyFilesToPath").toBool());
     keepFolderStructureCheckBox->setChecked(settings->value("keepFolderStructure").toBool());
+    overWriteFilesCheckBox->setChecked(settings->value("overWriteFiles").toBool());
     keepTagsCheckBox->setChecked(settings->value("keepTags").toBool());
 
 

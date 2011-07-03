@@ -13,12 +13,15 @@ class PlayListCollection {
         QList<PlayList> playLists() const;
         void setPlayLists(const QList<PlayList> &playLists);
         static QString defaultCollectionName();
+        void setOutPutPath( const QDir &outPutPath );
+        QDir outPutPath() const;
         operator QVariant() const;
         bool operator==(const PlayListCollection& other) const;
 
     private:
         QString name_;
         QList<PlayList> playLists_;
+        QDir outPutPath_;
 
 };
 
