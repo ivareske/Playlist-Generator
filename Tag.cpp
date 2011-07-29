@@ -238,7 +238,7 @@ void Tag::readFrames() {
             //cout << (*it)->frameID() << " - \"" << (*it)->toString() << "\"" << endl;
             QString id = TStringToQString(TagLib::String((*it)->frameID()));
             QString content = TStringToQString((*it)->toString());
-            //qDebug()<<id<<content;
+            //qDebug()<<"ID3v2"<<id<<content;
             frames_.insert(id,content);
         }
 
@@ -252,11 +252,32 @@ void Tag::readFrames() {
 
             QString data = TStringToQString((*it).second.toString());
             QString id = TStringToQString((*it).first);
-            //qDebug()<<id<<item.toString().toCString();
+            //qDebug()<<"APE: "<<id<<item.toString().toCString();
             frames_.insert(id,data);
         }
     }
+/*
+    TagLib::ASF::Tag *asfTag = dynamic_cast<TagLib::ASF::Tag*>(f.tag());
+    if(asfTag){
+        qDebug()<<"found ASF tag";
+        //ASF items
+        for(TagLib::ASF::AttributeListMap::ConstIterator it = asfTag->attributeListMap().begin(); it != asfTag->attributeListMap().end(); ++it){
 
+            TagLib::List<TagLib::ASF::Attribute> attributes = (*it).second;
+            QString data;
+            for(uint i=0;i<attributes.size();i++){
+                data = TStringToQString(attributes[i].toString());
+                qDebug()<<"ASF data: "<<data;
+            }
+
+            QString id = TStringToQString((*it).first);
+            qDebug()<<"ASF: "<<id<<data;
+            frames_.insert(id,data);
+        }
+    }else{
+        qDebug()<<"NO ASF TAG";
+    }
+*/
 }
 
 /*!

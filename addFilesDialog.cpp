@@ -54,14 +54,14 @@ void AddFilesDialog::removeFiles() {
 */
 void AddFilesDialog::chooseFiles() {
 
-
-    static QString lastUsedDir;
-
+    QSettings *settings = Global::guiSettings();
+    QString lastUsedDir = settings->value("AddFilesDialog/lastUsedDir",QDesktopServices::MusicLocation).toString();
+    qDebug()<<lastUsedDir;
     QStringList files = QFileDialog::getOpenFileNames(
                             this,
                             "Select files",
                             lastUsedDir,
-                            "*.*");
+                            "*.*");    
 
     if (files.size() == 0) {
         return;
@@ -73,5 +73,8 @@ void AddFilesDialog::chooseFiles() {
         fileList->addItem(files[i]);
     }
 
+    QFileInfo f(files[0]);
+    settings->setValue("AddFilesDialog/lastUsedDir",f.absolutePath());
+    delete settings;settings=0;
 
 }

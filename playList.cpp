@@ -306,9 +306,26 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
 
     qDebug() << "finding files...";
 
+    //GATHER SOME SETTINGS HERE SO WE DON`T HAVE TO READ THEM FROM QSETTINGS EVERY TIME IN THE LOOP
+    //UNSURE IF THAT WOULD HAVE SLOWED THINGS DOWN
+
+    //store the ID3v2 fields and APE item keys before processing files
+    ID3v2Fields = guiSettings->value("ID3v2Fields", QStringList()).toStringList();
+    apeItemKeys = guiSettings->value("apeItemKeys", QStringList()).toStringList();
+
+    bool keepTags = guiSettings->value("keepTags").toBool();
+    bool useScript = guiSettings->value("useScript").toBool();
+    QString format = guiSettings->value("format").toString();
+    artistEmpty = guiSettings->value("artistEmpty").toBool();
+    titleEmpty = guiSettings->value("titleEmpty").toBool();
+    albumEmpty = guiSettings->value("albumEmpty").toBool();
+    commentEmpty = guiSettings->value("commentEmpty").toBool();
+    genreEmpty = guiSettings->value("genreEmpty").toBool();
+    trackEmpty = guiSettings->value("trackEmpty").toBool();
+    yearEmpty = guiSettings->value("yearEmpty").toBool();
+
     //the two first mandatory rules_
     QList<M3uEntry> plist;
-
 
 
     bool hasTagRule = false;
@@ -334,102 +351,114 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
         }
     }
 
-    if (folders_.size() == 0) {
-        QMessageBox::critical(0, "",
-                              "You must specify at least one folder",
-                              QMessageBox::Ok, QMessageBox::Ok);
-        *canceled = true;
-        return plist;
-    }
-    if (extensions_.size() == 0) {
-        QMessageBox::critical(0, "",
-                              "Extensions can`t be empty",
-                              QMessageBox::Ok, QMessageBox::Ok);
-        *canceled = true;
-        return plist;
+    //just add all individually specified files first
+    for(int i=0;i<individualFiles_.size();i++){
+        QFileInfo f(individualFiles_[i]);
+        if(!f.exists()){
+            log->append("\nSpecified file does not exist: "+individualFiles_[i].absoluteFilePath());
+            continue;
+        }
+        M3uEntry e;
+        if (includeExtInf_) {
+            Tag tag = tags->value(f.absoluteFilePath());
+            if (tag.fileName().isEmpty()) {
+                tag = Tag(f.absoluteFilePath());
+                tag.readTags();
+                tag.readFrames();
+                if (keepTags) {
+                    tags->insert(f.absoluteFilePath(), tag);
+                }
+            }
+            if (!tag.tagOk()) {
+                log->append("Could not read tag for " + f.absoluteFilePath() + "\n");
+            }
+            e.setExtInf(createExtInfString(tag, f.absoluteFilePath(), format));
+        }
+        e.setOriginalFile(f);
+        plist.append(e);
     }
 
-    QList<QFileInfo> fileInfo;
-    for (int i = 0; i < folders_.size(); i++) {
-        QDir d(folders_[i]);
-        if (!d.exists()) {
+    if( !(folders_.size()==0 && individualFiles_.size()!=0) ){
+
+        if (folders_.size()==0) {
             QMessageBox::critical(0, "",
-                                  "Folder" + folders_[i].absolutePath() + " doesn`t exist",
+                                  "You must specify at least one folder",
                                   QMessageBox::Ok, QMessageBox::Ok);
             *canceled = true;
             return plist;
         }
-        if (!d.isAbsolute()) {
+        if (extensions_.size() == 0) {
             QMessageBox::critical(0, "",
-                                  "Folder" + folders_[i].absolutePath() + " is not an absolute path",
+                                  "Extensions can`t be empty",
                                   QMessageBox::Ok, QMessageBox::Ok);
-            plist.clear();
             *canceled = true;
             return plist;
         }
 
-        //get content from the specified folder(s)
-        fileInfo = fileInfo + getDirContent(folders_[i].absolutePath(),canceled);
-        if(*canceled){
-            log->append("\n\nCanceled by user");
-            return plist;
+        QList<QFileInfo> fileInfo;
+        for (int i = 0; i < folders_.size(); i++) {
+            QDir d(folders_[i]);
+            if (!d.exists()) {
+                QMessageBox::critical(0, "",
+                                      "Folder" + folders_[i].absolutePath() + " doesn`t exist",
+                                      QMessageBox::Ok, QMessageBox::Ok);
+                *canceled = true;
+                return plist;
+            }
+            if (!d.isAbsolute()) {
+                QMessageBox::critical(0, "",
+                                      "Folder" + folders_[i].absolutePath() + " is not an absolute path",
+                                      QMessageBox::Ok, QMessageBox::Ok);
+                plist.clear();
+                *canceled = true;
+                return plist;
+            }
+
+            //get content from the specified folder(s)
+            fileInfo = fileInfo + getDirContent(folders_[i].absolutePath(),canceled);
+            if(*canceled){
+                log->append("\n\nCanceled by user");
+                return plist;
+            }
         }
+        qDebug() << "found " << fileInfo.size() << " files to process";
+
+        //make unique
+        fileInfo = fileInfo.toSet().toList();
+
+        //local copy of QHash tags: new read tags are inserted into global tags. used files are removed from local qhash tags to increase lookup speed
+        QHash<QString, Tag> tagsCopy = *tags;
+
+        int n = fileInfo.size();
+        QList<M3uEntry> tmplist;
+        QProgressDialog p("Processing files for playlist " + name(), "Abort", 0, n, 0);
+        p.setWindowModality(Qt::WindowModal);
+        QPushButton* cancelButton = new QPushButton;
+        p.setCancelButton(cancelButton);
+        p.setCancelButtonText("Cancel");
+
+
+        //process each of the files matching the specified extensions, and see if
+        //they matches the rules/script
+        for (int i = 0; i < n; i++) {
+            p.setValue(i);
+            if (p.wasCanceled()) {
+                *canceled = true;
+                log->append("\n\nCanceled by user");
+                return plist;
+            }
+
+            tmplist = processFile(fileInfo[i], hasTagRule, hasAudioRule, keepTags, format, useScript, log, tags, &tagsCopy, canceled );
+
+            if (*canceled) {
+                return plist;
+            }
+            plist = plist + tmplist;
+        }
+        p.setValue(n);
+
+        qDebug() << "finished finding files";
     }
-    qDebug() << "found " << fileInfo.size() << " files to process";    
-
-    //make unique
-    fileInfo = fileInfo.toSet().toList();
-
-    //local copy of QHash tags: new read tags are inserted into global tags. used files are removed from local qhash tags to increase lookup speed
-    QHash<QString, Tag> tagsCopy = *tags;
-
-    int n = fileInfo.size();
-    QList<M3uEntry> tmplist;
-    QProgressDialog p("Processing files for playlist " + name(), "Abort", 0, n, 0);
-    p.setWindowModality(Qt::WindowModal);
-    QPushButton* cancelButton = new QPushButton;
-    p.setCancelButton(cancelButton);    
-    p.setCancelButtonText("Cancel");        
-
-    //GATHER SOME SETTINGS HERE SO WE DON`T HAVE TO READ THEM FROM QSETTINGS EVERY TIME IN THE LOOP
-    //UNSURE IF THAT WOULD HAVE SLOWED THINGS DOWN
-
-    //store the ID3v2 fields and APE item keys before processing files
-    ID3v2Fields = guiSettings->value("ID3v2Fields", QStringList()).toStringList();
-    apeItemKeys = guiSettings->value("apeItemKeys", QStringList()).toStringList();
-
-    bool keepTags = guiSettings->value("keepTags").toBool();
-    bool useScript = guiSettings->value("useScript").toBool();
-    QString format = guiSettings->value("format").toString();
-    artistEmpty = guiSettings->value("artistEmpty").toBool();
-    titleEmpty = guiSettings->value("titleEmpty").toBool();
-    albumEmpty = guiSettings->value("albumEmpty").toBool();
-    commentEmpty = guiSettings->value("commentEmpty").toBool();
-    genreEmpty = guiSettings->value("genreEmpty").toBool();
-    trackEmpty = guiSettings->value("trackEmpty").toBool();
-    yearEmpty = guiSettings->value("yearEmpty").toBool();
-
-    //process each of the files matching the specified extensions, and see if
-    //they matches the rules/script
-    for (int i = 0; i < n; i++) {
-        p.setValue(i);
-        if (p.wasCanceled()) {
-            *canceled = true;
-            log->append("\n\nCanceled by user");
-            return plist;
-        }
-
-        tmplist = processFile(fileInfo[i], hasTagRule, hasAudioRule, keepTags, format, useScript, log, tags, &tagsCopy, canceled );
-
-        if (*canceled) {
-            return plist;
-        }
-        plist = plist + tmplist;
-    }
-    p.setValue(n);
-
-    qDebug() << "finished finding files";
-
     if (randomize_) {
         std::random_shuffle(plist.begin(), plist.end());
     }
@@ -470,9 +499,9 @@ QList<QFileInfo> PlayList::getDirContent(const QString& aPath, bool *canceled) c
 
     // set dir iterator
     QDirIterator* dirIterator = new QDirIterator(aPath,
-            extensions_,
-            QDir::Files | QDir::NoSymLinks,
-            subdirFlag);
+                                                 extensions_,
+                                                 QDir::Files | QDir::NoSymLinks,
+                                                 subdirFlag);
 
 
     QList<QFileInfo> fileInfo;

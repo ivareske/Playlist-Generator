@@ -8,6 +8,8 @@
 #subclass qsettings to check/make error message when non-existing value is asked for? all qsettings values should be initialized at startup
 #test freopen stdout
 #TEST READING OF APE TAGS/ITEMS
+#git messages appear in console windows...? why?
+#show total time of generated playlist
 
 # The application version
 VERSION = 1.0

@@ -11,6 +11,8 @@
 #include <mpegfile.h>
 #include <id3v2tag.h>
 #include <id3v2frame.h>
+#include <xiphcomment.h>
+#include <asffile.h>
 #include <id3v2header.h>
 #include <id3v1tag.h>
 #include <apetag.h>
