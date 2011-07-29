@@ -44,8 +44,7 @@ class PlaylistManager : public QMainWindow, private Ui::playListGenerator {
         void generateSelectedPlayLists();
         void generatePlayLists( const QList<PlayList*> &playLists );
         void addPlayList();
-        void removePlayList();
-        void changeFolder(QListWidgetItem* item);
+        void removePlayList();        
 
         void newRule();
         void editRule();
@@ -54,8 +53,9 @@ class PlaylistManager : public QMainWindow, private Ui::playListGenerator {
         void clearRulesAndFolders();
         void blockPlayListSignals(bool block);
         void showSettings();
-        void removeFolder();
-        void renameFolder(QListWidgetItem* item);
+        //void removeFolder();
+        //void renameFolder(QListWidgetItem* item);
+        //void changeFolder(QListWidgetItem* item);
         void addFolder();
         void open();
         void newCollection();
@@ -72,7 +72,7 @@ class PlaylistManager : public QMainWindow, private Ui::playListGenerator {
 
     private:
         PlayList* playListItem(int row);
-        TextEdit *RuleScript;
+        TextEdit *RuleScript,*folderTable;
         PlayList* currentPlayList();
         PlayListCollection collection_, lastSavedCollection_;
         QSettings* guiSettings;

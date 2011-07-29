@@ -1,15 +1,12 @@
 #generate other playlist formats?
 #generate one playlist for each artist?
-#foo fighters music videos, fileref blir 0, får ikke tag eller audioproperties
 #when renaming files in tag editor, specify a list of files to rename the renamed files.
-#fix textviewer
-#add id3 tags
 #qstring bindings for qtscript
 #subclass qsettings to check/make error message when non-existing value is asked for? all qsettings values should be initialized at startup
 #test freopen stdout
 #TEST READING OF APE TAGS/ITEMS
 #git messages appear in console windows...? why?
-#show total time of generated playlist
+#change to master branch
 
 # The application version
 VERSION = 1.0

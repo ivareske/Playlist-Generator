@@ -11,6 +11,11 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
     setupUi(this); // this sets up GUI
     RuleScript = new TextEdit(this);
     rulesGroupBox->layout()->addWidget(RuleScript);
+    folderTable = new TextEdit(this);
+    if(!folderFrame->layout()){
+        folderFrame->setLayout(new QGridLayout);
+    }
+    folderFrame->layout()->addWidget(folderTable);
     QString tip = "Use QtScript. The result of the script should return true or false, to determine if the file being processed should be included or not.\n";
     tip += "Available parameters:\n";
     tip += "String: FILENAME, FILEPATH, ARTIST, ALBUM, TITLE, GENRE, COMMENT\n";
@@ -158,11 +163,11 @@ void PlaylistManager::createActions() {
     connect(newRuleButton, SIGNAL(clicked()), this, SLOT(newRule()));
     connect(editRuleButton, SIGNAL(clicked()), this, SLOT(editRule()));
     connect(removeRuleButton, SIGNAL(clicked()), this, SLOT(removeRule()));
-    connect(addFolderButton, SIGNAL(clicked()), this, SLOT(addFolder()));
-    connect(removeFolderButton, SIGNAL(clicked()), this, SLOT(removeFolder()));
+    connect(addFolderButton, SIGNAL(clicked()), this, SLOT(addFolder()));    
     connect(addFilesButton, SIGNAL(clicked()), this, SLOT(addIndividualFiles()));
+    //connect(removeFolderButton, SIGNAL(clicked()), this, SLOT(removeFolder()));
     //connect( folderTable, SIGNAL( itemChanged ( QListWidgetItem * ) ), this, SLOT( renameFolder(QListWidgetItem *) ) );
-    connect(folderTable, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(changeFolder(QListWidgetItem*)));
+    //connect(folderTable, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(changeFolder(QListWidgetItem*)));    
 
     //connect( playListTable, SIGNAL( itemChanged ( QListWidgetItem *) ), this, SLOT( renamePlayList(QListWidgetItem *) ) );
     //connect( playListTable, SIGNAL( currentRowChanged ( int ) ), this, SLOT( showRulesAndFolders(int) ) );
@@ -170,6 +175,7 @@ void PlaylistManager::createActions() {
     connect(rulesTable, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(editRule()));
 
     //playlist settings
+    connect(folderTable, SIGNAL(editingFinished()), this, SLOT(updatePlayList()));
     connect(extensions, SIGNAL(textEdited(const QString&)), this, SLOT(updatePlayList()));
     connect(RuleScript, SIGNAL(editingFinished()), this, SLOT(updatePlayList()));
     connect(randomize, SIGNAL(stateChanged(int)), this, SLOT(updatePlayList()));
@@ -277,7 +283,18 @@ void PlaylistManager::updatePlayList() {
     for (int i = 0; i < selected.size(); i++) {
         PlayList* p = static_cast<PlayList*>(selected[i]);
 
-        if (s == extensions) {
+        if (s == folderTable) {
+            QStringList folders = folderTable->toPlainText().split("\n");
+            QList<QDir> dirs;
+            for(int k=0;k<folders.size();k++){
+                if(folders[k].isEmpty()){
+                    continue;
+                }
+                dirs << QDir(folders[k]);
+            }
+            p->setFolders(dirs);
+        }
+        else if (s == extensions) {
             p->setExtensions(extensions->text().split(";"));
         }
         else if (s == RuleScript) {
@@ -600,11 +617,13 @@ void PlaylistManager::addFolder() {
     showRulesAndFolders();
 }
 
-/*!
+/*
+!
  \brief
 
  \param item
-*/
+*
+  /
 void PlaylistManager::renameFolder(QListWidgetItem* item) {
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
@@ -643,12 +662,15 @@ void PlaylistManager::renameFolder(QListWidgetItem* item) {
     qDebug() << "renamed from " << oldName << " to " << item->text();
 
 }
+*/
 
-/*!
+/*
+!
  \brief
 
  \param item
-*/
+*
+/
 void PlaylistManager::changeFolder(QListWidgetItem* item) {
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
@@ -676,11 +698,15 @@ void PlaylistManager::changeFolder(QListWidgetItem* item) {
     p->setFolders(folders);
 
 }
+*/
 
-/*!
+
+/*
+!
  \brief
 
-*/
+*
+/
 void PlaylistManager::removeFolder() {
 
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
@@ -715,6 +741,7 @@ void PlaylistManager::removeFolder() {
     delete folderTable->takeItem(ind);
     p->setFolders(folders);
 }
+*/
 
 /*!
  \brief
@@ -800,13 +827,11 @@ void PlaylistManager::showRulesAndFolders() {
 
     //folders
     QList<QDir> folders = p->folders();
+    QString foldersText;
     for (int i = 0; i < folders.size(); i++) {
-        QString t = folders[i].absolutePath();
-        QListWidgetItem* item = new QListWidgetItem();
-        item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-        item->setText(t);
-        folderTable->addItem(item);
+        foldersText.append(folders[i].absolutePath()+"\n");
     }
+    folderTable->setText(foldersText);
 
     //extensions & settings
     extensions->setText(p->extensions().join(";"));
