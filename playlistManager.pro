@@ -3,10 +3,11 @@
 #when renaming files in tag editor, specify a list of files to rename the renamed files.
 #qstring bindings for qtscript
 #subclass qsettings to check/make error message when non-existing value is asked for? all qsettings values should be initialized at startup
-#test freopen stdout
 #TEST READING OF APE TAGS/ITEMS
-#git messages appear in console windows...? why?
+#git messages appear in console windows...? why? probably does not matter as the program wont be installed in a git folder
 #change to master branch
+
+#test freopen stdout
 
 # The application version
 VERSION = 1.0

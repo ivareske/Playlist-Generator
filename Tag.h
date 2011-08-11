@@ -16,6 +16,17 @@
 #include <id3v2header.h>
 #include <id3v1tag.h>
 #include <apetag.h>
+#include <mp4file.h>
+#include <oggfile.h>
+#include <vorbisfile.h>
+#include <speexfile.h>
+#include <oggflacfile.h>
+#include <wavfile.h>
+#include <rifffile.h>
+#include <aifffile.h>
+#include <apefile.h>
+#include <trueaudiofile.h>
+#include <wavpackfile.h>
 
 
 class Tag {
@@ -46,8 +57,17 @@ class Tag {
         uint channels() const;
 
         void readFrames();
-        QHash<QString, QString> frames() const;
+        void clearFrames();
+        QHash<QString, QString> frames() const;                        
+
 private:
+
+        bool readXiphComment(TagLib::Ogg::XiphComment *tag, const QString &type="XIPH");
+        bool readID3V2Frames(TagLib::ID3v2::Tag *id3v2tag, const QString &type="ID3V2");
+        bool readAPEItems(TagLib::APE::Tag *ape, const QString &type="APE");
+        bool readMP4Items(TagLib::MP4::Tag *mp4Tag, const QString &type="MP4");
+        bool readASFAttributes(TagLib::ASF::Tag *asfTag, const QString &type="ASF");
+
         QHash<QString,QString> frames_;
         QString filename_;
         QString artist_;
