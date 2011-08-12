@@ -16,9 +16,13 @@ TextViewer::TextViewer(QWidget* parent, QString* text) : QDialog(parent) {
     QFont f = Global::guiSettings()->value("textViewer/font",textEdit->font()).value<QFont>();
     textEdit->setFont(f);
 
+    resize(Global::guiSettings()->value("textViewer/size",QSize(400,400)).toSize());
+    move(Global::guiSettings()->value("textViewer/position",this->pos()).toPoint());
+
     connect(editFontButton,SIGNAL(clicked()),this,SLOT(editFont()));
     connect(okButton,SIGNAL(clicked()),this,SLOT(accept()));
     connect(cancelButton,SIGNAL(clicked()),this,SLOT(reject()));
+    connect(this,SIGNAL(finished(int)),this,SLOT(onFinish(int)));
 }
 
 /*!
@@ -56,12 +60,14 @@ void TextViewer::setText(QString text) {
     textEdit->setText(text);
 }
 
-/*
-void TextViewer::resize( QSize size ){
-  this->setSize(size);
-}
+/*!
+ \brief Store size and position before exit
 
-void TextViewer::setFont( QFont font ){
-  textEdit->setFont(font);
-}
+ \param event
 */
+void TextViewer::onFinish(int result){
+
+    Global::guiSettings()->setValue("textViewer/position",this->pos());
+    Global::guiSettings()->setValue("textViewer/size",this->size());
+    Global::guiSettings()->sync();
+}

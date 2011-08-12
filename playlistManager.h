@@ -3,6 +3,7 @@
 
 #include <time.h>
 #include <stdio.h>
+#include <string>
 #include <QtGui>
 #include "Rule.h"
 #include "PlayList.h"
@@ -81,7 +82,6 @@ class PlaylistManager : public QMainWindow, private Ui::playListGenerator {
 };
 
 
-//Q_DECLARE_METATYPE(QList<PlayList>)
 
 #endif
 

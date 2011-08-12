@@ -23,6 +23,7 @@ protected:
 
 private slots:
     void editFont();
+    void onFinish(int result);
 
 };
 

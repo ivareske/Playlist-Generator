@@ -3,10 +3,10 @@
 #when renaming files in tag editor, specify a list of files to rename the renamed files.
 #qstring bindings for qtscript
 #subclass qsettings to check/make error message when non-existing value is asked for? all qsettings values should be initialized at startup
-#TEST READING OF APE TAGS/ITEMS
 #git messages appear in console windows...? why? probably does not matter as the program wont be installed in a git folder
 #change to master branch
 
+#what to do when multiple values for one frame/item id? xiphcommments can have multiple artists. looks like taglib uses the first one when asking for tag->artist()
 #test freopen stdout
 
 # The application version

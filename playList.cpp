@@ -21,7 +21,7 @@ PlayList::PlayList(const QString& name, QListWidget* parent) : QListWidgetItem(p
     includeExtInf_ = true;
     makeUnique_ = false;
     copyFiles_ = false;
-    script_ = "";    
+    script_ = "";
 
     setFlags( flags() | Qt::ItemIsEditable );
 
@@ -315,6 +315,7 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
 
     bool keepTags = guiSettings->value("keepTags").toBool();
     bool useScript = guiSettings->value("useScript").toBool();
+    showTaglibDebug = guiSettings->value("ShowTaglibDebug").toBool();
     QString format = guiSettings->value("format").toString();
     artistEmpty = guiSettings->value("artistEmpty").toBool();
     titleEmpty = guiSettings->value("titleEmpty").toBool();
@@ -322,7 +323,7 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
     commentEmpty = guiSettings->value("commentEmpty").toBool();
     genreEmpty = guiSettings->value("genreEmpty").toBool();
     trackEmpty = guiSettings->value("trackEmpty").toBool();
-    yearEmpty = guiSettings->value("yearEmpty").toBool();
+    yearEmpty = guiSettings->value("yearEmpty").toBool();    
 
     //the two first mandatory rules_
     QList<M3uEntry> plist;
@@ -438,6 +439,13 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
         p.setCancelButtonText("Cancel");
 
 
+        if(showTaglibDebug){
+            // Redirect cerr to stringstream buffer
+            sbuf = std::cerr.rdbuf();
+            buffer = new std::stringstream;
+            std::cerr.rdbuf(buffer->rdbuf());
+        }
+
         //process each of the files matching the specified extensions, and see if
         //they matches the rules/script
         for (int i = 0; i < n; i++) {
@@ -447,8 +455,12 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
                 log->append("\n\nCanceled by user");
                 return plist;
             }
-
-            tmplist = processFile(fileInfo[i], hasTagRule, hasAudioRule, keepTags, format, useScript, log, tags, &tagsCopy, canceled );
+            QString fileLog;
+            tmplist = processFile(fileInfo[i], hasTagRule, hasAudioRule, keepTags, format, useScript, &fileLog, tags, &tagsCopy, canceled );
+            if(!fileLog.isEmpty()){
+                fileLog.prepend("\n-------------------------------\n"+fileInfo[i].absoluteFilePath()+"\n");
+                log->append(fileLog);
+            }
 
             if (*canceled) {
                 return plist;
@@ -456,6 +468,12 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
             plist = plist + tmplist;
         }
         p.setValue(n);
+
+        if(showTaglibDebug){
+            //set the cerr back
+            std::cerr.rdbuf(sbuf);
+            delete buffer; buffer=0;
+        }
 
         qDebug() << "finished finding files";
     }
@@ -547,6 +565,9 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
     QString file = fileInfo.fileName();
     QString fullfile = fileInfo.absoluteFilePath();
 
+    if(showTaglibDebug){
+        buffer->str(""); //clear buffer for logging cerr/taglib debug
+    }
 
     Tag tag;
     if (hasTagRule || hasAudioRule || includeExtInf_) {
@@ -562,10 +583,16 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
             }
         }
         if (!tag.tagOk()) {
-            log->append("Could not read tag for " + fullfile + "\n");
+            log->append("\nCould not read tag");
         }
     }
 
+    if(showTaglibDebug){
+        QString taglibDebug = QString(buffer->str().c_str());
+        if(!taglibDebug.isEmpty()){
+            log->append("\nTaglib Debug info: "+taglibDebug);
+        }
+    }
 
     //only these are needed
     bool anyOk;

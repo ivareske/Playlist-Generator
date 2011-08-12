@@ -10,9 +10,7 @@
 SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     setupUi(this); // this sets up GUI
 
-    settings = Global::guiSettings();
-
-    ShowTagLibDebug->hide(); // not implemented anymore
+    settings = Global::guiSettings();    
 
     // signals/slots mechanism in action
 
@@ -97,6 +95,7 @@ void SettingsDialog::onFinish(int result) {
         settings->setValue("keepFolderStructure", keepFolderStructureCheckBox->isChecked());
         settings->setValue("overWriteFiles", overWriteFilesCheckBox->isChecked());
         settings->setValue("keepTags", keepTagsCheckBox->isChecked());
+        settings->setValue("ShowTagLibDebug", ShowTagLibDebug->isChecked());
         settings->sync();
     }
 
@@ -126,6 +125,7 @@ void SettingsDialog::setSettings() {
     keepFolderStructureCheckBox->setChecked(settings->value("keepFolderStructure").toBool());
     overWriteFilesCheckBox->setChecked(settings->value("overWriteFiles").toBool());
     keepTagsCheckBox->setChecked(settings->value("keepTags").toBool());
+    ShowTagLibDebug->setChecked(settings->value("ShowTagLibDebug").toBool());
 
 
 }

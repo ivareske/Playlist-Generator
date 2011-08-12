@@ -228,10 +228,10 @@ void Tag::clearFrames(){
 
 */
 void Tag::readFrames() {
-    //read all ID3v2 frames and APE items
+    //read all frames/items/attributes and store them in qhash frames_
+
     //http://kid3.sourcearchive.com/documentation/0.8.1/taglibframelist_8cpp-source.html
 
-    //qDebug()<<filename_;
     frames_.clear();
 
 
@@ -264,6 +264,12 @@ void Tag::readFrames() {
         readID3V2Frames( aifFile->tag(), "AIF"  );
     }
 
+    //flac
+    TagLib::FLAC::File *flacFile = dynamic_cast<TagLib::FLAC::File*>(file.file());
+    if( flacFile && flacFile->isValid() ){
+        readID3V2Frames( flacFile->ID3v2Tag(false), "ID3V2" );
+        readXiphComment(flacFile->xiphComment(false), "XIPH" );
+    }
 
     //APE items
     TagLib::APE::File *apeFile = dynamic_cast<TagLib::APE::File*>(file.file());
@@ -271,6 +277,17 @@ void Tag::readFrames() {
         readAPEItems( apeFile->APETag(), "APE"  );
     }
 
+    //wavpack
+    TagLib::WavPack::File *wavPackFile = dynamic_cast<TagLib::WavPack::File*>(file.file());
+    if( wavPackFile && wavPackFile->isValid() ){
+        readAPEItems( wavPackFile->APETag(false), "APE" );
+    }
+
+    //wavpack
+    TagLib::MPC::File *mpcFile = dynamic_cast<TagLib::MPC::File*>(file.file());
+    if( mpcFile && mpcFile->isValid() ){
+        readAPEItems( mpcFile->APETag(false), "APE" );
+    }
 
     //just like asf/mp4 tags, one vorbis item can have multiple values. How to handle this?
     //vorbis
@@ -285,10 +302,10 @@ void Tag::readFrames() {
         readXiphComment( speexFile->tag(), "XIPH" );
     }
 
-    //flac
-    TagLib::Ogg::FLAC::File *flacFile = dynamic_cast<TagLib::Ogg::FLAC::File*>(file.file());
-    if( flacFile && flacFile->isValid() ){
-        readXiphComment( flacFile->tag(), "XIPH" );
+    //ogg flac
+    TagLib::Ogg::FLAC::File *oggFlacFile = dynamic_cast<TagLib::Ogg::FLAC::File*>(file.file());
+    if( oggFlacFile && oggFlacFile->isValid() ){
+        readXiphComment( oggFlacFile->tag(), "XIPH" );
     }
 
 
@@ -307,11 +324,6 @@ void Tag::readFrames() {
         readASFAttributes( asfFile->tag(), "ASF" );
     }
 
-    //wavpack
-    TagLib::WavPack::File *wavPackFile = dynamic_cast<TagLib::WavPack::File*>(file.file());
-    if( wavPackFile && wavPackFile->isValid() ){
-        readAPEItems( wavPackFile->APETag(false), "APE" );
-    }
 
 
 }
@@ -332,7 +344,7 @@ bool Tag::readASFAttributes( TagLib::ASF::Tag *asfTag, const QString &type ){
             QString id = TStringToQString((*it).first);
             for(uint i=0;i<attributes.size();i++){
                 data = TStringToQString(attributes[i].toString());
-                qDebug()<<"ASF data: "<<id<<data;
+                qDebug()<<filename_<<" ASF data: "<<id<<data;
             }
             frames_.insert(type+"::"+id,data);
         }
@@ -358,7 +370,7 @@ bool Tag::readMP4Items( TagLib::MP4::Tag *mp4Tag, const QString &type ){
             TagLib::StringList stringList = (*it).second.toStringList();
             for(uint i=0;i<stringList.size();i++){
                 data = TStringToQString(stringList[i]);
-                qDebug()<<"MP4 data: "<<id<<data;
+                qDebug()<<filename_<<" MP4 data: "<<id<<data;
             }
             frames_.insert(type+"::"+id,data);
         }
@@ -378,6 +390,7 @@ bool Tag::readMP4Items( TagLib::MP4::Tag *mp4Tag, const QString &type ){
 bool Tag::readXiphComment( TagLib::Ogg::XiphComment *tag, const QString &type ) {
 
     if(tag) {
+        qDebug()<<"-------------------------ARTIST "<<TStringToQString(tag->artist());
         qDebug()<<"found "<<type<<" tag";
         TagLib::Ogg::FieldListMap map=tag->fieldListMap();
         for (TagLib::Ogg::FieldListMap::ConstIterator it = map.begin(); it != map.end(); ++it){
@@ -385,7 +398,7 @@ bool Tag::readXiphComment( TagLib::Ogg::XiphComment *tag, const QString &type ) 
             TagLib::StringList list = (*it).second;
             for(uint i=0;i<list.size();i++){
                 QString data = TStringToQString(list[i]);
-                qDebug()<<type<<id<<data;
+                qDebug()<<filename_<<" "<<type<<id<<data;
                 frames_.insert(type+"::"+id,data);
             }
         }
@@ -406,10 +419,9 @@ bool Tag::readID3V2Frames( TagLib::ID3v2::Tag *id3v2tag, const QString &type ){
     if(id3v2tag) {
         TagLib::ID3v2::FrameList::ConstIterator it = id3v2tag->frameList().begin();
         for(; it != id3v2tag->frameList().end(); it++){
-            //cout << (*it)->frameID() << " - \"" << (*it)->toString() << "\"" << endl;
             QString id = TStringToQString(TagLib::String((*it)->frameID()));
             QString content = TStringToQString((*it)->toString());
-            //qDebug()<<"ID3v2"<<id<<content;
+            qDebug()<<filename_<<" ID3v2"<<id<<content;
             frames_.insert(type+"::"+id,content);
         }
         return true;
@@ -431,7 +443,7 @@ bool Tag::readAPEItems( TagLib::APE::Tag *ape, const QString &type ){
 
             QString data = TStringToQString((*it).second.toString());
             QString id = TStringToQString((*it).first);
-            //qDebug()<<"APE: "<<id<<item.toString().toCString();
+            qDebug()<<filename_<<" APE: "<<id<<data;
             frames_.insert(type+"::"+id,data);
         }
         return true;

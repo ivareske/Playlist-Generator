@@ -27,6 +27,8 @@
 #include <apefile.h>
 #include <trueaudiofile.h>
 #include <wavpackfile.h>
+#include <mpcfile.h>
+#include <flacfile.h>
 
 
 class Tag {

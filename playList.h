@@ -88,12 +88,15 @@ class PlayList : public QListWidgetItem {
         bool allRulesTrue_;
         bool includeExtInf_;
         bool makeUnique_;
+        bool showTaglibDebug;
         QDir copyFilesToDir_;
         bool copyFiles_;
         QList<QFileInfo> individualFiles_;
-        QString script_;
+        QString script_;        
         //QDir outPutFolder_;        
-        QSettings* guiSettings;
+        QSettings* guiSettings;        
+        std::stringstream *buffer;
+        std::streambuf *sbuf;
 
         QStringList ID3v2Fields,apeItemKeys;
         bool artistEmpty,titleEmpty,albumEmpty,commentEmpty,genreEmpty,trackEmpty,yearEmpty;

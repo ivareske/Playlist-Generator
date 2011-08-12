@@ -1081,12 +1081,16 @@ void PlaylistManager::generatePlayLists(const QList<PlayList*> &playLists) {
     QStringList names;
     QTime timer; timer.start();
 
-    //freopen("log.txt","w",stdout);
+
+
+
+
+
     for (int i = 0; i < playLists.size(); i++) {
 
         PlayList* p = playLists[i];
         names.append(p->name());
-        log.append("Info for generation of playlist '" + p->name() + "'\n");
+        log.append("==================================================\nInfo for generation of playlist '" + p->name() + "'\n");
 
         QList<M3uEntry> songs;
         bool wasCanceled = p->generate(&songs, &log, &tags_);
@@ -1098,9 +1102,9 @@ void PlaylistManager::generatePlayLists(const QList<PlayList*> &playLists) {
         if (p->copyFiles()) {
             p->copyFoundFiles(songs, &log);
         }
-        log.append("\n----------------------------------------------------------\n");
+        //log.append("\n----------------------------------------------------------\n");
     }
-    //fclose(stdout);
+
     int milliSecs = timer.elapsed();
     if (names.size() != names.toSet().toList().size()) {
         //if some names are equal
@@ -1113,6 +1117,8 @@ void PlaylistManager::generatePlayLists(const QList<PlayList*> &playLists) {
             log.append("\n\n Total time used: " + QString::number(milliSecs) + " milliseconds\n");
         }
     }
+
+
     if (guiSettings->value("showLog").toBool()) {
         TextViewer t(this, &log);
         t.exec();
