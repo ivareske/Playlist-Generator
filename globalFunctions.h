@@ -2,9 +2,12 @@
 #define GLOBALFUNCTIONS_H
 
 #include <QtGui>
+#include <QtScript>
 
 namespace Global {
 
+    QList<QFileInfo> getDirContent(const QString& aPath, bool includeSubFolders, const QStringList &extensions, bool *canceled=false);
+    QString timeString( uint milliSeconds, const QString &format="hh:mm:ss:z" );
     QString versionCheck(QDataStream* in, bool* ok, QString* log);
     QSettings* guiSettings();
     bool checkIntValue(QVector<int> *intvals, const QString& val);
@@ -21,5 +24,6 @@ namespace Global {
 
 uint qHash(const QFileInfo& key);
 int qHash(const QDir& dir);
+
 
 #endif

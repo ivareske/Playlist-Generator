@@ -40,6 +40,15 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
 
     readGUISettings();
 
+    connect(pushButton,SIGNAL(clicked()),this,SLOT(testScript()));
+    plainTextEdit->setPlainText (Global::guiSettings()->value("script","").toString());
+
+}
+
+void PlaylistManager::testScript(){
+    QScriptEngine engine;
+    engine.evaluate(plainTextEdit->toPlainText()) ;
+    qDebug()<<engine.uncaughtExceptionBacktrace().join("\n");
 }
 
 /*!
@@ -69,6 +78,9 @@ void PlaylistManager::initGuiSettings() {
         guiSettings = Global::guiSettings();
     }
 
+
+
+    QHash<QString,QVariant> frameFields;
     QStringList ID3v2Fields;
     ID3v2Fields<<"AENC"<<"APIC"<<"COMM"<<"COMR"<<"ENCR"<<"EQUA"<<"ETCO"<<"GEOB"<<"GRID"<<"IPLS"<<"LINK"<<"MCDI"<<"MLLT"<<"OWNE" \
     <<"PRIV"<<"PCNT"<<"POPM"<<"POSS"<<"RBUF"<<"RVAD"<<"RVRB"<<"SYLT"<<"SYTC"<<"TALB"<<"TBPM"<<"TCOM"<<"TCON"<<"TCOP" \
@@ -76,16 +88,17 @@ void PlaylistManager::initGuiSettings() {
     "TOFN"<<"TOLY"<<"TOPE"<<"TORY"<<"TOWN"<<"TPE1"<<"TPE2"<<"TPE3"<<"TPE4"<<"TPOS"<<"TPUB"<<"TRCK"<<"TRDA"<<"TRSN"<<"TRSO"\
     <<"TSIZ"<<"TSRC"<<"TSSE"<<"TYER"<<"TXXX"<<"UFID"<<"USER"<<"USLT"<<"WCOM"<<"WCOP"<<"WOAF"<<"WOAR"<<"WOAS"<<"WORS"<<\
     "WPAY"<<"WPUB"<<"WXXX"<<"ASPI"<<"EQU2"<<"RVA2"<<"SEEK"<<"SIGN"<<"TDEN"<<"TDOR"<<"TDRC"<<"TDRL"<<"TDTG"<<"TIPL"<<\
-    "TMCL"<<"TMOO"<<"TPRO"<<"TSOA"<<"TSOP"<<"TSOT"<<"TSST";
-    if (!guiSettings->value("ID3v2Fields").canConvert(QVariant::StringList)) {
-        guiSettings->setValue("ID3v2Fields", ID3v2Fields );
-    }
+    "TMCL"<<"TMOO"<<"TPRO"<<"TSOA"<<"TSOP"<<"TSOT"<<"TSST";    
+    frameFields.insert("ID3V2",ID3v2Fields);
+
     QStringList apeItemKeys;apeItemKeys<<"Title"<<"Subtitle"<<"Artist"<<"Album"<<"Debut"<<"album"<<"Publisher"<<\
     "Conductor"<<"Track"<<"Composer"<<"Comment"<<"Copyright"<<"Publicationright"<<"File"<<"EAN/UPC"<<"ISBN"<<\
     "Catalog"<<"LC"<<"Year"<<"Record Date"<<"Record Location"<<"Genre"<<"Media"<<"Index"<<"Related"<<"ISRC"<<"Abstract"\
     <<"Language"<<"Bibliography"<<"Introplay"<<"Dummy";
-    if (!guiSettings->value("apeItemKeys").canConvert(QVariant::StringList)) {
-        guiSettings->setValue("apeItemKeys", apeItemKeys );
+    frameFields.insert("APE",apeItemKeys);
+
+    if (!guiSettings->value("frameFields").canConvert(QVariant::Hash)) {
+        guiSettings->setValue("frameFields", frameFields );
     }
 
     if (!guiSettings->value("style").canConvert(QVariant::String)) {
@@ -196,6 +209,7 @@ void PlaylistManager::createActions() {
     connect(actionOpen, SIGNAL(triggered()), this, SLOT(open()));
     connect(actionNew, SIGNAL(triggered()), this, SLOT(newCollection()));
     connect(actionClearTags, SIGNAL(triggered()), this, SLOT(clearTags()));
+    connect(actionMakeOnePlaylistForEveryArtist, SIGNAL(triggered()), this, SLOT(makePlayListForEveryArtist()));
     connect(actionAbout, SIGNAL(triggered()), this, SLOT(showAbout()));
 
 
@@ -212,6 +226,67 @@ void PlaylistManager::showAbout() {
     QMessageBox::information(this, "About", text);
 }
 
+/*!
+ \brief
+
+*/
+void PlaylistManager::makePlayListForEveryArtist() {
+
+    bool ok;
+    QString exts = QInputDialog::getText(0,"Specify Extensions","Extensions",QLineEdit::Normal,guiSettings->value("defaultExtensions").toStringList().join(";"),&ok);
+    if(!ok){
+        return;
+    }
+    QStringList extensions = exts.split(";");
+    QList<QDir> folders = this->selectFolders();
+    if(folders.size()==0){
+        return;
+    }
+    QList<QFileInfo> content;
+    bool keepTags = guiSettings->value("keepTags").toBool();
+    for(int i=0;i<folders.size();i++){
+        content += Global::getDirContent( folders[i].absolutePath(), true, extensions );
+    }
+    QStringList artists;
+    QProgressDialog pd("Processing files...", "Abort", 0, content.size() );
+    pd.setWindowModality(Qt::WindowModal);
+    for(int i=0;i<content.size();i++){
+        pd.setValue(i);
+        QString file = content[i].absoluteFilePath();
+        Tag tag = tags_[file];
+        if (tag.fileName().isEmpty()) {
+            tag = Tag(file);
+            tag.readTags();
+        }
+        if (keepTags) {
+            tag.readFrames();
+            tags_.insert(file, tag);
+        }
+        artists<<tag.artist();
+    }
+    pd.close();
+    artists = artists.toSet().toList(); //make unique
+    //playListTable->setUpdatesEnabled(false);
+    for(int i=0;i<artists.size();i++){
+        if(artists[i].isEmpty()){
+            continue;
+        }
+        PlayList *p = addPlayList(artists[i]);
+        Rule r;
+        r.setType(Rule::TAG_ARTIST_EQUALS);
+        r.setValue(artists[i]);
+        QVector<Rule> rules; rules<<r;
+        p->setRules(r);
+        p->setScript("ARTIST=='"+artists[i]+"'");
+        p->setFolders(folders);
+        if(i==artists.size()-1){
+            playListTable->setCurrentItem(p);
+        }
+    }
+    //playListTable->setUpdatesEnabled(true);
+
+
+}
 
 /*!
  \brief
@@ -339,16 +414,11 @@ void PlaylistManager::updatePlayList() {
 */
 void PlaylistManager::newCollection() {
 
-    updateCollection();
+    saveCollectionCheck();
 
-    if (!(lastSavedCollection_ == collection_)) {
-        int ret = QMessageBox::warning(this, "", "Save existing collection first?", QMessageBox::Yes, QMessageBox::No);
-        if (ret == QMessageBox::Yes) {
-            saveCollection();
-        }
-    }
-
-    collection_ = PlayListCollection();
+    QFileInfo f(collection_.name());
+    QString name = newUniqePlayListCollectionName( f.absoluteDir() );
+    collection_ = PlayListCollection(name);
     lastSavedCollection_ = collection_;
 
     initialize();
@@ -368,7 +438,7 @@ void PlaylistManager::writeGUISettings() {
     guiSettings->setValue("pos", this->pos());
     guiSettings->endGroup();
     guiSettings->setValue("collection", collection_.name());
-
+    guiSettings->setValue("script",plainTextEdit->toPlainText());
     guiSettings->sync();
     //delete guiSettings;
 
@@ -394,7 +464,7 @@ void PlaylistManager::readGUISettings() {
 
     QFileInfo collectionFile(guiSettings->value("collection", QDesktopServices::storageLocation(QDesktopServices::MusicLocation) + "/New collection" + Global::ext).toString());
     loadCollection(collectionFile);
-    initialize();
+
 }
 
 
@@ -404,13 +474,7 @@ void PlaylistManager::readGUISettings() {
 */
 void PlaylistManager::open() {
 
-    updateCollection();
-    if (!(lastSavedCollection_ == collection_)) {
-        int ret = QMessageBox::warning(this, "", "Save existing collection first?", QMessageBox::Yes, QMessageBox::No);
-        if (ret == QMessageBox::Yes) {
-            saveCollection();
-        }
-    }
+    saveCollectionCheck();
 
 
     QDir dir(collection_.name());
@@ -425,7 +489,7 @@ void PlaylistManager::open() {
     QFileInfo file(fileName);
 
     loadCollection(file);
-    initialize();
+
 
 }
 
@@ -438,6 +502,16 @@ void PlaylistManager::initialize() {
 
     qDebug() << "Initializing";
     //enableOptions( false );
+
+    playListTable->clear();
+    QList<PlayList> playLists = collection_.playLists();
+    for (int i = 0; i < playLists.size(); i++) {
+        PlayList* p = new PlayList;
+        *p = playLists[i];
+        p->setFlags( p->flags() | Qt::ItemIsEditable );
+        playListTable->addItem(p);
+    }
+    guiSettings->setValue("outPutPath", collection_.outPutPath().absolutePath());
     updateUseScript();
     showRulesAndFolders();
 
@@ -455,12 +529,13 @@ void PlaylistManager::updateUseScript() {
     if (guiSettings->value("useScript").toBool()) {
         rulesFrame->hide();
         RuleScript->show();
-        allRulesTrue->setEnabled(false);
-    }
-    else {
+        //allRulesTrue->setEnabled(false);
+        allRulesTrue->hide();
+    }else {
         rulesFrame->show();
         RuleScript->hide();
-        allRulesTrue->setEnabled(true);
+        //allRulesTrue->setEnabled(true);
+        allRulesTrue->show();
     }
 }
 
@@ -551,7 +626,7 @@ PlayList* PlaylistManager::currentPlayList() {
 
  \return QList<QDir>
 */
-QList<QDir> PlaylistManager::selectFolders() {
+QList<QDir> PlaylistManager::selectFolders( QAbstractItemView::SelectionMode mode ) {
 
     QList<QDir> dirs;
 
@@ -564,7 +639,7 @@ QList<QDir> PlaylistManager::selectFolders() {
     }
     QListView* l = dialog.findChild<QListView*>("listView");
     if (l) {
-        l->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        l->setSelectionMode(mode);
     }
     if (dialog.exec() != QDialog::Accepted) {
         return dirs;
@@ -617,131 +692,24 @@ void PlaylistManager::addFolder() {
     showRulesAndFolders();
 }
 
-/*
-!
+
+
+/*!
  \brief
 
- \param item
-*
-  /
-void PlaylistManager::renameFolder(QListWidgetItem* item) {
-
-    QList<QListWidgetItem*> selected = playListTable->selectedItems();
-    if (selected.size() > 1) {
-        QMessageBox::critical(this, "", "Not allowed when more than one playlist is selected...");
-        showRulesAndFolders();
-        return;
-    }
-
-    PlayList* p = currentPlayList();
-    if (!p || !folderTable->currentItem()) {
-        return;
-    }
-    int ind = folderTable->currentRow();
-    QList<QDir> folders = p->folders();
-    QString oldName = folders[ind].absolutePath();
-    QString newName = item->text();
-    QDir d(newName);
-    if (!d.exists()) {
-        QMessageBox::critical(this, "",
-                              "Folder " + newName + " does not exist",
-                              QMessageBox::Ok,
-                              QMessageBox::Ok);
-        item->setText(oldName);
-        return;
-    }
-    if (!d.isAbsolute()) {
-        QMessageBox::critical(0, "",
-                              "Folder " + newName + " is not an absolute path",
-                              QMessageBox::Ok, QMessageBox::Ok);
-        item->setText(oldName);
-        return;
-    }
-    folders[ind] = QDir(newName);
-    p->setFolders(folders);
-    qDebug() << "renamed from " << oldName << " to " << item->text();
-
-}
 */
+void PlaylistManager::saveCollectionCheck() {
 
-/*
-!
- \brief
-
- \param item
-*
-/
-void PlaylistManager::changeFolder(QListWidgetItem* item) {
-
-    QList<QListWidgetItem*> selected = playListTable->selectedItems();
-    if (selected.size() > 1) {
-        QMessageBox::critical(this, "", "Not allowed when more than one playlist is selected...");
-        showRulesAndFolders();
-        return;
+    updateCollection();
+    QFileInfo f(collection_.name());
+    if ( !(lastSavedCollection_==collection_) || !f.exists() ) {
+        int ret = QMessageBox::warning(this, "", "Save existing collection first?", QMessageBox::Yes, QMessageBox::No);
+        if (ret == QMessageBox::Yes) {
+            saveCollection();
+        }
     }
-
-    PlayList* p = currentPlayList();
-    if (!p) {
-        return;
-    }
-    int ind = folderTable->currentRow();
-    QList<QDir> folders = p->folders();
-    QString oldName = folders[ind].absolutePath();
-    QString dir = QFileDialog::getExistingDirectory(this, tr("Select Directory"),
-                  oldName, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-
-    if (dir.isEmpty()) {
-        return;
-    }
-    item->setText(dir);
-    folders[ind] = QDir(dir);
-    p->setFolders(folders);
-
 }
-*/
 
-
-/*
-!
- \brief
-
-*
-/
-void PlaylistManager::removeFolder() {
-
-    QList<QListWidgetItem*> selected = playListTable->selectedItems();
-    if (selected.size() > 1) {
-        int ret = QMessageBox::critical(this, "", "More than one playlist selected:\nThe folders you choose will be removed from all selected playlists, continue?", QMessageBox::Yes, QMessageBox::No);
-        if (ret != QMessageBox::Yes) {
-            return;
-        }
-        QList<QDir> dirs = selectFolders();
-        if (dirs.size() == 0) {
-            return;
-        }
-        for (int i = 0; i < selected.size(); i++) {
-            PlayList* p = static_cast<PlayList*>(selected[i]);
-            QList<QDir> folders = p->folders();
-            for (int j = 0; j < dirs.size(); j++) {
-                folders.removeAll(dirs[j]);
-            }
-            p->setFolders(folders);
-        }
-        showRulesAndFolders();
-        return;
-    }
-
-    PlayList* p = currentPlayList();
-    int ind = folderTable->currentRow();
-    if (ind == -1 || !p) {
-        return;
-    }
-    QList<QDir> folders = p->folders();
-    folders.removeAt(ind);
-    delete folderTable->takeItem(ind);
-    p->setFolders(folders);
-}
-*/
 
 /*!
  \brief
@@ -750,14 +718,7 @@ void PlaylistManager::removeFolder() {
 */
 void PlaylistManager::closeEvent(QCloseEvent* event) {
 
-    updateCollection();
-
-    if (!(lastSavedCollection_ == collection_)) {
-        int ret = QMessageBox::warning(this, "", "Save existing collection first?", QMessageBox::Yes, QMessageBox::No);
-        if (ret == QMessageBox::Yes) {
-            saveCollection();
-        }
-    }
+    saveCollectionCheck();
 
     writeGUISettings();
 }
@@ -912,17 +873,7 @@ void PlaylistManager::loadCollection(const QFileInfo& file) {
 
     collection_ = collection;
     lastSavedCollection_ = collection_;
-    playListTable->clear();
-    QList<PlayList> playLists = collection_.playLists();
-    for (int i = 0; i < playLists.size(); i++) {
-        PlayList* p = new PlayList;        
-        *p = playLists[i];
-        p->setFlags( p->flags() | Qt::ItemIsEditable );
-        playListTable->addItem(p);
-    }
-
-
-    guiSettings->setValue("outPutPath", collection.outPutPath().absolutePath());
+    initialize();
 
 
 }
@@ -933,11 +884,13 @@ void PlaylistManager::loadCollection(const QFileInfo& file) {
 */
 void PlaylistManager::saveCollectionAs() {
 
+    /*
     QDir dir(collection_.name());
     if (!dir.exists()) {
         dir = QDir(QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
     }
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save file as..."), dir.absolutePath(), "*" + Global::ext);
+    */
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save file as..."), collection_.name(), "*" + Global::ext);
 
     if (fileName.isNull() || fileName.isEmpty()) {
         return;
@@ -1076,21 +1029,16 @@ void PlaylistManager::generatePlayLists(const QList<PlayList*> &playLists) {
         return;
     }
 
-
     QString log;
     QStringList names;
     QTime timer; timer.start();
-
-
-
-
 
 
     for (int i = 0; i < playLists.size(); i++) {
 
         PlayList* p = playLists[i];
         names.append(p->name());
-        log.append("==================================================\nInfo for generation of playlist '" + p->name() + "'\n");
+        log.append("\n==================================================\nInfo for generation of playlist '" + p->name() + "'\n");
 
         QList<M3uEntry> songs;
         bool wasCanceled = p->generate(&songs, &log, &tags_);
@@ -1105,17 +1053,14 @@ void PlaylistManager::generatePlayLists(const QList<PlayList*> &playLists) {
         //log.append("\n----------------------------------------------------------\n");
     }
 
-    int milliSecs = timer.elapsed();
+    //int milliSecs = timer.elapsed();
     if (names.size() != names.toSet().toList().size()) {
         //if some names are equal
         log.append("Warning, some playlists have identical names!\n");
     }
-    if (playLists.size() > 1) {
-        if(milliSecs>1000){
-            log.append("\n\n Total time used: " + QString::number(double(milliSecs/1000),'f',1) + " seconds\n");
-        }else{
-            log.append("\n\n Total time used: " + QString::number(milliSecs) + " milliseconds\n");
-        }
+    if (playLists.size() > 1) {        
+        int time = timer.elapsed();
+        log.append("\n\n Total time used: " + Global::timeString(time));
     }
 
 
@@ -1125,7 +1070,30 @@ void PlaylistManager::generatePlayLists(const QList<PlayList*> &playLists) {
     }
 }
 
+/*!
+ \brief
+ \param dir
+ \return QString
+*/
+QString PlaylistManager::newUniqePlayListCollectionName( const QDir &dir ){
 
+    QString name = "New Collection";
+    int k = 0;
+    while (1) {
+        if (k > 0) {
+            name = "New Collection" + QString::number(k);
+        }
+        bool ok = true;
+        if( QFile::exists( dir.absoluteFilePath(name+Global::ext) ) ){
+            ok=false;
+        }
+        if (ok) {
+            break;
+        }
+        k++;
+    }
+    return name;
+}
 
 /*!
  \brief
@@ -1162,16 +1130,18 @@ QString PlaylistManager::newUniqePlayListName() {
  \brief
 
 */
-void PlaylistManager::addPlayList() {
+PlayList* PlaylistManager::addPlayList( QString name ) {
     //add a new playlist to the table
 
-    QString name = newUniqePlayListName();
+    if(name.isEmpty()){
+        name = newUniqePlayListName();
+    }
     PlayList* p = new PlayList(name);
     p->setFlags(p->flags() | Qt::ItemIsEditable);
     playListTable->addItem(p);
     playListTable->setCurrentItem(p);    
 
-
+    return p;
 }
 
 /*!

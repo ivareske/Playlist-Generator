@@ -6,8 +6,10 @@
 #git messages appear in console windows...? why? probably does not matter as the program wont be installed in a git folder
 #change to master branch
 
-#what to do when multiple values for one frame/item id? xiphcommments can have multiple artists. looks like taglib uses the first one when asking for tag->artist()
-#test freopen stdout
+#sjekk at frames/items leses rett
+#lag noe hjelpetekst for scripting og evt. annet
+#bytt til editingfinished for extensions
+#legg til dialog i settings for xiph, asf etc. frames
 
 # The application version
 VERSION = 1.0

@@ -210,7 +210,7 @@ QVariant Tag::getTag( Tag::TagField field ){
 
 */
 
-QHash<QString,QString> Tag::frames() const{
+QHash< QString, QHash<QString,QStringList> > Tag::frames() const{
     return frames_;
 }
 
@@ -337,17 +337,19 @@ bool Tag::readASFAttributes( TagLib::ASF::Tag *asfTag, const QString &type ){
     if(asfTag){
         qDebug()<<"found ASF tag";
         //ASF items
+        QHash<QString,QStringList> list = frames_[type];
         for(TagLib::ASF::AttributeListMap::ConstIterator it = asfTag->attributeListMap().begin(); it != asfTag->attributeListMap().end(); ++it){
 
             TagLib::List<TagLib::ASF::Attribute> attributes = (*it).second;
-            QString data;
+            QStringList data;
             QString id = TStringToQString((*it).first);
             for(uint i=0;i<attributes.size();i++){
-                data = TStringToQString(attributes[i].toString());
-                qDebug()<<filename_<<" ASF data: "<<id<<data;
+                data << TStringToQString(attributes[i].toString());
             }
-            frames_.insert(type+"::"+id,data);
+            //qDebug()<<type<<id<<data;
+            list.insert(id,data);
         }
+        frames_[type] = list;
         return true;
     }else{
         return false;
@@ -364,16 +366,18 @@ bool Tag::readMP4Items( TagLib::MP4::Tag *mp4Tag, const QString &type ){
     if(mp4Tag){
         qDebug()<<"found mp4 tag";
 
+        QHash<QString,QStringList> list = frames_[type];
         for(TagLib::MP4::ItemListMap::ConstIterator it = mp4Tag->itemListMap().begin(); it != mp4Tag->itemListMap().end(); ++it){
-            QString data;
+            QStringList data;
             QString id = TStringToQString((*it).first);
             TagLib::StringList stringList = (*it).second.toStringList();
             for(uint i=0;i<stringList.size();i++){
-                data = TStringToQString(stringList[i]);
-                qDebug()<<filename_<<" MP4 data: "<<id<<data;
+                data << TStringToQString(stringList[i]);
             }
-            frames_.insert(type+"::"+id,data);
+            //qDebug()<<type<<id<<data;
+            list.insert(id,data);
         }
+        frames_[type]=list;
         return true;
     }else{
         return false;
@@ -390,18 +394,19 @@ bool Tag::readMP4Items( TagLib::MP4::Tag *mp4Tag, const QString &type ){
 bool Tag::readXiphComment( TagLib::Ogg::XiphComment *tag, const QString &type ) {
 
     if(tag) {
-        qDebug()<<"-------------------------ARTIST "<<TStringToQString(tag->artist());
-        qDebug()<<"found "<<type<<" tag";
+        QHash<QString,QStringList> list = frames_[type];
         TagLib::Ogg::FieldListMap map=tag->fieldListMap();
         for (TagLib::Ogg::FieldListMap::ConstIterator it = map.begin(); it != map.end(); ++it){
             QString id = TStringToQString(TagLib::String((*it).first));
-            TagLib::StringList list = (*it).second;
-            for(uint i=0;i<list.size();i++){
-                QString data = TStringToQString(list[i]);
-                qDebug()<<filename_<<" "<<type<<id<<data;
-                frames_.insert(type+"::"+id,data);
+            TagLib::StringList list2 = (*it).second;
+            QStringList data;
+            for(uint i=0;i<list2.size();i++){
+                data << TStringToQString(list2[i]);
             }
+            //qDebug()<<type<<id<<data;
+            list.insert(id,data);
         }
+        frames_[type] = list;
         return true;
     }else{
         return false;
@@ -417,13 +422,19 @@ bool Tag::readXiphComment( TagLib::Ogg::XiphComment *tag, const QString &type ) 
 */
 bool Tag::readID3V2Frames( TagLib::ID3v2::Tag *id3v2tag, const QString &type ){
     if(id3v2tag) {
+        QHash<QString,QStringList> list = frames_[type];
         TagLib::ID3v2::FrameList::ConstIterator it = id3v2tag->frameList().begin();
         for(; it != id3v2tag->frameList().end(); it++){
             QString id = TStringToQString(TagLib::String((*it)->frameID()));
-            QString content = TStringToQString((*it)->toString());
-            qDebug()<<filename_<<" ID3v2"<<id<<content;
-            frames_.insert(type+"::"+id,content);
-        }
+            TagLib::ID3v2::FrameList l = id3v2tag->frameListMap()[id.toUtf8().data()];
+            QStringList data;
+            for(uint i=0;i<l.size();i++){
+                data << TStringToQString(l[i]->toString());
+            }
+            list.insert(id,data);
+            //qDebug()<<type<<id<<data;
+        }        
+        frames_[type]=list;
         return true;
     }else{
         qDebug()<<"no id3v2 tag in mpeg file";
@@ -439,13 +450,19 @@ bool Tag::readID3V2Frames( TagLib::ID3v2::Tag *id3v2tag, const QString &type ){
 
 bool Tag::readAPEItems( TagLib::APE::Tag *ape, const QString &type ){
     if(ape) {
+        QHash<QString,QStringList> list = frames_[type];
+        QHash<QString,QStringList> items;
         for(TagLib::APE::ItemListMap::ConstIterator it = ape->itemListMap().begin(); it != ape->itemListMap().end(); ++it){
-
             QString data = TStringToQString((*it).second.toString());
             QString id = TStringToQString((*it).first);
-            qDebug()<<filename_<<" APE: "<<id<<data;
-            frames_.insert(type+"::"+id,data);
+            items[id]<<data;
         }
+        QStringList keys = items.keys();
+        for(int i=0;i<keys.size();i++){
+            list.insert(keys[i],items[keys[i]]);
+            //qDebug()<<type<<keys[i]<<items[keys[i]];
+        }        
+        frames_[type]=list;
         return true;
     }else{
         qDebug()<<"no ape tag";

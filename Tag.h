@@ -29,6 +29,7 @@
 #include <wavpackfile.h>
 #include <mpcfile.h>
 #include <flacfile.h>
+#include <id3v2frame.h>
 
 
 class Tag {
@@ -60,7 +61,7 @@ class Tag {
 
         void readFrames();
         void clearFrames();
-        QHash<QString, QString> frames() const;                        
+        QHash< QString, QHash<QString,QStringList> > frames() const;
 
 private:
 
@@ -70,7 +71,8 @@ private:
         bool readMP4Items(TagLib::MP4::Tag *mp4Tag, const QString &type="MP4");
         bool readASFAttributes(TagLib::ASF::Tag *asfTag, const QString &type="ASF");
 
-        QHash<QString,QString> frames_;
+        //QHash<QString,QStringList> = frames_["ID3V2"]; //usage
+        QHash< QString, QHash<QString,QStringList> > frames_;
         QString filename_;
         QString artist_;
         QString title_;

@@ -14,8 +14,8 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
 
     // signals/slots mechanism in action
 
-    connect(ID3v2FramesButton, SIGNAL(clicked()), this, SLOT(editID3v2Frames()));
-    connect(apeItemKeysButton, SIGNAL(clicked()), this, SLOT(editAPEItemKeys()));
+    connect(ID3v2FramesButton, SIGNAL(clicked()), this, SLOT(editFrameFields()));
+    connect(apeItemKeysButton, SIGNAL(clicked()), this, SLOT(editFrameFields()));
     connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
     connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
     connect(fileDialog, SIGNAL(clicked()), this, SLOT(setOutPutDir()));
@@ -28,32 +28,38 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
 
 /*!
   \brief
-
+  \param type
 */
-void SettingsDialog::editID3v2Frames(){
+void SettingsDialog::editFrameFields(){
+
+    QObject* s = QObject::sender();;
+    if( s==0 ){
+        qDebug()<<"SettingsDialog::editFrameFields, ERROR, NULL POINTER SENDER!";
+        return;
+    }
+    QString type;
+    if(s==ID3v2FramesButton){
+        type="ID3V2";
+    }else if(s==apeItemKeysButton){
+        type="APE";
+    }else{
+        qDebug()<<"SettingsDialog::editFrameFields, UNKNOWN SENDER!";
+        return;
+    }
+
     TextViewer t;
     t.label()->setText("Warning: Do not edit these values unless you know what you are doing!");
-    t.setText( settings->value("ID3v2Fields", QStringList()).toStringList().join("\n") );
+    QHash<QString,QVariant> frameFields = settings->value("frameFields").toHash();
+    t.setText( frameFields[type].toStringList().join("\n").toUpper() );
+    t.getTextEdit()->setReadOnly(false);
     if(t.exec()!=QDialog::Accepted){
         return;
     }
-    settings->setValue("ID3v2Fields",t.getTextEdit()->toPlainText().split("\n"));
+    QStringList list = t.getTextEdit()->toPlainText().split("\n");
+    frameFields[type] = list;
+    settings->setValue("frameFields",QVariant::fromValue(frameFields));
 }
 
-/*!
-  \brief
-
-*/
-void SettingsDialog::editAPEItemKeys(){
-//KOMMET HIT, LEGG TIL DREFAULT VALUES VED STARTUP OG Og iMPLEMENTER I PLAYLIST
-    TextViewer t;
-    t.label()->setText("Warning: Do not edit these values unless you know what you are doing!");
-    t.setText( settings->value("apeItemKeys", QStringList()).toStringList().join("\n") );
-    if(t.exec()!=QDialog::Accepted){
-        return;
-    }
-    settings->setValue("apeItemKeys",t.getTextEdit()->toPlainText().split("\n"));
-}
 /*!
  \brief
 

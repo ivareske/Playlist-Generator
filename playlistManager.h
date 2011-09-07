@@ -24,16 +24,20 @@ class PlaylistManager : public QMainWindow, private Ui::playListGenerator {
 
     public:
 
-        PlaylistManager(QWidget* parent = 0);
+    PlaylistManager(QWidget* parent = 0);
 
-    protected:
+protected:
         void closeEvent(QCloseEvent* event);
 
     private slots:
+        void saveCollectionCheck();
+        void makePlayListForEveryArtist();
+        void testScript();
         void editStyleDialog();
         void initGuiSettings();
         void showAbout();
         QString newUniqePlayListName();
+        QString newUniqePlayListCollectionName( const QDir &dir );
         void updateUseScript();
         void addIndividualFiles();
         void createActions();
@@ -44,8 +48,8 @@ class PlaylistManager : public QMainWindow, private Ui::playListGenerator {
         void generateAllPlayLists();
         void generateSelectedPlayLists();
         void generatePlayLists( const QList<PlayList*> &playLists );
-        void addPlayList();
-        void removePlayList();        
+        PlayList* addPlayList( QString name="" );
+        void removePlayList();
 
         void newRule();
         void editRule();
@@ -68,7 +72,7 @@ class PlaylistManager : public QMainWindow, private Ui::playListGenerator {
         void enableOptions(bool state);
         void clearTags();
         void updatePlayList();
-        QList<QDir> selectFolders();
+        QList<QDir> selectFolders( QAbstractItemView::SelectionMode mode = QAbstractItemView::ExtendedSelection );
 
 
     private:
@@ -80,7 +84,6 @@ class PlaylistManager : public QMainWindow, private Ui::playListGenerator {
         QHash<QString, Tag> tags_;
 
 };
-
 
 
 #endif

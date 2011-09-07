@@ -236,14 +236,11 @@ bool PlayList::generate(QList<M3uEntry> *songsOut, QString* log, QHash<QString, 
     }
 
     int milliSecs = timer.elapsed();
-    qDebug() << "time used: " << milliSecs/1000;
+    QString timeUsed = Global::timeString(milliSecs);
+    qDebug() << "time used: " << timeUsed<<milliSecs;
 
     log->append("\n Found " + QString::number(songs.size()) + " songs for " + name());
-    if(milliSecs>1000){
-        log->append("\nTime used: " + QString::number(double(milliSecs/1000),'f',1) + " seconds");
-    }else{
-        log->append("\nTime used: " + QString::number(milliSecs) + " milliseconds\n\n");
-    }
+    log->append("\nTime used: " + timeUsed);
 
     if (songs.isEmpty()) {
         QMessageBox::information(0, "",
@@ -310,8 +307,7 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
     //UNSURE IF THAT WOULD HAVE SLOWED THINGS DOWN
 
     //store the ID3v2 fields and APE item keys before processing files
-    ID3v2Fields = guiSettings->value("ID3v2Fields", QStringList()).toStringList();
-    apeItemKeys = guiSettings->value("apeItemKeys", QStringList()).toStringList();
+    frameFields = guiSettings->value("frameFields").toHash();
 
     bool keepTags = guiSettings->value("keepTags").toBool();
     bool useScript = guiSettings->value("useScript").toBool();
@@ -416,7 +412,7 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
             }
 
             //get content from the specified folder(s)
-            fileInfo = fileInfo + getDirContent(folders_[i].absolutePath(),canceled);
+            fileInfo = fileInfo + Global::getDirContent(folders_[i].absolutePath(),includeSubFolders_,extensions_, canceled);
             if(*canceled){
                 log->append("\n\nCanceled by user");
                 return plist;
@@ -426,6 +422,7 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
 
         //make unique
         fileInfo = fileInfo.toSet().toList();
+
 
         //local copy of QHash tags: new read tags are inserted into global tags. used files are removed from local qhash tags to increase lookup speed
         QHash<QString, Tag> tagsCopy = *tags;
@@ -495,53 +492,6 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
 }
 
 
-
-/*!
- \brief
-
- \param aPath
- \return QList<QFileInfo>
-*/
-QList<QFileInfo> PlayList::getDirContent(const QString& aPath, bool *canceled) const {
-
-    // append the filtered files to this list
-
-    //decide to include subfolder or not
-    QDirIterator::IteratorFlag subdirFlag;
-    if (includeSubFolders_) {
-        subdirFlag = QDirIterator::Subdirectories;
-    }
-    else {
-        subdirFlag = QDirIterator::NoIteratorFlags;
-    }
-
-    // set dir iterator
-    QDirIterator* dirIterator = new QDirIterator(aPath,
-                                                 extensions_,
-                                                 QDir::Files | QDir::NoSymLinks,
-                                                 subdirFlag);
-
-
-    QList<QFileInfo> fileInfo;
-    QProgressDialog p("Locating files matching specified extensions..." + name(), "Abort", 0, 0, 0);
-    p.setWindowModality(Qt::WindowModal);
-
-    while (dirIterator->hasNext()) {
-        if(p.wasCanceled()){
-            if(canceled!=0){
-                *canceled=true;
-            }
-            return fileInfo;
-        }
-        dirIterator->next();
-        fileInfo.append(dirIterator->fileInfo());
-
-    }
-    p.close();
-    delete dirIterator;
-    qDebug() << "Finished!";
-    return fileInfo;
-}
 
 /*!
  \brief
@@ -657,6 +607,41 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
     return list;
 }
 
+
+/*!
+ \brief
+
+ \param context
+ \param engine
+*/
+QScriptValue PlayList::contains(QScriptContext *context, QScriptEngine *engine){
+
+    qDebug()<<context->argument(0).toVariant()<<context->argument(1).toVariant();
+    if(!context->argumentCount()!=2){
+        qDebug()<<"invalid number of arguments";
+        return false;
+    }
+    if(!context->argument(0).isArray() || !context->argument(0).isString() ){
+        qDebug()<<"wrong argument types";
+        return false;
+    }
+    QScriptValue array = context->argument(0);
+    QString string = context->argument(1).toString();
+    int length = array.property("length").toInteger();
+    for(int i=0; i<length; i++){
+        if( array.property(i).toString()==string ){
+            return true;
+        }
+    }
+    return false;
+}
+
+QScriptValue PlayList::myAdd(QScriptContext *context, QScriptEngine *engine){
+    QScriptValue a = context->argument (0);
+    QScriptValue b = context->argument (1);
+    return a.toNumber () + b.toNumber ();
+}
+
 /*!
  \brief
 
@@ -673,25 +658,35 @@ bool PlayList::evaluateScript( const Tag& tag, const QFileInfo& fileInfo, QStrin
 
     QScriptEngine engine;
 
-    //add ID3v2 frames as variables in script
-    //qDebug()<<"size of ID3v2Fields in script "<<ID3v2Fields.size();
-    QHash<QString,QString> frames = tag.frames(); //returns both ID3v2 frames and APE items
-    //QStringList keys = frames.keys();
-    for(int i=0;i<ID3v2Fields.size();i++){
-        QString id = ID3v2Fields[i];
-        QString data = frames[id]; //will return empty string if non-existent
-        //qDebug()<<"ID3v2 script: "<<id<<data;
-        engine.globalObject().setProperty( id, data );
+    //add all possible/specified id3v2 frames/ape items etc. to script, with empty array as value
+    QHash< QString, QHash<QString,QStringList> > tagFrames = tag.frames(); //returns both ID3v2 frames and APE items
+    QStringList frameTypes = frameFields.keys(); //defined list of possible frames
+    for(int j=0;j<frameTypes.size();j++){
+        QString type = frameTypes[j]; //e.g. APE, ID3V2 etc.
+        QStringList frameTypeKeys = frameFields[type].toStringList();
+        QScriptValue array = engine.newArray(frameTypeKeys.size());
+        QHash<QString,QStringList> tagTypeFrames = tagFrames[type];
+        QStringList tagTypeFramesKeys = tagTypeFrames.keys();
+        //loop for instance all ID3V2 frames
+        QScriptValue v = engine.newArray(0);
+        for(int i=0;i<frameTypeKeys.size();i++){
+            v.setProperty(0, QScriptValue(&engine, "")); //set default value an empty array
+            array.setProperty(frameTypeKeys[i].toUpper(), v);
+        }//now add all frames from current tag
+        for(int i=0;i<tagTypeFramesKeys.size();i++){
+            QStringList list = tagTypeFrames[tagTypeFramesKeys[i]];
+            for(int k=0;k<list.size();k++){
+                v.setProperty(k, list[k]);
+                qDebug()<<type<<tagTypeFramesKeys[i]<<list[k];
+            }
+            array.setProperty(tagTypeFramesKeys[i].toUpper(), v);
+        }
+        engine.globalObject().setProperty(type,array);
     }
 
-    //add APE item keys as variables in script
-    //QStringList keys = frames.keys();
-    for(int i=0;i<apeItemKeys.size();i++){
-        QString id = apeItemKeys[i];
-        QString data = frames[id]; //will return empty string if non-existent
-        //qDebug()<<"APE SCRIPT: "<<id<<data;
-        engine.globalObject().setProperty( id, data );
-    }
+    QString containsFunctions = "\nfunction contains(a, str) { print(a.length); for ( i = 0; i < a.length; i++) { print(a[i]); if(a[i]==str){return true;} } return false; }\n";
+
+    //PROBLEMET MED SCRIPT ER AT . IKKE ER TILLAT I VARIABEL NAVN! HUSK Å SLETTE INI SETTINGS
 
     //add tag data  as variables to script
     engine.globalObject().setProperty("ARTIST",tag.artist());
@@ -709,7 +704,9 @@ bool PlayList::evaluateScript( const Tag& tag, const QFileInfo& fileInfo, QStrin
     engine.globalObject().setProperty("FILENAME",fileInfo.fileName());
     engine.globalObject().setProperty("FILEPATH",fileInfo.filePath());    
 
-    QScriptValue result = engine.evaluate( script_ );
+    qDebug()<<"------------------------------evaluating script";
+    QScriptValue result = engine.evaluate( containsFunctions+script_ );
+    qDebug()<<"------------------------------end evaluating script";
     if( engine.hasUncaughtException() ){
         QString err = engine.uncaughtExceptionBacktrace().join("\n");
         log->append(err);

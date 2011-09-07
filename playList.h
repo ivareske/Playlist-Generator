@@ -28,7 +28,7 @@ class PlayList : public QListWidgetItem {
         //~PlayList();
         //PlayList( const PlayList &other );
         bool generate(QList<M3uEntry> *songsOut, QString* log, QHash<QString, Tag> *tags);
-        void copyFoundFiles(QList<M3uEntry> songs, QString* log);
+        void copyFoundFiles(QList<M3uEntry> songs, QString* log);        
 
         QString name() const;
         QVector<Rule> rules() const;
@@ -68,15 +68,16 @@ class PlayList : public QListWidgetItem {
 
     private:
 
-        QList<M3uEntry> findFiles(bool* canceled, QString* log, QHash<QString, Tag> *tags);
-        QList<QFileInfo> getDirContent(const QString& aPath, bool *canceled=false) const;
+        QList<M3uEntry> findFiles(bool* canceled, QString* log, QHash<QString, Tag> *tags);        
         void checkRange(const QVector<int> &intvals, int value, bool* allOk, bool* anyOk, bool shouldBeTrue) const;
         bool writeM3U(const QString& file, const QList<M3uEntry> &songs, QString* log = 0) const;
         void checkRule(bool value, bool* allOk, bool* anyOk, bool shouldBeTrue) const;
         QList<M3uEntry> processFile(const QFileInfo& fileInfo, bool hasTagRule, bool hasAudioRule,bool keepTags, const QString &format, bool useScript, QString* log, QHash<QString, Tag> *tags, QHash<QString, Tag> *tagsCopy, bool *wasCanceled) const;
         QString createExtInfString(const Tag& tag, const QString& file, const QString& format_) const;
         void evaluateRules(const Tag& tag, const QString& file, bool* allOk, bool* anyOk) const;
-        bool evaluateScript( const Tag& tag, const QFileInfo& fileInfo, QString *log ) const;
+        bool evaluateScript( const Tag& tag, const QFileInfo& fileInfo, QString *log ) const;        
+        static QScriptValue contains(QScriptContext *context, QScriptEngine *engine);
+        static QScriptValue myAdd(QScriptContext *context, QScriptEngine *engine);
 
         //QString name_;
         QVector<Rule> rules_;
@@ -98,7 +99,7 @@ class PlayList : public QListWidgetItem {
         std::stringstream *buffer;
         std::streambuf *sbuf;
 
-        QStringList ID3v2Fields,apeItemKeys;
+        QHash<QString,QVariant> frameFields;
         bool artistEmpty,titleEmpty,albumEmpty,commentEmpty,genreEmpty,trackEmpty,yearEmpty;
 
 
@@ -110,6 +111,7 @@ Q_DECLARE_METATYPE(PlayList);
 
 QDataStream& operator>>(QDataStream& in, PlayList& p);
 QDataStream& operator<<(QDataStream& out, const PlayList& p);
+
 
 #endif
 

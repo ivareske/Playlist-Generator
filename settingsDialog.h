@@ -19,13 +19,13 @@ class SettingsDialog : public QDialog, private Ui::SettingsDialog {
 
 protected:
 
-    private:
+    private:        
         QSettings* settings;
         void setSettings();
         QString chooseDir();
+
     private slots:
-        void editID3v2Frames();
-        void editAPEItemKeys();
+        void editFrameFields();
         void onFinish(int result);
         void setOutPutDir();
 
