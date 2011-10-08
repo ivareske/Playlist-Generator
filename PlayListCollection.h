@@ -3,11 +3,13 @@
 
 #include <QtGui>
 #include "PlayList.h"
-#include "globalFunctions.h"
+#include "GlobalFunctions.h"
 
 class PlayListCollection {
     public:
         PlayListCollection(const QString& name = "");
+        QString script() const;
+        void setSCript( const QString &script );
         QString name() const;
         void setName(const QString& name);
         QList<PlayList> playLists() const;
@@ -22,6 +24,7 @@ class PlayListCollection {
         QString name_;
         QList<PlayList> playLists_;
         QDir outPutPath_;
+        QString script_;
 
 };
 

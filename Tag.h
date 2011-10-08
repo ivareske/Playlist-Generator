@@ -24,7 +24,9 @@
 #include <wavfile.h>
 #include <rifffile.h>
 #include <aifffile.h>
-#include <apefile.h>
+#ifdef HAVE_TAGLIB_APEFILE_H
+    #include <apefile.h>
+#endif
 #include <trueaudiofile.h>
 #include <wavpackfile.h>
 #include <mpcfile.h>
@@ -38,7 +40,7 @@ class Tag {
         enum TagField { ARTIST, ALBUM, TITLE, GENRE, TRACK, YEAR, COMMENT, LENGTH, BITRATE, SAMPLERATE, CHANNELS, NTAGFIELDS };
         Tag(const QString& fullfile = "");
         void clearTags();
-        void readTags();
+        Q_INVOKABLE void readTags();
         QVariant getTag( Tag::TagField field );
         bool tagIsRead() const;
         bool tagOk() const;
@@ -92,6 +94,7 @@ private:
 
 };
 
-
+Q_DECLARE_METATYPE(Tag)
+Q_DECLARE_METATYPE(Tag*)
 
 #endif

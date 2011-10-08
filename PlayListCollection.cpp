@@ -78,6 +78,7 @@ bool PlayListCollection::operator ==(const PlayListCollection& other) const {
     bool res = name_ == other.name();
     res &= playLists_ == other.playLists();
     res &= outPutPath_ == other.outPutPath();
+    res &= script_ == other.script();
     return res;
 }
 
@@ -113,11 +114,12 @@ QDataStream& operator>>(QDataStream& in, PlayListCollection& p) {
 
     QString name;
     QList<PlayList> playLists;
-    QString outPutPath;
-    in >> name >> playLists >> outPutPath ;
+    QString outPutPath,script;
+    in >> name >> playLists >> outPutPath >> script;
     p = PlayListCollection(name);
     p.setPlayLists(playLists);
     p.setOutPutPath(QDir(outPutPath));
+    p.setSCript(script);
     return in;
 }
 
@@ -133,7 +135,7 @@ QDataStream& operator<<(QDataStream& out, const PlayListCollection& p) {
     out << out.version();
     out << qApp->applicationVersion();
 
-    out << p.name() << p.playLists() << p.outPutPath().absolutePath();
+    out << p.name() << p.playLists() << p.outPutPath().absolutePath() << p.script();
     return out;
 }
 
@@ -144,4 +146,22 @@ QDataStream& operator<<(QDataStream& out, const PlayListCollection& p) {
 */
 QString PlayListCollection::defaultCollectionName() {
     return QDesktopServices::storageLocation(QDesktopServices::MusicLocation) + "/New collection" + Global::ext;
+}
+
+/*!
+ \brief
+
+ \param script
+*/
+void PlayListCollection::setSCript(const QString &script){
+    script_=script;
+}
+
+/*!
+ \brief
+
+ return QString
+*/
+QString PlayListCollection::script() const{
+    return script_;
 }

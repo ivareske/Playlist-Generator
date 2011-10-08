@@ -271,11 +271,14 @@ void Tag::readFrames() {
         readXiphComment(flacFile->xiphComment(false), "XIPH" );
     }
 
-    //APE items
-    TagLib::APE::File *apeFile = dynamic_cast<TagLib::APE::File*>(file.file());
-    if( apeFile && apeFile->isValid() ){
-        readAPEItems( apeFile->APETag(), "APE"  );
-    }
+    #ifdef HAVE_TAGLIB_APEFILE_H
+        //APE items
+        TagLib::APE::File *apeFile = dynamic_cast<TagLib::APE::File*>(file.file());
+        if( apeFile && apeFile->isValid() ){
+            readAPEItems( apeFile->APETag(), "APE"  );
+        }
+    #endif
+
 
     //wavpack
     TagLib::WavPack::File *wavPackFile = dynamic_cast<TagLib::WavPack::File*>(file.file());
@@ -479,7 +482,7 @@ bool Tag::readAPEItems( TagLib::APE::Tag *ape, const QString &type ){
 void Tag::readTags() {
 
     tagIsRead_ = true;
-    //qDebug()<<"reading tags for "<<filename_;
+    qDebug()<<"readin tags for "<<filename_;
     TagLib::FileRef f(filename_.toStdString().c_str());
     if(f.isNull()){
         return;
