@@ -25,7 +25,7 @@
 #include <rifffile.h>
 #include <aifffile.h>
 #ifdef HAVE_TAGLIB_APEFILE_H
-    #include <apefile.h>
+#include <apefile.h>
 #endif
 #include <trueaudiofile.h>
 #include <wavpackfile.h>
@@ -34,67 +34,67 @@
 #include <id3v2frame.h>
 
 
-class Tag {
+class Tag : public QObject{
+    Q_OBJECT
+    //Q_PROPERTY( QString fileName READ fileName )
+public:
+    enum TagField { ARTIST, ALBUM, TITLE, GENRE, TRACK, YEAR, COMMENT, LENGTH, BITRATE, SAMPLERATE, CHANNELS, NTAGFIELDS };
+    Tag(const QString& fullfile = "",QObject *parent=0);
+public slots:
+    void clearTags();
+    void readTags();
+    QVariant getTag( Tag::TagField field );
+    bool tagIsRead() const;
+    bool tagOk() const;
+    bool audioPropertiesOk() const;
+    Q_INVOKABLE QString fileName() const;
 
-    public:
-        enum TagField { ARTIST, ALBUM, TITLE, GENRE, TRACK, YEAR, COMMENT, LENGTH, BITRATE, SAMPLERATE, CHANNELS, NTAGFIELDS };
-        Tag(const QString& fullfile = "");
-        void clearTags();
-        Q_INVOKABLE void readTags();
-        QVariant getTag( Tag::TagField field );
-        bool tagIsRead() const;
-        bool tagOk() const;
-        bool audioPropertiesOk() const;
-        QString fileName() const;
+    QString artist() const;
+    QString title() const;
+    QString album() const;
+    QString comment() const;
+    QString genre() const;
+    uint year() const;
+    uint track() const;
 
-        QString filename() const;
-        QString artist() const;
-        QString title() const;
-        QString album() const;
-        QString comment() const;
-        QString genre() const;
-        uint year() const;
-        uint track() const;
+    uint length() const;
+    uint bitRate() const;
+    uint sampleRate() const;
+    uint channels() const;
 
-        uint length() const;
-        uint bitRate() const;
-        uint sampleRate() const;
-        uint channels() const;
-
-        void readFrames();
-        void clearFrames();
-        QHash< QString, QHash<QString,QStringList> > frames() const;
+    void readFrames();
+    void clearFrames();
+    QHash< QString, QHash<QString,QStringList> > frames() const;
 
 private:
 
-        bool readXiphComment(TagLib::Ogg::XiphComment *tag, const QString &type="XIPH");
-        bool readID3V2Frames(TagLib::ID3v2::Tag *id3v2tag, const QString &type="ID3V2");
-        bool readAPEItems(TagLib::APE::Tag *ape, const QString &type="APE");
-        bool readMP4Items(TagLib::MP4::Tag *mp4Tag, const QString &type="MP4");
-        bool readASFAttributes(TagLib::ASF::Tag *asfTag, const QString &type="ASF");
+    bool readXiphComment(TagLib::Ogg::XiphComment *tag, const QString &type="XIPH");
+    bool readID3V2Frames(TagLib::ID3v2::Tag *id3v2tag, const QString &type="ID3V2");
+    bool readAPEItems(TagLib::APE::Tag *ape, const QString &type="APE");
+    bool readMP4Items(TagLib::MP4::Tag *mp4Tag, const QString &type="MP4");
+    bool readASFAttributes(TagLib::ASF::Tag *asfTag, const QString &type="ASF");
 
-        //QHash<QString,QStringList> = frames_["ID3V2"]; //usage
-        QHash< QString, QHash<QString,QStringList> > frames_;
-        QString filename_;
-        QString artist_;
-        QString title_;
-        QString album_;
-        QString comment_;
-        QString genre_;
-        uint year_;
-        uint track_;
-        bool tagIsRead_;
-        bool tagOk_;
-        bool audioPropertiesOk_;
+    //QHash<QString,QStringList> = frames_["ID3V2"]; //usage
+    QHash< QString, QHash<QString,QStringList> > frames_;
+    QString filename_;
+    QString artist_;
+    QString title_;
+    QString album_;
+    QString comment_;
+    QString genre_;
+    uint year_;
+    uint track_;
+    bool tagIsRead_;
+    bool tagOk_;
+    bool audioPropertiesOk_;
 
-        uint length_;
-        uint bitRate_;
-        uint sampleRate_;
-        uint channels_;
+    uint length_;
+    uint bitRate_;
+    uint sampleRate_;
+    uint channels_;
 
 };
 
-Q_DECLARE_METATYPE(Tag)
 Q_DECLARE_METATYPE(Tag*)
 
 #endif

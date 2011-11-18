@@ -6,7 +6,7 @@
 
  \param fullfile
 */
-Tag::Tag(const QString& fullfile) {
+Tag::Tag(const QString& fullfile, QObject *parent) : QObject(parent){
     artist_ = "";
     title_ = "";
     album_ = "";
@@ -15,6 +15,7 @@ Tag::Tag(const QString& fullfile) {
     //year_=0;
     //track_=0;
     filename_ = fullfile;
+    qDebug()<<"Tag::Tag "<<fullfile;
     tagIsRead_ = false;
     tagOk_ = false;
     audioPropertiesOk_ = false;
@@ -133,6 +134,7 @@ uint Tag::channels() const {
  \return QString
 */
 QString Tag::fileName() const {
+    qDebug()<<"Tag::fileName()";
     return filename_;
 }
 
