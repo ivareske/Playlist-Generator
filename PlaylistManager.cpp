@@ -71,6 +71,7 @@ void PlaylistManager::editStyleDialog() {
 
 */
 void PlaylistManager::initGuiSettings() {
+
     if (guiSettings == 0) {
         guiSettings = Global::guiSettings();
     }
@@ -131,7 +132,12 @@ void PlaylistManager::initGuiSettings() {
         guiSettings->setValue("frameFields", frameFields );
     }
 
-
+    if (!guiSettings->value("scriptType").canConvert(QVariant::Int)) {
+        guiSettings->setValue("scriptType",(int)Global::SCRIPTANDPLAYLIST );
+    }
+    if (!guiSettings->value("styleSheet").canConvert(QVariant::String)) {
+        guiSettings->setValue("styleSheet", "");
+    }
     if (!guiSettings->value("style").canConvert(QVariant::String)) {
         guiSettings->setValue("style", qApp->style()->metaObject()->className());
     }
@@ -192,6 +198,7 @@ void PlaylistManager::initGuiSettings() {
     }
 
     guiSettings->setCheckForEmptyValue(true);
+    guiSettings->sync();
 
 }
 
@@ -480,7 +487,7 @@ void PlaylistManager::writeGUISettings() {
     guiSettings->endGroup();
     guiSettings->setValue("collection", collection_.name());        
     guiSettings->sync();
-    //delete guiSettings;
+    delete guiSettings;
 
 
 }
@@ -915,6 +922,7 @@ void PlaylistManager::loadCollection(const QFileInfo& file) {
     else {
 
         PMSettings playListCollection(file.absoluteFilePath(), PMSettings::IniFormat, this);
+        playListCollection.setCheckForEmptyValue(false);
         QVariant tmp = playListCollection.value("collection");
         if (!tmp.canConvert<PlayListCollection>()) {
             QMessageBox::critical(this, "",

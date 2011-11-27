@@ -36,7 +36,7 @@ bool PMSettings::checkForEmptyValue() const{
 QVariant PMSettings::value( const QString & key, const QVariant & defaultValue ) const{
     QVariant val = QSettings::value(key,defaultValue);
     if(checkForEmptyValue_){
-        if(!( val==defaultValue && defaultValue==QVariant() )){
+        if( val==defaultValue && defaultValue==QVariant() ){
             qWarning()<<"Empty value in PMSettings for key "<<key;
         }
     }
