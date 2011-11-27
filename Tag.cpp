@@ -484,7 +484,7 @@ bool Tag::readAPEItems( TagLib::APE::Tag *ape, const QString &type ){
 void Tag::readTags() {
 
     tagIsRead_ = true;
-    qDebug()<<"readin tags for "<<filename_;
+    qDebug()<<"reading tags for "<<filename_;
     TagLib::FileRef f(filename_.toStdString().c_str());
     if(f.isNull()){
         return;

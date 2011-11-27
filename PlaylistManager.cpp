@@ -567,30 +567,30 @@ void PlaylistManager::updateUseScript() {
     //switch between using script or a set of rules
 
     int type = guiSettings->value("scriptType").toInt();
-    if (type==Global::RULES) {
-        rulesFrame->show();
-        RuleScript->hide();
-        //allRulesTrue->setEnabled(true);
-        allRulesTrue->show();
-        scriptEdit->hide();
-        OptionsFrame->show();
-        PlayListGroupBox->show();
-    }else if(type==Global::SCRIPTANDPLAYLIST){
+    if (type==Global::RULES) {                
         rulesFrame->hide();
         RuleScript->show();
         //allRulesTrue->setEnabled(false);
         allRulesTrue->hide();
-        scriptEdit->hide();
         OptionsFrame->show();
         PlayListGroupBox->show();
+        ScriptOnlyFrame->hide();
+    }else if(type==Global::SCRIPTANDPLAYLIST){        
+        rulesFrame->show();
+        RuleScript->hide();
+        //allRulesTrue->setEnabled(true);
+        allRulesTrue->show();
+        OptionsFrame->show();
+        PlayListGroupBox->show();
+        ScriptOnlyFrame->hide();
     }else if(type==Global::SCRIPTONLY){
         rulesFrame->hide();
         RuleScript->hide();
         //allRulesTrue->setEnabled(false);
-        allRulesTrue->hide();
-        scriptEdit->show();
+        allRulesTrue->hide();        
         OptionsFrame->hide();
         PlayListGroupBox->hide();
+        ScriptOnlyFrame->show();
     }
 }
 
@@ -1390,6 +1390,8 @@ void PlaylistManager::showSettings() {
 */
 void PlaylistManager::initializeScriptEngine(){
 
+    //qScriptRegisterSequenceMetaType<FrameList>(&engine_);
+    //qScriptRegisterSequenceMetaType<FrameListList>(&engine_);
     qScriptRegisterSequenceMetaType< QList<QFileInfo> >(&engine_);
     qScriptRegisterMetaType<QFileInfo>(&engine_, ScriptWrappers::toQFileInfo,ScriptWrappers::fromQFileInfo);
 
@@ -1412,6 +1414,7 @@ void PlaylistManager::runScript(){
     }
 
 }
+
 
 
 

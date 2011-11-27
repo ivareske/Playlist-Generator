@@ -36,6 +36,7 @@ void fromQFileInfo(const QScriptValue &v, QFileInfo &info) {
 }
 
 
+//http://www.qtcentre.org/threads/33355-Use-QObject-with-QtScript
 QScriptValue constructTag(QScriptContext *context, QScriptEngine *engine){
     if (!context->isCalledAsConstructor()){
         return context->throwError(QScriptContext::SyntaxError, "please use the 'new' operator");
@@ -45,7 +46,9 @@ QScriptValue constructTag(QScriptContext *context, QScriptEngine *engine){
     }
     QString file = context->argument(0).toString();
     // store the shared pointer in the script object that we are constructing
-    return engine->newVariant(context->thisObject(), qVariantFromValue(new Tag(file)));
+    //return engine->newVariant(context->thisObject(), qVariantFromValue(new Tag(file)));
+    Tag *tag = new Tag(file);
+    return engine->newQObject(tag);
 }
 
 

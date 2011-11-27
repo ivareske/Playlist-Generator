@@ -47,7 +47,7 @@ QList<QFileInfo> getDirContent(const QString& aPath, bool includeSubFolders, con
     }
     p.close();
     delete dirIterator;
-    qDebug() << "getDirContent, found "<<fileInfo.size()<<" files. Extensions: "<<extensions.join(",");
+    qDebug() << "getDirContent: searched "<<aPath<<", found "<<fileInfo.size()<<" files. Extensions: "<<extensions.join(",");
     return fileInfo;
 }
 

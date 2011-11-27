@@ -47,7 +47,7 @@ public slots:
     bool tagIsRead() const;
     bool tagOk() const;
     bool audioPropertiesOk() const;
-    Q_INVOKABLE QString fileName() const;
+    QString fileName() const;
 
     QString artist() const;
     QString title() const;
