@@ -61,14 +61,14 @@ void SettingsDialog::editFrameFields(){
     }
 
     TextViewer t;
-    t.label()->setText("Warning: Do not edit these values unless you know what you are doing!");
+    t.setLabelText("Warning: Do not edit these values unless you know what you are doing!");
     QHash<QString,QVariant> frameFields = settings->value("frameFields").toHash();
     t.setText( frameFields[type].toStringList().join("\n").toUpper() );
-    t.getTextEdit()->setReadOnly(false);
+    t.setReadOnly(false);
     if(t.exec()!=QDialog::Accepted){
         return;
     }
-    QStringList list = t.getTextEdit()->toPlainText().split("\n");
+    QStringList list = t.text().split("\n");
     frameFields[type] = list;
     settings->setValue("frameFields",QVariant::fromValue(frameFields));
 }
