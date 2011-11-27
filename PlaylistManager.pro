@@ -23,7 +23,7 @@ QT += script
 
 win32{
     INCLUDEPATH  += ./taglib ./
-    LIBS += -L./ libtag
+    LIBS += $$PWD/libtag.dll
 }
 unix{
     INCLUDEPATH += /usr/include/taglib/
@@ -35,13 +35,13 @@ HEADERS = PlaylistManager.h SettingsDialog.h RuleDialog.h PlayList.h Rule.h Glob
     TextEdit.h \
     PMSettings.h \
     ScriptWrappers.h \
-    metaTypes.h
+    metaTypes.h CodeEditor.h
 FORMS   = PlaylistManager.ui SettingsDialog.ui RuleDialog.ui AddFilesDialog.ui TextViewer.ui StyleSheetEditor.ui
 SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp RuleDialog.cpp PlayList.cpp Rule.cpp GlobalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp \
     PlayListCollection.cpp StyleSheetEditor.cpp \
     TextEdit.cpp \
     PMSettings.cpp \
-    ScriptWrappers.cpp
+    ScriptWrappers.cpp CodeEditor.cpp
 
 RC_FILE = PlaylistManager.rc
 

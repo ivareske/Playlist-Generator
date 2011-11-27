@@ -107,9 +107,9 @@ QString versionCheck(QDataStream* in, bool* ok, QString* log) {
 
      \return PMSettings *
     */
-PMSettings* guiSettings() {
+PMSettings* guiSettings(QObject * parent) {
 
-    return new PMSettings(qApp->applicationDirPath() + "/settings" + Global::ext, PMSettings::IniFormat, 0);
+    return new PMSettings(qApp->applicationDirPath() + "/settings" + Global::ext, PMSettings::IniFormat, parent);
 
 }
 

@@ -1123,7 +1123,7 @@ void PlaylistManager::generatePlayLists(const QList<PlayList*> &playLists) {
 
 
     if (guiSettings->value("showLog").toBool()) {
-        TextViewer t(this, &log);
+        TextViewer t(this, log);
         t.exec();
     }
 }
