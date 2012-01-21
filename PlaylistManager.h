@@ -83,7 +83,8 @@ private:
     void initializeScriptEngine();
 
     PlayList* playListItem(int row);
-    TextEdit *RuleScript,*folderTable;
+    TextEdit *folderTable;
+    CodeEditor *scriptEdit,*RuleScript;
     PlayList* currentPlayList();
     PlayListCollection collection_, lastSavedCollection_;
     PMSettings* guiSettings;

@@ -2,9 +2,9 @@
 #define TEXTVIEWER_H
 
 #include <QtGui>
-#include "ui_textViewer.h"
 #include "GlobalFunctions.h"
-#include "CodeEditor.h"
+#include "ui_TextViewer.h"
+#include <CodeEditor.h>
 
 class TextViewer : public QDialog, private Ui::TextViewer {
     Q_OBJECT
@@ -16,22 +16,23 @@ public:
 
 public slots:
 
+    void setLabelText(const QString &text);
     bool readOnly() const;
     void setText(const QString& text);
-    void setLabelText(const QString& text);
     QString text();
     void setReadOnly( bool enable );
     void enableCancelButton( bool enable );
     bool cancelButtonenabled() const;
+    CodeEditor* codeEditor();
+    void setExample(const QString &example);
 
 protected:
 
 private slots:
-    void fontDialog();
 
 private:
     CodeEditor *textEdit;
-    PMSettings *s;
+    QSettings *s;
 
 };
 

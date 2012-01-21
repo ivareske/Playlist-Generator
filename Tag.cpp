@@ -437,7 +437,7 @@ bool Tag::readID3V2Frames( TagLib::ID3v2::Tag *id3v2tag, const QString &type ){
                 data << TStringToQString(l[i]->toString());
             }
             list.insert(id,data);
-            //qDebug()<<type<<id<<data;
+            qDebug()<<"Tag::readID3V2Frames: "<<type<<id<<data;
         }        
         frames_[type]=list;
         return true;
@@ -529,4 +529,22 @@ void Tag::clearTags() {
     bitRate_ = -1;
     sampleRate_ = -1;
     channels_ = -1;
+}
+
+QHash<QString,QStringList> Tag::iD3V2Frames() const{
+    return frames_["ID3V2"];
+}
+QHash<QString,QStringList> Tag::aPEItems() const{
+    return frames_["APE"];
+}
+QHash<QString,QStringList> Tag::mP4Items() const{
+    return frames_["MP4"];
+}
+QHash<QString,QStringList> Tag::aSFAttributes() const{
+    return frames_["ASF"];
+}
+
+QHash<QString, QStringList> Tag::xiphFrames() const{
+    qDebug()<<"Tag::xiphFrames";
+    return frames_["XIPH"];
 }

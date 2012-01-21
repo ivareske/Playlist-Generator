@@ -11,7 +11,13 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
     setupUi(this); // this sets up GUI
 
 
-    RuleScript = new TextEdit(this);
+    if(!ScriptOnlyFrame->layout()){
+        ScriptOnlyFrame->setLayout(new QVBoxLayout);
+    }
+    scriptEdit = new CodeEditor(this);
+    ScriptOnlyFrame->layout()->addWidget(scriptEdit);
+
+    RuleScript = new CodeEditor(this);
     rulesGroupBox->layout()->addWidget(RuleScript);
     folderTable = new TextEdit(this);
     if(!folderFrame->layout()){
@@ -508,7 +514,7 @@ void PlaylistManager::readGUISettings() {
     qDebug() << guiSettings->value("style").toString();
     qApp->setStyleSheet(guiSettings->value("styleSheet").toString());   //qDebug()<<guiSettings->value("styleSheet").toString();
 
-    QFileInfo collectionFile(guiSettings->value("collection", QDesktopServices::storageLocation(QDesktopServices::MusicLocation) + "/New collection" + Global::ext).toString());
+    QFileInfo collectionFile(guiSettings->value("collection", PlayListCollection::defaultCollectionName() ).toString());
     loadCollection(collectionFile);
 
 }
@@ -763,8 +769,8 @@ void PlaylistManager::addFolder() {
 void PlaylistManager::saveCollectionCheck() {
 
     updateCollection();
-    QFileInfo f(collection_.name());
-    if ( !(lastSavedCollection_==collection_) || !f.exists() ) {
+    //QFileInfo f(collection_.name());
+    if ( !(lastSavedCollection_==collection_) && lastSavedCollection_!=PlayListCollection() ) {
         int ret = QMessageBox::warning(this, "", "Save existing collection first?", QMessageBox::Yes, QMessageBox::No);
         if (ret == QMessageBox::Yes) {
             saveCollection();
@@ -911,7 +917,7 @@ void PlaylistManager::loadCollection(const QFileInfo& file) {
 
     PlayListCollection collection;
 
-    qDebug() << file.filePath() << PlayListCollection::defaultCollectionName();
+    //qDebug() << file.filePath() << PlayListCollection::defaultCollectionName();
     if (!file.exists()) {
         if (file != QFileInfo(PlayListCollection::defaultCollectionName())) {
             QMessageBox::critical(this, "",
@@ -938,6 +944,8 @@ void PlaylistManager::loadCollection(const QFileInfo& file) {
 
     collection_ = collection;
     lastSavedCollection_ = collection_;
+    guiSettings->setValue("collection",collection_.name());
+    guiSettings->sync();
     initialize();
 
 
@@ -1401,6 +1409,8 @@ void PlaylistManager::initializeScriptEngine(){
     //qScriptRegisterSequenceMetaType<FrameList>(&engine_);
     //qScriptRegisterSequenceMetaType<FrameListList>(&engine_);
     qScriptRegisterSequenceMetaType< QList<QFileInfo> >(&engine_);
+    //qScriptRegisterSequenceMetaType< QHash<QString,QStringList> >(&engine_);
+    qScriptRegisterMetaType< QHash<QString,QStringList> >(&engine_, ScriptWrappers::toStringStringListHash,ScriptWrappers::fromStringStringListHash);
     qScriptRegisterMetaType<QFileInfo>(&engine_, ScriptWrappers::toQFileInfo,ScriptWrappers::fromQFileInfo);
 
     engine_.globalObject().setProperty("Tag",engine_.newFunction(ScriptWrappers::constructTag) );

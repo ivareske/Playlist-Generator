@@ -17,39 +17,24 @@ TextViewer::TextViewer(QWidget* parent, const QString& text) : QDialog(parent) {
     this->setWindowTitle(qApp->applicationName());
     s = Global::guiSettings(this);
     s->beginGroup("TextViewer");
-    QSize size = s->value("size",QSize(200,200)).toSize();
-    QFont font = s->value("font",textEdit->font()).value<QFont>();
-    textEdit->setFont(font);
+    QSize size = s->value("size",QSize(200,200)).toSize();    
     resize(size);
     s->endGroup();
+
 
     if (!text.isNull()) {
         textEdit->setPlainText(text);
     }
 
     connect(cancelButton,SIGNAL(clicked()),this,SLOT(reject()));
-    connect(okButton,SIGNAL(clicked()),this,SLOT(accept()));
-    connect(editFontButton,SIGNAL(clicked()),this,SLOT(fontDialog()));
+    connect(okButton,SIGNAL(clicked()),this,SLOT(accept()));    
 
     setReadOnly(true);
 }
 
-/*!
- \brief Show a dialog to edit the font of the texteditor
 
-*/
-void TextViewer::fontDialog(){
-
-    bool ok;
-    QFont font = QFontDialog::getFont(&ok, textEdit->font(), this);
-
-    if( ok ){
-        textEdit->setFont(font);
-        s->beginGroup("TextViewer");
-        s->setValue("font",font);
-        s->endGroup();
-        s->sync();
-    }
+void TextViewer::setLabelText( const QString &text ){
+    label_->setText(text);
 }
 
 /*!
@@ -59,8 +44,7 @@ void TextViewer::fontDialog(){
 TextViewer::~TextViewer(){
 
     s->beginGroup("TextViewer");
-    s->setValue("size",size());
-    s->setValue("font",textEdit->font());
+    s->setValue("size",size());    
     s->endGroup();
     s->sync();
     delete s;
@@ -104,16 +88,12 @@ void TextViewer::setReadOnly( bool enable ){
 
 /*!
  \brief Set specified text in the texteditor
-
  \param text
 */
 void TextViewer::setText(const QString& text) {
     textEdit->setPlainText(text);
 }
 
-void TextViewer::setLabelText(const QString& text) {
-    label_->setText(text);
-}
 
 /*!
  \brief return the text in the texteditor
@@ -122,4 +102,12 @@ void TextViewer::setLabelText(const QString& text) {
 */
 QString TextViewer::text() {
     return textEdit->toPlainText();
+}
+
+CodeEditor * TextViewer::codeEditor(){
+    return textEdit;
+}
+
+void TextViewer::setExample(const QString &example){
+    textEdit->setExample(example);
 }

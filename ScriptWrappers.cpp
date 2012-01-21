@@ -35,6 +35,52 @@ void fromQFileInfo(const QScriptValue &v, QFileInfo &info) {
     info = QFileInfo(v.toString());
 }
 
+QScriptValue toStringStringListHash(QScriptEngine *e, const QHash<QString,QStringList> &hash ) {
+    qDebug()<<"toStringStringListHash";
+
+    QStringList keys = hash.keys();
+    QScriptValue array = e->newArray(keys.size());
+    for (int i=0;i<keys.size();i++){
+        QStringList list = hash[keys[i]];
+        QScriptValue array2 = e->newArray(list.size());
+        for (int k=0;k<list.size();k++){
+            array2.setProperty(k, QScriptValue(e, list[k]));
+        }
+        qDebug()<<"toStringStringListHash "<<keys[i]<<list;
+        array.setProperty(keys[i], array2);
+    }
+    return array;
+
+
+}
+void fromStringStringListHash(const QScriptValue &v, QHash<QString,QStringList> &hash) {
+    qDebug()<<"fromStringStringListHash";
+
+    //QHash<QString,QVector<double> > hash;
+    QScriptValueIterator it(v);
+    while(it.hasNext()){
+        it.next();
+        //qDebug() << it.name();// << ": " << it.value().toVariant();
+        QScriptValue v2 = it.value();
+        if(v2.isArray()){
+            QStringList vector;
+            qScriptValueToSequence(v2,vector);
+            hash.insert(it.name(),vector);
+        }
+    }
+    //return hash;
+
+    /*QVariant var = v.toVariant();
+    qDebug()<<"fromStringStringListHash "<<var;
+    QHash<QString,QVariant> hash2 = var.toHash();
+    QStringList keys = hash2.keys();
+    for(int i=0;i<keys.size();i++){
+        hash.insert(keys[i],hash2[keys[i]].toStringList());
+    }
+    */
+
+}
+
 
 //http://www.qtcentre.org/threads/33355-Use-QObject-with-QtScript
 QScriptValue constructTag(QScriptContext *context, QScriptEngine *engine){

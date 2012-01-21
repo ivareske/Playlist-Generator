@@ -65,6 +65,11 @@ public slots:
     void readFrames();
     void clearFrames();
     QHash< QString, QHash<QString,QStringList> > frames() const;
+    QHash<QString,QStringList> xiphFrames() const;
+    QHash<QString,QStringList> iD3V2Frames() const;
+    QHash<QString,QStringList> aPEItems() const;
+    QHash<QString,QStringList> mP4Items() const;
+    QHash<QString,QStringList> aSFAttributes() const;
 
 private:
 

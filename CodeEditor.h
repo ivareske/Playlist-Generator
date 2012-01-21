@@ -44,6 +44,8 @@
 
 #include <QPlainTextEdit>
 #include <QObject>
+#include <QtScript>
+#include "GlobalFunctions.h"
 
 QT_BEGIN_NAMESPACE
 class QPaintEvent;
@@ -58,28 +60,44 @@ class LineNumberArea;
 
 class CodeEditor : public QPlainTextEdit
 {
-        Q_OBJECT
+    Q_OBJECT
 
-    public:
-        CodeEditor(QWidget *parent = 0);
+public:
+    CodeEditor(QWidget *parent = 0);
 
-        void lineNumberAreaPaintEvent(QPaintEvent *event);
-        int lineNumberAreaWidth();
+    void lineNumberAreaPaintEvent(QPaintEvent *event);
+    int lineNumberAreaWidth();
+    static QString beautifyJavaScriptCode( const QString &source );
+    int currentLine() const;
+    void setCurrentLine(int line);
+    void setExample(const QString &example);
+    QString example() const;
+    void setText(const QString &text);
+    QString text() const;
 
-    protected:
-        void focusOutEvent(QFocusEvent *e);
-        void resizeEvent(QResizeEvent *event);
+public slots:
+    void beautify();
 
-    signals:
-        void editingFinished();
+protected:
+    void contextMenuEvent(QContextMenuEvent *event);
+    void focusOutEvent(QFocusEvent *e);
+    void resizeEvent(QResizeEvent *event);
 
-        private slots:
-            void updateLineNumberAreaWidth(int newBlockCount);
-        void highlightCurrentLine();
-        void updateLineNumberArea(const QRect &, int);
+signals:
+    void editingFinished();
 
-    private:
-        QWidget *lineNumberArea;
+private slots:
+    void fontDialog();
+    void updateLineNumberAreaWidth(int newBlockCount);
+    void highlightCurrentLine();
+    void updateLineNumberArea(const QRect &, int);
+    void insertExample();
+
+private:
+    QSettings *s;
+    QString example_;
+    QWidget *lineNumberArea;
+    QAction *beautifyAction;
 };
 
 //![codeeditordefinition]
@@ -87,22 +105,22 @@ class CodeEditor : public QPlainTextEdit
 
 class LineNumberArea : public QWidget
 {
-    public:
-        LineNumberArea(CodeEditor *editor) : QWidget(editor) {
-            codeEditor = editor;
-        }
+public:
+    LineNumberArea(CodeEditor *editor) : QWidget(editor) {
+        codeEditor = editor;
+    }
 
-        QSize sizeHint() const {
-            return QSize(codeEditor->lineNumberAreaWidth(), 0);
-        }
+    QSize sizeHint() const {
+        return QSize(codeEditor->lineNumberAreaWidth(), 0);
+    }
 
-    protected:
-        void paintEvent(QPaintEvent *event) {
-            codeEditor->lineNumberAreaPaintEvent(event);
-        }
+protected:
+    void paintEvent(QPaintEvent *event) {
+        codeEditor->lineNumberAreaPaintEvent(event);
+    }
 
-    private:
-        CodeEditor *codeEditor;
+private:
+    CodeEditor *codeEditor;    
 };
 
 //![extraarea]

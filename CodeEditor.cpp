@@ -47,6 +47,17 @@
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent){
     lineNumberArea = new LineNumberArea(this);
 
+    s = Global::guiSettings(this);
+    s->beginGroup("CodeEditor");
+    QFont font = s->value("font",this->font()).value<QFont>();
+    this->setFont(font);
+    s->endGroup();
+
+    beautifyAction = new QAction("Beautify javascript code",this);
+    connect(beautifyAction, SIGNAL(triggered()), this, SLOT(beautify()));
+    beautifyAction->setShortcut(tr("Ctrl+B"));
+    addAction(beautifyAction);
+
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
     connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
@@ -55,6 +66,87 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent){
     highlightCurrentLine();
 }
 
+void CodeEditor::beautify(){
+
+    //QString text = this->textCursor().selectedText();
+    QString text = this->toPlainText();
+    int current = currentLine();
+    qDebug()<<"CodeEditor::beautify "<<current;
+    text = beautifyJavaScriptCode(text);
+    this->setPlainText(text);
+    this->setCurrentLine(current);
+    qDebug()<<currentLine();
+
+}
+
+int CodeEditor::currentLine() const{
+    return this->textCursor().blockNumber();
+}
+
+void CodeEditor::setCurrentLine(int line){
+    QTextCursor c = this->textCursor();
+    c.movePosition(QTextCursor::Down,QTextCursor::MoveAnchor, line);
+    this->setTextCursor(c);
+}
+
+QString CodeEditor::beautifyJavaScriptCode( const QString &source ){
+
+
+    QScriptEngine engine;
+    QScriptValue options = engine.newObject();
+
+    options.setProperty("preserve_newlines", true);
+    options.setProperty("space_after_anon_function", true);
+    options.setProperty("braces_on_own_line", false);
+    options.setProperty("keep_array_indentation", true);
+
+
+    if (source.isEmpty()) {
+        return source;
+    }
+
+    QString fileName = qApp->applicationDirPath()+"/beautify.js";
+    QFile file(fileName);
+    if(!file.exists()){
+        QMessageBox::critical(0,"","Could not find 'beautify.js' in application directory! Cannot beautify code.");
+        return source;
+    }
+
+
+    if(!file.open(QFile::ReadOnly)) {
+        return source;
+    }
+    QString script = file.readAll();
+    file.close();
+
+    if (script.isEmpty()) {
+        return source;
+    }
+
+    engine.evaluate(script);
+    engine.globalObject().setProperty("source", QScriptValue(source));
+    engine.globalObject().setProperty("options", options);
+    QScriptValue result = engine.evaluate("js_beautify(source, options);");
+
+    return result.toString();
+}
+
+
+void CodeEditor::contextMenuEvent(QContextMenuEvent *event){
+    QMenu *menu = this->createStandardContextMenu();
+    menu->addAction(beautifyAction);
+
+    QAction *editFontAction = new QAction("Edit font...",this);
+    connect(editFontAction,SIGNAL(triggered()),this,SLOT(fontDialog()));
+    menu->addAction(editFontAction);
+
+    if(!example_.isEmpty()){
+        QAction *insertExampleAction = new QAction("Insert example code",this);
+        connect(insertExampleAction,SIGNAL(triggered()),this,SLOT(insertExample()));
+        menu->addAction(insertExampleAction);
+    }
+    menu->exec(event->globalPos());
+}
 
 
 int CodeEditor::lineNumberAreaWidth(){
@@ -145,3 +237,43 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event){
     }
 }
 
+void CodeEditor::setExample(const QString &example){
+    example_=example;
+    if(this->toolTip().isEmpty()){
+        this->setToolTip(example);
+    }
+}
+
+QString CodeEditor::example() const{
+    return example_;
+}
+
+void CodeEditor::insertExample(){
+    this->insertPlainText(example_);
+}
+
+void CodeEditor::setText(const QString &text){
+    this->setPlainText(text);
+}
+
+QString CodeEditor::text() const{
+    return this->toPlainText();
+}
+
+/*!
+ \brief Show a dialog to edit the font of the texteditor
+
+*/
+void CodeEditor::fontDialog(){
+
+    bool ok;
+    QFont font = QFontDialog::getFont(&ok, this->font(), this);
+
+    if( ok ){
+        this->setFont(font);
+        s->beginGroup("CodeEditor");
+        s->setValue("font",this->font());
+        s->endGroup();
+        s->sync();
+    }
+}

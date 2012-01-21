@@ -19,6 +19,7 @@ class PlayListCollection {
         QDir outPutPath() const;
         operator QVariant() const;
         bool operator==(const PlayListCollection& other) const;
+        bool operator!=(const PlayListCollection& other) const;
 
     private:
         QString name_;

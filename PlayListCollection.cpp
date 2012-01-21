@@ -82,6 +82,10 @@ bool PlayListCollection::operator ==(const PlayListCollection& other) const {
     return res;
 }
 
+bool PlayListCollection::operator !=(const PlayListCollection& other) const {
+    return !this->operator ==(other);
+}
+
 /*!
  \brief
 

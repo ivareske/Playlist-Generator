@@ -1,0 +1,61 @@
+function printArray(arr) {
+    for (i = 0; i < arr.length; i++) {
+        print(arr[i]);
+    }
+}
+
+function contains(a, str) {
+    for (i = 0; i < a.length; i++) {
+        if (a[i] == str) {
+            return true;
+        }
+    }
+    return false;
+}
+
+var myArray = new Array();
+myArray[0] = "Football";
+myArray[1] = "Baseball";
+myArray[2] = "Cricket";
+print(myArray.length)
+printArray(myArray)
+print(contains(myArray, "Basheball"))
+
+/*
+var myArray2 = new Hash();
+myArray2['one'] = 1;
+myArray2['two'] = 2;
+myArray2['three'] = 3;
+myArray2['three'] = 4;
+print('hei')
+print( myArray2['three'] )
+for(description in myArray2) {  // print out the bands with descriptions
+  print( myArray2[description] + "  " + description );
+}
+*/
+
+var extensions = new Array();
+extensions[0] = "*.mp3";
+extensions[1] = "*.ogg";
+extensions[2] = "*.ape";
+extensions[3] = "*.flac";
+//files = getDirContent( 'C:/programming/testFiles', true, extensions );
+files = getDirContent('C:/Users/Public/Music/Sample Music', true, extensions);
+//printArray(files)
+for (i in files) { // print out the bands with descriptions
+    file = files[i];
+    print('processing file ', file);
+    var tag = new Tag(file);
+    tag.readTags();
+    tag.readFrames();
+    print('tag: ', tag.channels());
+    print('artist: ', tag.artist());
+    var frames = tag.iD3V2Frames();
+    for (var i in frames) {
+        //print('key is: ' + i + ', value is: ' + frames[i]);
+        var arr = frames[i];
+        for (var j in arr) {
+            print('key is: ' + i + ', value ' + j + ' is: ' + arr[j]);
+        }
+    }
+}
