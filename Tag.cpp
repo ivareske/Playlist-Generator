@@ -15,7 +15,7 @@ Tag::Tag(const QString& fullfile, QObject *parent) : QObject(parent){
     //year_=0;
     //track_=0;
     filename_ = fullfile;
-    qDebug()<<"Tag::Tag "<<fullfile;
+
     tagIsRead_ = false;
     tagOk_ = false;
     audioPropertiesOk_ = false;
@@ -134,7 +134,7 @@ uint Tag::channels() const {
  \return QString
 */
 QString Tag::fileName() const {
-    qDebug()<<"Tag::fileName()";
+    //qDebug()<<"Tag::fileName()";
     return filename_;
 }
 
@@ -437,7 +437,7 @@ bool Tag::readID3V2Frames( TagLib::ID3v2::Tag *id3v2tag, const QString &type ){
                 data << TStringToQString(l[i]->toString());
             }
             list.insert(id,data);
-            qDebug()<<"Tag::readID3V2Frames: "<<type<<id<<data;
+            //qDebug()<<"Tag::readID3V2Frames: "<<type<<id<<data;
         }        
         frames_[type]=list;
         return true;
@@ -484,7 +484,7 @@ bool Tag::readAPEItems( TagLib::APE::Tag *ape, const QString &type ){
 void Tag::readTags() {
 
     tagIsRead_ = true;
-    qDebug()<<"reading tags for "<<filename_;
+    //qDebug()<<"reading tags for "<<filename_;
     TagLib::FileRef f(filename_.toStdString().c_str());
     if(f.isNull()){
         return;
@@ -545,6 +545,5 @@ QHash<QString,QStringList> Tag::aSFAttributes() const{
 }
 
 QHash<QString, QStringList> Tag::xiphFrames() const{
-    qDebug()<<"Tag::xiphFrames";
     return frames_["XIPH"];
 }

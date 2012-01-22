@@ -1107,6 +1107,8 @@ void PlaylistManager::generatePlayLists(const QList<PlayList*> &playLists) {
     QStringList names;
     QTime timer; timer.start();
 
+    bool overWrite = guiSettings->value("overWriteFiles").toBool();
+    bool keepFolderStructure = guiSettings->value("keepFolderStructure").toBool();
 
     for (int i = 0; i < playLists.size(); i++) {
 
@@ -1122,7 +1124,11 @@ void PlaylistManager::generatePlayLists(const QList<PlayList*> &playLists) {
         }
 
         if (p->copyFiles()) {
-            p->copyFoundFiles(songs, &log);
+            QStringList list;
+            for(int i=0;i<songs.size();i++){
+                list.append(songs[i].originalFile().absoluteFilePath());
+            }
+            Global::copyFoundFiles(list,p->copyFilesToDir().absolutePath(), keepFolderStructure, overWrite, &log);
         }
         //log.append("\n----------------------------------------------------------\n");
     }
@@ -1416,6 +1422,12 @@ void PlaylistManager::initializeScriptEngine(){
     engine_.globalObject().setProperty("Tag",engine_.newFunction(ScriptWrappers::constructTag) );
 
     engine_.globalObject().setProperty("getDirContent",engine_.newFunction(ScriptWrappers::scriptGetDirContent));
+    engine_.globalObject().setProperty("copyFiles",engine_.newFunction(ScriptWrappers::scriptCopyFiles));
+    engine_.globalObject().setProperty("writeFile",engine_.newFunction(ScriptWrappers::writeFile));
+    engine_.globalObject().setProperty("contains",engine_.newFunction(ScriptWrappers::scriptContains));
+    engine_.globalObject().setProperty("unique",engine_.newFunction(ScriptWrappers::scriptUnique));
+    engine_.globalObject().setProperty("shuffle",engine_.newFunction(ScriptWrappers::scriptRandomize));
+    engine_.globalObject().setProperty("relativeTo",engine_.newFunction(ScriptWrappers::scriptRelativeTo));
 
 }
 
@@ -1427,7 +1439,12 @@ void PlaylistManager::runScript(){
     QString script = scriptEdit->toPlainText();
     engine_.evaluate(script);
     if(engine_.hasUncaughtException()){
-        QMessageBox::critical(0,"Error in script",engine_.uncaughtExceptionBacktrace().join("\n"));
+        QString err = "Uncaught exception at line "
+                          + QString::number(engine_.uncaughtExceptionLineNumber()) + ": "
+                          + qPrintable(engine_.uncaughtException().toString())
+                          + "\nBacktrace: "
+                          + qPrintable(engine_.uncaughtExceptionBacktrace().join(", "));
+        QMessageBox::critical(0,"Error",err);
         return;
     }
 

@@ -3,6 +3,129 @@
 
 namespace Global {
 
+/*!
+ \brief
+
+ \param files
+ \param log
+*/
+int copyFoundFiles(const QStringList &files, const QString &copyFilesToDir, bool keepFolderStructure, bool overWrite, QString* log) {
+
+    if(log){
+        log->append("\nResult from file copy:\n");
+    }
+    int nCopied = 0;
+
+    bool ok = true;
+
+    //check if main directory to copy files to exist.
+    //if not, try to create it
+    QDir copyFilesToDir_(copyFilesToDir);
+    QDir c(copyFilesToDir_);
+    if (!c.exists()) {
+        ok = c.mkpath(copyFilesToDir_.absolutePath());
+        if (ok) {
+            if(log){
+                log->append("Created directory " + copyFilesToDir_.absolutePath() + "\n");
+            }
+        }
+        else {
+            if(log){
+                log->append("Could not create directory " + copyFilesToDir_.absolutePath() + ", no copying performed\n");
+            }
+            return 0;
+        }
+    }
+
+    QTime time;
+    time.start();
+
+    bool res = 1;
+
+    // bool overWrite = guiSettings->value("overWriteFiles").toBool();
+
+    qDebug() << "starting to copy " << files.size() << " files!";
+    QProgressDialog pr("Copying files to " + copyFilesToDir_.absolutePath(), "Abort", 0, files.size(), 0);
+    pr.setWindowModality(Qt::WindowModal);
+    QPushButton* cancelButton = new QPushButton;
+    pr.setCancelButton(cancelButton);
+    pr.setCancelButtonText("Cancel");
+    pr.setLabelText("Copying files");
+    for (int j = 0; j < files.size(); j++) {
+        pr.setValue(j);
+        if (pr.wasCanceled()) {
+            break;
+        }
+        QFileInfo file = QFileInfo(files[j]);
+        QString copyToName = copyFilesToDir_.absolutePath() + "/" + file.fileName();
+       // bool keepFolderStructure = guiSettings->value("keepFolderStructure").toBool();
+        if (keepFolderStructure) {
+            //qDebug()<<"file.absolutePath() "<<file.absolutePath();
+            QStringList dirs = file.absolutePath().replace("\\", "/").split("/");
+            QString root = dirs[0];
+            //qDebug()<<"root: "<<root;
+            //qDebug()<<"copyFilesToDir_.absolutePath() "<<copyFilesToDir_.absolutePath();
+            copyToName = file.absoluteFilePath().replace(root, copyFilesToDir_.absolutePath());
+
+        }
+
+        QFileInfo fi(copyToName);
+        if (!fi.absoluteDir().exists()) {
+            QDir dir;
+            bool createPathOk = dir.mkpath(fi.dir().absolutePath());
+            if (!createPathOk) {
+                if(log){
+                    log->append("\nCould not create path: " + fi.dir().absolutePath());
+                    res = -1;
+                }
+                continue;
+            }else{
+                qDebug()<<"Created path "<<fi.dir().absolutePath();
+            }
+        }
+
+        QFile f2(copyToName);
+        if(overWrite && f2.exists()){
+            bool removeOk = f2.remove();
+            if(!removeOk){
+                if(log){
+                    log->append("\nCould not delete file "+copyToName);
+                }
+                res = -2;
+            }
+        }
+        QFile f(file.absoluteFilePath());
+        bool okf = f.copy(copyToName);
+        if (!okf) {
+            if (f2.exists()) {
+                if(log){
+                    log->append(file.filePath() + " was not copied as it already exists in " + copyFilesToDir_.absolutePath() + "\n");
+                }
+            }else {
+                if(log){
+                    log->append(file.filePath() + " could not be copied to " + copyFilesToDir_.absolutePath() + "\n");
+                }
+                res = -3;
+            }
+        }
+        else {
+            nCopied++;
+        }
+    }
+    pr.setValue(files.size());
+    pr.close();
+
+    double secs = time.elapsed()/1000;
+    if(log){
+        log->append(QString::number(nCopied) + " of " + QString::number(files.size()) + " files copied to " + copyFilesToDir_.absolutePath() + "\n");
+        log->append("Time used copying files: "+QString::number(secs)+" seconds\n");
+    }
+    return res;
+}
+
+
+
+
 
 /*!
  \brief

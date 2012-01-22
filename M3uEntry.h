@@ -2,7 +2,6 @@
 #define M3UENTRY_H
 
 #include <QtGui>
-#include "GlobalFunctions.h"
 
 class M3uEntry {
 

@@ -62,20 +62,7 @@ QString PlayList::copyFilesName( const QString &fileName ){
 }
 */
 
-/*!
- \brief
 
- \param e
- \return QString
-*/
-QString PlayList::copyFilesName(const M3uEntry& e){
-
-    bool tmp = relativePath_;
-    relativePath_ = false;
-    QString name = playListEntry(e);
-    relativePath_ = tmp;
-    return name;
-}
 
 /*!
  \brief
@@ -120,96 +107,6 @@ QString PlayList::playListEntry(const M3uEntry& e) const {
 }
 
 
-/*!
- \brief
-
- \param songs
- \param log
-*/
-void PlayList::copyFoundFiles(QList<M3uEntry> songs, QString* log) {
-
-    log->append("\nResult from file copy:\n");
-    int nCopied = 0;
-
-    bool ok = true;
-
-    //check if main directory to copy files to exist.
-    //if not, try to create it
-    QDir c(copyFilesToDir_);
-    if (!c.exists()) {
-        ok = c.mkpath(copyFilesToDir_.absolutePath());
-        if (ok) {
-            log->append("Created directory " + copyFilesToDir_.absolutePath() + "\n");
-        }
-        else {
-            log->append("Could not create directory " + copyFilesToDir_.absolutePath() + ", no copying performed\n");
-            return;
-        }
-    }
-
-    QTime time;
-    time.start();
-
-
-    bool overWrite = guiSettings->value("overWriteFiles").toBool();
-
-    qDebug() << "starting to copy " << songs.size() << " files!";
-    QProgressDialog pr("Copying files for playlist " + name() + " to " + copyFilesToDir_.absolutePath(), "Abort", 0, songs.size(), 0);
-    pr.setWindowModality(Qt::WindowModal);
-    QPushButton* cancelButton = new QPushButton;
-    pr.setCancelButton(cancelButton);
-    pr.setCancelButtonText("Cancel");
-    pr.setLabelText("Copying files for playlist "+name());
-    for (int j = 0; j < songs.size(); j++) {
-        pr.setValue(j);
-        if (pr.wasCanceled()) {
-            break;
-        }
-
-        QString copyToName = copyFilesName(songs[j]);
-        QFileInfo fi(copyToName);
-        if (!fi.absoluteDir().exists()) {
-            QDir dir;
-            bool createPathOk = dir.mkpath(fi.dir().absolutePath());
-            if (!createPathOk) {
-                log->append("\nCould not create path: " + fi.dir().absolutePath());
-                continue;
-            }else{
-                qDebug()<<"Created path "<<fi.dir().absolutePath();
-            }
-        }
-
-        QFile f2(copyToName);
-        if(overWrite && f2.exists()){
-            bool removeOk = f2.remove();
-            if(!removeOk){
-                log->append("\nCould not delete file "+copyToName);
-            }
-        }
-        QFile f(songs[j].originalFile().absoluteFilePath());
-        //pr.setLabelText("Copying "+songs[j].originalFile().absoluteFilePath()+" to\n"+playListEntryName);
-        bool okf = f.copy(copyToName);
-        if (!okf) {            
-            if (f2.exists()) {
-                log->append(songs[j].originalFile().filePath() + " was not copied as it already exists in " + copyFilesToDir_.absolutePath() + "\n");
-            }
-            else {
-                log->append(songs[j].originalFile().filePath() + " could not be copied to " + copyFilesToDir_.absolutePath() + "\n");
-            }
-        }
-        else {
-            nCopied++;
-        }
-    }
-    pr.setValue(songs.size());
-    pr.close();
-
-    int secs = time.elapsed();
-
-    log->append(QString::number(nCopied) + " of " + QString::number(songs.size()) + " files copied to " + copyFilesToDir_.absolutePath() + "\n");
-    log->append("Time used copying files: "+QString::number(secs)+" seconds\n");
-
-}
 
 
 /*!
@@ -614,42 +511,7 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
 }
 
 
-/*!
- \brief
 
- \param context
- \param engine
-*/
-QScriptValue PlayList::contains(QScriptContext *context, QScriptEngine *engine){
-
-    Q_UNUSED(engine)
-
-    qDebug()<<context->argument(0).toVariant()<<context->argument(1).toVariant();
-    if(!context->argumentCount()!=2){
-        qDebug()<<"invalid number of arguments";
-        return false;
-    }
-    if(!context->argument(0).isArray() || !context->argument(0).isString() ){
-        qDebug()<<"wrong argument types";
-        return false;
-    }
-    QScriptValue array = context->argument(0);
-    QString string = context->argument(1).toString();
-    int length = array.property("length").toInteger();
-    for(int i=0; i<length; i++){
-        if( array.property(i).toString()==string ){
-            return true;
-        }
-    }
-    return false;
-}
-
-QScriptValue PlayList::myAdd(QScriptContext *context, QScriptEngine *engine){
-    Q_UNUSED(engine)
-    QScriptValue a = context->argument (0);
-    QScriptValue b = context->argument (1);
-    return a.toNumber () + b.toNumber ();
-}
 
 /*!
  \brief

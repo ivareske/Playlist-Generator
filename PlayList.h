@@ -27,8 +27,7 @@ class PlayList : public QListWidgetItem {
         PlayList(const QString& name = "New playlist", QListWidget* parent = 0);
         //~PlayList();
         //PlayList( const PlayList &other );
-        bool generate(QList<M3uEntry> *songsOut, QString* log, QHash<QString, Tag*> *tags);
-        void copyFoundFiles(QList<M3uEntry> songs, QString* log);        
+        bool generate(QList<M3uEntry> *songsOut, QString* log, QHash<QString, Tag*> *tags);        
 
         QString name() const;
         QVector<Rule> rules() const;
@@ -45,7 +44,6 @@ class PlayList : public QListWidgetItem {
         QList<QFileInfo> individualFiles() const;
         QString script() const;
         QString playListEntry(const M3uEntry& e) const;
-        QString copyFilesName(const M3uEntry& e);
 
 
         void setName(const QString& name);
@@ -76,8 +74,6 @@ class PlayList : public QListWidgetItem {
         QString createExtInfString(const Tag* tag, const QString& file, const QString& format_) const;
         void evaluateRules(const Tag* tag, const QString& file, bool* allOk, bool* anyOk) const;
         bool evaluateScript( const Tag* tag, const QFileInfo& fileInfo, QString *log ) const;
-        static QScriptValue contains(QScriptContext *context, QScriptEngine *engine);
-        static QScriptValue myAdd(QScriptContext *context, QScriptEngine *engine);
 
         //QString name_;
         QVector<Rule> rules_;
