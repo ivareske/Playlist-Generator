@@ -15,13 +15,17 @@ QStringList scriptArrayToStringList( const QScriptValue &array ){
 QScriptValue scriptGetDirContent(QScriptContext *context, QScriptEngine *engine){
 
     QList<QFileInfo> info;
-    if (context->argumentCount()!=3 ){
-        return context->throwError("3 arguments required. path (string), includeSubFolders (bool) and extensions (array) ");
+    int nargin=context->argumentCount();
+    if( nargin>3 || nargin<2 ){
+        return context->throwError("2-3 arguments required. QStringList getDirContent( const QString &path, const QStringList &extensions, bool includeSubFolders=true ) ");
     }
-    QString path = context->argument(0).toString();
-    bool includeSubFolders = context->argument(1).toBool();
-    QScriptValue array = context->argument(2);
+    QString path = context->argument(0).toString();    
+    QScriptValue array = context->argument(1);
     QStringList extensions = scriptArrayToStringList( array );
+    bool includeSubFolders = true;
+    if(nargin>2){
+        includeSubFolders = context->argument(2).toBool();
+    }
     info = Global::getDirContent( path, includeSubFolders, extensions );
 
     return engine->toScriptValue(info);
@@ -150,7 +154,7 @@ QScriptValue writeFile(QScriptContext *context, QScriptEngine *engine){
 
     int nargin=context->argumentCount();
     if (nargin<2 || nargin>3){
-        return context->throwError("2 or 3 arguments required: writeFile( const QStringList &lines, const QString &file, bool append=false )");
+        return context->throwError("2 or 3 arguments required: bool writeFile( const QStringList &lines, const QString &file, bool append=false )");
     }
     QScriptValue array = context->argument(0);
     QStringList lines = scriptArrayToStringList( array );
@@ -235,10 +239,10 @@ void fromStringStringListHash(const QScriptValue &v, QHash<QString,QStringList> 
 //http://www.qtcentre.org/threads/33355-Use-QObject-with-QtScript
 QScriptValue constructTag(QScriptContext *context, QScriptEngine *engine){
     if (!context->isCalledAsConstructor()){
-        return context->throwError(QScriptContext::SyntaxError, "please use the 'new' operator");
+        return context->throwError(QScriptContext::SyntaxError, "please use the 'new' operator (var tag = new Tag(fileName);)");
     }
     if(context->argumentCount()!=1 ){
-        return context->throwError("1 argument required (Full filename/string) ");
+        return context->throwError("1 argument required (Full filename/string): var tag = new Tag(fileName)");
     }
     QString file = context->argument(0).toString();
     // store the shared pointer in the script object that we are constructing

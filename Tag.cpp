@@ -170,14 +170,10 @@ bool Tag::audioPropertiesOk() const {
  \brief
  \param field
  \return QVariant
-*/
+*
+/
 QVariant Tag::getTag( Tag::TagField field ){
 
-    /*
-    if(!tagIsRead_){
-        readTags();
-    }
-    */
 
     QVariant result;
     if(field==Tag::ARTIST){
@@ -205,7 +201,7 @@ QVariant Tag::getTag( Tag::TagField field ){
     }
     return result;
 }
-
+*/
 
 /*!
  \brief
@@ -531,16 +527,16 @@ void Tag::clearTags() {
     channels_ = -1;
 }
 
-QHash<QString,QStringList> Tag::iD3V2Frames() const{
+QHash<QString,QStringList> Tag::ID3v2Frames() const{
     return frames_["ID3V2"];
 }
-QHash<QString,QStringList> Tag::aPEItems() const{
+QHash<QString,QStringList> Tag::APEItems() const{
     return frames_["APE"];
 }
-QHash<QString,QStringList> Tag::mP4Items() const{
+QHash<QString,QStringList> Tag::MP4Items() const{
     return frames_["MP4"];
 }
-QHash<QString,QStringList> Tag::aSFAttributes() const{
+QHash<QString,QStringList> Tag::ASFAttributes() const{
     return frames_["ASF"];
 }
 

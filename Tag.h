@@ -40,10 +40,11 @@ class Tag : public QObject{
 public:
     enum TagField { ARTIST, ALBUM, TITLE, GENRE, TRACK, YEAR, COMMENT, LENGTH, BITRATE, SAMPLERATE, CHANNELS, NTAGFIELDS };
     Tag(const QString& fullfile = "",QObject *parent=0);
+    QHash< QString, QHash<QString,QStringList> > frames() const;
+
 public slots:
     void clearTags();
-    void readTags();
-    QVariant getTag( Tag::TagField field );
+    void readTags();    
     bool tagIsRead() const;
     bool tagOk() const;
     bool audioPropertiesOk() const;
@@ -63,13 +64,12 @@ public slots:
     uint channels() const;
 
     void readFrames();
-    void clearFrames();
-    QHash< QString, QHash<QString,QStringList> > frames() const;
+    void clearFrames();    
     QHash<QString,QStringList> xiphFrames() const;
-    QHash<QString,QStringList> iD3V2Frames() const;
-    QHash<QString,QStringList> aPEItems() const;
-    QHash<QString,QStringList> mP4Items() const;
-    QHash<QString,QStringList> aSFAttributes() const;
+    QHash<QString,QStringList> ID3v2Frames() const;
+    QHash<QString,QStringList> APEItems() const;
+    QHash<QString,QStringList> MP4Items() const;
+    QHash<QString,QStringList> ASFAttributes() const;
 
 private:
 

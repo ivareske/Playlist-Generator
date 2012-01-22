@@ -580,6 +580,7 @@ void PlaylistManager::updateUseScript() {
     //switch between using script or a set of rules
 
     int type = guiSettings->value("scriptType").toInt();
+    actionMakeOnePlaylistForEveryArtist->setVisible(true);
     if (type==Global::RULES) {                
         rulesFrame->hide();
         RuleScript->show();
@@ -587,7 +588,7 @@ void PlaylistManager::updateUseScript() {
         allRulesTrue->hide();
         OptionsFrame->show();
         PlayListGroupBox->show();
-        ScriptOnlyFrame->hide();
+        ScriptOnlyFrame->hide();        
     }else if(type==Global::SCRIPTANDPLAYLIST){        
         rulesFrame->show();
         RuleScript->hide();
@@ -604,6 +605,7 @@ void PlaylistManager::updateUseScript() {
         OptionsFrame->hide();
         PlayListGroupBox->hide();
         ScriptOnlyFrame->show();
+        actionMakeOnePlaylistForEveryArtist->setVisible(false);
     }
 }
 
@@ -1429,6 +1431,42 @@ void PlaylistManager::initializeScriptEngine(){
     engine_.globalObject().setProperty("shuffle",engine_.newFunction(ScriptWrappers::scriptRandomize));
     engine_.globalObject().setProperty("relativeTo",engine_.newFunction(ScriptWrappers::scriptRelativeTo));
 
+    QString tip = "Available functions:\n";
+    tip += "QStringList getDirContent( const QString &path, const QStringList &extensions, bool includeSubFolders=true )\n";
+    tip += "QStringList randomize(const QStringList &list)\n";
+    tip += "QString relativeTo(const QString &dir,const QString &file)\n";
+    tip += "QStringList relativeTo(const QString &dir,const QStringList &files)\n";
+    tip += "QStringList unique(const QStringList &list)\n";
+    tip += "bool contains(const QStringList &list, const QString &val, bool caseSensitive=true)\n";
+    tip += "bool contains(const QString &str, const QString &val, bool caseSensitive=true)\n";
+    tip += "(Output is array)[int res, QString log] = copyFoundFiles(const QStringList &files,\n";
+    tip +="    const QString &copyFilesToDir, bool keepFolderStructure=false, bool overWrite=true)\n";
+    tip += "bool writeFile( const QStringList &lines, const QString &file, bool append=false )\n";
+    tip += "var tag = new Tag(const QString &fileName)\n\nTag functions:\n";
+    tip += "void readTags();\n";
+    tip += "bool tagIsRead() const;\n";
+    tip += "bool tagOk() const;\n";
+    tip += "bool audioPropertiesOk() const;\n";
+    tip += "QString fileName() const;\n";
+    tip += "QString artist() const;\n";
+    tip += "QString title() const;\n";
+    tip += "QString album() const;\n";
+    tip += "QString comment() const;\n";
+    tip += "QString genre() const;\n";
+    tip += "uint year() const;\n";
+    tip += "uint track() const;\n";
+    tip += "uint length() const;\n";
+    tip += "uint bitRate() const;\n";
+    tip += "uint sampleRate() const;\n";
+    tip += "uint channels() const;\n";
+    tip += "void readFrames(); (Reads xiph, id3v2, ape, mp4 and asf frames/items)\n";
+    tip += "QHash<QString,QStringList> xiphFrames() const;\n";
+    tip += "QHash<QString,QStringList> ID3v2Frames() const;\n";
+    tip += "QHash<QString,QStringList> APEItems() const;\n";
+    tip += "QHash<QString,QStringList> MP4Items() const;\n";
+    tip += "QHash<QString,QStringList> ASFAttributes() const;";
+
+    scriptEdit->setToolTip(tip);
 }
 
 /*!
