@@ -1,6 +1,9 @@
 #ifndef TAG_H
 #define TAG_H
 
+
+#include <sstream>
+#include <fstream>
 #include <iostream>
 #include <QtGui>
 #include <tag.h>
@@ -35,68 +38,75 @@
 
 
 class Tag : public QObject{
-    Q_OBJECT
-    //Q_PROPERTY( QString fileName READ fileName )
-public:
-    enum TagField { ARTIST, ALBUM, TITLE, GENRE, TRACK, YEAR, COMMENT, LENGTH, BITRATE, SAMPLERATE, CHANNELS, NTAGFIELDS };
-    Tag(const QString& fullfile = "",QObject *parent=0);
-    QHash< QString, QHash<QString,QStringList> > frames() const;
+        Q_OBJECT
+        //Q_PROPERTY( QString fileName READ fileName )
+    public:
+        enum TagField { ARTIST, ALBUM, TITLE, GENRE, TRACK, YEAR, COMMENT, LENGTH, BITRATE, SAMPLERATE, CHANNELS, NTAGFIELDS };
+        Tag(const QString& fullfile = "",QObject *parent=0);
+        QHash< QString, QHash<QString,QStringList> > frames();
 
-public slots:
-    void clearTags();
-    void readTags();    
-    bool tagIsRead() const;
-    bool tagOk() const;
-    bool audioPropertiesOk() const;
-    QString fileName() const;
+        QString tagLibDebug() const;
+    public slots:
 
-    QString artist() const;
-    QString title() const;
-    QString album() const;
-    QString comment() const;
-    QString genre() const;
-    uint year() const;
-    uint track() const;
+        bool tagOk() const;
+        bool audioPropertiesOk() const;
+        QString fileName() const;
 
-    uint length() const;
-    uint bitRate() const;
-    uint sampleRate() const;
-    uint channels() const;
+        QString artist();
+        QString title();
+        QString album();
+        QString comment();
+        QString genre();
+        uint year();
+        uint track();
 
-    void readFrames();
-    void clearFrames();    
-    QHash<QString,QStringList> xiphFrames() const;
-    QHash<QString,QStringList> ID3v2Frames() const;
-    QHash<QString,QStringList> APEItems() const;
-    QHash<QString,QStringList> MP4Items() const;
-    QHash<QString,QStringList> ASFAttributes() const;
+        uint length();
+        uint bitRate() ;
+        uint sampleRate();
+        uint channels() ;
 
-private:
+        QHash<QString,QStringList> xiphFrames() ;
+        QHash<QString,QStringList> ID3v2Frames() ;
+        QHash<QString,QStringList> APEItems() ;
+        QHash<QString,QStringList> MP4Items() ;
+        QHash<QString,QStringList> ASFAttributes() ;
 
-    bool readXiphComment(TagLib::Ogg::XiphComment *tag, const QString &type="XIPH");
-    bool readID3V2Frames(TagLib::ID3v2::Tag *id3v2tag, const QString &type="ID3V2");
-    bool readAPEItems(TagLib::APE::Tag *ape, const QString &type="APE");
-    bool readMP4Items(TagLib::MP4::Tag *mp4Tag, const QString &type="MP4");
-    bool readASFAttributes(TagLib::ASF::Tag *asfTag, const QString &type="ASF");
+    private:
 
-    //QHash<QString,QStringList> = frames_["ID3V2"]; //usage
-    QHash< QString, QHash<QString,QStringList> > frames_;
-    QString filename_;
-    QString artist_;
-    QString title_;
-    QString album_;
-    QString comment_;
-    QString genre_;
-    uint year_;
-    uint track_;
-    bool tagIsRead_;
-    bool tagOk_;
-    bool audioPropertiesOk_;
+        void readFrames();
+        void clearFrames();
+        bool tagIsRead() const;
+        void readTags();
+        void clearTags();
 
-    uint length_;
-    uint bitRate_;
-    uint sampleRate_;
-    uint channels_;
+        bool readXiphComment(TagLib::Ogg::XiphComment *tag, const QString &type="XIPH");
+        bool readID3V2Frames(TagLib::ID3v2::Tag *id3v2tag, const QString &type="ID3V2");
+        bool readAPEItems(TagLib::APE::Tag *ape, const QString &type="APE");
+        bool readMP4Items(TagLib::MP4::Tag *mp4Tag, const QString &type="MP4");
+        bool readASFAttributes(TagLib::ASF::Tag *asfTag, const QString &type="ASF");
+
+        //QHash<QString,QStringList> = frames_["ID3V2"]; //usage
+        QHash< QString, QHash<QString,QStringList> > frames_;
+        QString filename_;
+        QString artist_;
+        QString title_;
+        QString album_;
+        QString comment_;
+        QString genre_;
+        uint year_;
+        uint track_;
+        bool tagIsRead_,framesAreRead_;
+        bool tagOk_;
+        bool audioPropertiesOk_;
+
+        uint length_;
+        uint bitRate_;
+        uint sampleRate_;
+        uint channels_;
+
+        QString tagLibDebug_;
+        std::stringstream *buffer;
+        std::streambuf *sbuf;
 
 };
 

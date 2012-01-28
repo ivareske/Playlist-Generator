@@ -17,6 +17,7 @@ Tag::Tag(const QString& fullfile, QObject *parent) : QObject(parent){
     filename_ = fullfile;
 
     tagIsRead_ = false;
+    framesAreRead_=false;
     tagOk_ = false;
     audioPropertiesOk_ = false;
 
@@ -32,7 +33,10 @@ Tag::Tag(const QString& fullfile, QObject *parent) : QObject(parent){
 
  \return QString
 */
-QString Tag::artist() const {
+QString Tag::artist()  {
+    if(!tagIsRead()){
+        readTags();
+    }
     return artist_;
 }
 
@@ -41,7 +45,10 @@ QString Tag::artist() const {
 
  \return QString
 */
-QString Tag::title() const {
+QString Tag::title()  {
+    if(!tagIsRead()){
+        readTags();
+    }
     return title_;
 }
 
@@ -50,7 +57,10 @@ QString Tag::title() const {
 
  \return QString
 */
-QString Tag::album() const {
+QString Tag::album()  {
+    if(!tagIsRead()){
+        readTags();
+    }
     return album_;
 }
 
@@ -59,7 +69,10 @@ QString Tag::album() const {
 
  \return QString
 */
-QString Tag::comment() const {
+QString Tag::comment() {
+    if(!tagIsRead()){
+        readTags();
+    }
     return comment_;
 }
 
@@ -68,7 +81,10 @@ QString Tag::comment() const {
 
  \return QString
 */
-QString Tag::genre() const {
+QString Tag::genre() {
+    if(!tagIsRead()){
+        readTags();
+    }
     return genre_;
 }
 
@@ -77,7 +93,10 @@ QString Tag::genre() const {
 
  \return uint
 */
-uint Tag::year() const {
+uint Tag::year() {
+    if(!tagIsRead()){
+        readTags();
+    }
     return year_;
 }
 
@@ -86,7 +105,10 @@ uint Tag::year() const {
 
  \return uint
 */
-uint Tag::track() const {
+uint Tag::track() {
+    if(!tagIsRead()){
+        readTags();
+    }
     return track_;
 }
 
@@ -95,7 +117,10 @@ uint Tag::track() const {
 
  \return uint
 */
-uint Tag::length() const {
+uint Tag::length()  {
+    if(!tagIsRead()){
+        readTags();
+    }
     return length_;
 }
 
@@ -104,7 +129,10 @@ uint Tag::length() const {
 
  \return uint
 */
-uint Tag::bitRate() const {
+uint Tag::bitRate() {
+    if(!tagIsRead()){
+        readTags();
+    }
     return bitRate_;
 }
 
@@ -113,7 +141,10 @@ uint Tag::bitRate() const {
 
  \return uint
 */
-uint Tag::sampleRate() const {
+uint Tag::sampleRate()  {
+    if(!tagIsRead()){
+        readTags();
+    }
     return sampleRate_;
 }
 
@@ -122,7 +153,10 @@ uint Tag::sampleRate() const {
 
  \return uint
 */
-uint Tag::channels() const {
+uint Tag::channels() {
+    if(!tagIsRead()){
+        readTags();
+    }
     return channels_;
 }
 
@@ -208,7 +242,10 @@ QVariant Tag::getTag( Tag::TagField field ){
 
 */
 
-QHash< QString, QHash<QString,QStringList> > Tag::frames() const{
+QHash< QString, QHash<QString,QStringList> > Tag::frames() {
+    if(!framesAreRead_){
+        readFrames();
+    }
     return frames_;
 }
 
@@ -218,6 +255,7 @@ QHash< QString, QHash<QString,QStringList> > Tag::frames() const{
 
 */
 void Tag::clearFrames(){
+    framesAreRead_=false;
     frames_.clear();
 }
 
@@ -232,6 +270,9 @@ void Tag::readFrames() {
 
     frames_.clear();
 
+    sbuf = std::cerr.rdbuf();
+    buffer = new std::stringstream;
+    std::cerr.rdbuf(buffer->rdbuf());
 
     //https://code.launchpad.net/~mixxxdevelopers/mixxx/features_recording2/+merge/55016
 
@@ -326,8 +367,63 @@ void Tag::readFrames() {
     }
 
 
+    tagLibDebug_.append(QString(buffer->str().c_str()));
+
+    std::cerr.rdbuf(sbuf);
+    delete buffer; buffer=0;
+
+    framesAreRead_=true;
+}
+
+
+
+/*!
+ \brief
+
+*/
+
+void Tag::readTags() {
+
+    sbuf = std::cerr.rdbuf();
+    buffer = new std::stringstream;
+    std::cerr.rdbuf(buffer->rdbuf());
+
+    tagIsRead_ = true;
+    //qDebug()<<"reading tags for "<<filename_;
+    TagLib::FileRef f(filename_.toStdString().c_str());
+    if(!f.isNull()){
+
+        if (f.tag()!= 0) {
+            artist_ = f.tag()->artist().toCString();
+            album_ = f.tag()->album().toCString();
+            title_ = f.tag()->title().toCString();
+            genre_ = f.tag()->genre().toCString();
+            comment_ = f.tag()->comment().toCString();
+            year_ = f.tag()->year();
+            track_ = f.tag()->track();
+            tagOk_ = true;
+        }
+        if (f.audioProperties() != 0) {
+            length_ = f.audioProperties()->length();
+            bitRate_ = f.audioProperties()->bitrate();
+            sampleRate_ = f.audioProperties()->sampleRate();
+            channels_ = f.audioProperties()->channels();
+            audioPropertiesOk_ = true;
+        }
+    }
+
+    tagLibDebug_.append(QString(buffer->str().c_str()));
+
+    std::cerr.rdbuf(sbuf);
+    delete buffer; buffer=0;
 
 }
+
+QString Tag::tagLibDebug() const{
+    return tagLibDebug_;
+}
+
+
 
 /*!
  \brief Read asf attributes
@@ -472,39 +568,6 @@ bool Tag::readAPEItems( TagLib::APE::Tag *ape, const QString &type ){
 }
 
 
-/*!
- \brief
-
-*/
-
-void Tag::readTags() {
-
-    tagIsRead_ = true;
-    //qDebug()<<"reading tags for "<<filename_;
-    TagLib::FileRef f(filename_.toStdString().c_str());
-    if(f.isNull()){
-        return;
-    }
-    if (f.tag()!= 0) {
-        artist_ = f.tag()->artist().toCString();
-        album_ = f.tag()->album().toCString();
-        title_ = f.tag()->title().toCString();
-        genre_ = f.tag()->genre().toCString();
-        comment_ = f.tag()->comment().toCString();
-        year_ = f.tag()->year();
-        track_ = f.tag()->track();
-        tagOk_ = true;
-    }
-    if (f.audioProperties() != 0) {
-        length_ = f.audioProperties()->length();
-        bitRate_ = f.audioProperties()->bitrate();
-        sampleRate_ = f.audioProperties()->sampleRate();
-        channels_ = f.audioProperties()->channels();
-        audioPropertiesOk_ = true;
-    }
-
-}
-
 
 /*!
  \brief
@@ -527,19 +590,34 @@ void Tag::clearTags() {
     channels_ = -1;
 }
 
-QHash<QString,QStringList> Tag::ID3v2Frames() const{
+QHash<QString,QStringList> Tag::ID3v2Frames() {
+    if(!framesAreRead_){
+        readFrames();
+    }
     return frames_["ID3V2"];
 }
-QHash<QString,QStringList> Tag::APEItems() const{
+QHash<QString,QStringList> Tag::APEItems() {
+    if(!framesAreRead_){
+        readFrames();
+    }
     return frames_["APE"];
 }
-QHash<QString,QStringList> Tag::MP4Items() const{
+QHash<QString,QStringList> Tag::MP4Items() {
+    if(!framesAreRead_){
+        readFrames();
+    }
     return frames_["MP4"];
 }
-QHash<QString,QStringList> Tag::ASFAttributes() const{
+QHash<QString,QStringList> Tag::ASFAttributes() {
+    if(!framesAreRead_){
+        readFrames();
+    }
     return frames_["ASF"];
 }
 
-QHash<QString, QStringList> Tag::xiphFrames() const{
+QHash<QString, QStringList> Tag::xiphFrames() {
+    if(!framesAreRead_){
+        readFrames();
+    }
     return frames_["XIPH"];
 }

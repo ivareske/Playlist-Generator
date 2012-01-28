@@ -50,7 +50,7 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
     readGUISettings();
     updateUseScript();
     initializeScriptEngine();
-    connect(runScriptButton,SIGNAL(clicked()),this,SLOT(runScript()));
+
 }
 
 
@@ -208,6 +208,10 @@ void PlaylistManager::initGuiSettings() {
 
 }
 
+void PlaylistManager::runScriptEditScript() {
+    runScript(scriptEdit->toPlainText());
+}
+
 
 /*!
  \brief
@@ -215,8 +219,8 @@ void PlaylistManager::initGuiSettings() {
 */
 void PlaylistManager::createActions() {
 
-    //connect( actionRunScript, SIGNAL( triggered() ), this, SLOT( runscript() ) );
 
+    connect(runScriptButton,SIGNAL(clicked()),this,SLOT(runScriptEditScript()));
 
     // signals/slots mechanism in action
     connect(generateButton, SIGNAL(clicked()), this, SLOT(generateSelectedPlayLists()));
@@ -305,11 +309,9 @@ void PlaylistManager::makePlayListForEveryArtist() {
         QString file = content[i].absoluteFilePath();
         Tag *tag = tags_[file];
         if (tag->fileName().isEmpty()) {
-            tag = new Tag(file);
-            tag->readTags();
+            tag = new Tag(file);            
         }
         if (keepTags) {
-            tag->readFrames();
             tags_.insert(file, tag);
         }
         artists<<tag->artist();
@@ -1443,8 +1445,6 @@ void PlaylistManager::initializeScriptEngine(){
     tip +="    const QString &copyFilesToDir, bool keepFolderStructure=false, bool overWrite=true)\n";
     tip += "bool writeFile( const QStringList &lines, const QString &file, bool append=false )\n";
     tip += "var tag = new Tag(const QString &fileName)\n\nTag functions:\n";
-    tip += "void readTags();\n";
-    tip += "bool tagIsRead() const;\n";
     tip += "bool tagOk() const;\n";
     tip += "bool audioPropertiesOk() const;\n";
     tip += "QString fileName() const;\n";
@@ -1458,8 +1458,7 @@ void PlaylistManager::initializeScriptEngine(){
     tip += "uint length() const;\n";
     tip += "uint bitRate() const;\n";
     tip += "uint sampleRate() const;\n";
-    tip += "uint channels() const;\n";
-    tip += "void readFrames(); (Reads xiph, id3v2, ape, mp4 and asf frames/items)\n";
+    tip += "uint channels() const;\n";    
     tip += "QHash<QString,QStringList> xiphFrames() const;\n";
     tip += "QHash<QString,QStringList> ID3v2Frames() const;\n";
     tip += "QHash<QString,QStringList> APEItems() const;\n";
@@ -1469,12 +1468,8 @@ void PlaylistManager::initializeScriptEngine(){
     scriptEdit->setToolTip(tip);
 }
 
-/*!
- \brief Evaluate script when in SCRIPTONLY mode
-*/
-void PlaylistManager::runScript(){
+bool PlaylistManager::runScript(const QString &script,bool guiMode) {
 
-    QString script = scriptEdit->toPlainText();
     engine_.evaluate(script);
     if(engine_.hasUncaughtException()){
         QString err = "Uncaught exception at line "
@@ -1482,10 +1477,14 @@ void PlaylistManager::runScript(){
                           + qPrintable(engine_.uncaughtException().toString())
                           + "\nBacktrace: "
                           + qPrintable(engine_.uncaughtExceptionBacktrace().join(", "));
-        QMessageBox::critical(0,"Error",err);
-        return;
+        qDebug()<<err;
+        if(guiMode){
+            QMessageBox::critical(0,"Error",err);
+        }
+        return false;
     }
-
+    qDebug()<<"Successfully evaluated script";
+    return true;
 }
 
 

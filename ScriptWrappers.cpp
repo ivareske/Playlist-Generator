@@ -175,7 +175,7 @@ QScriptValue writeFile(QScriptContext *context, QScriptEngine *engine){
     }
     QTextStream out(&f);
     for(int i=0;i<lines.size();i++){
-        out << lines[i];
+        out << lines[i].replace("/","\\");
         if(i<lines.size()-1){
             out << "\n";
         }

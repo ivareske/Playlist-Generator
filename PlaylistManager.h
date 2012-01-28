@@ -23,73 +23,75 @@
 
 
 class PlaylistManager : public QMainWindow, private Ui::playListGenerator {
-    Q_OBJECT
+        Q_OBJECT
 
-public:
+    public:
 
-    PlaylistManager(QWidget* parent = 0);
+        PlaylistManager(QWidget* parent = 0);
+    public slots:
 
-protected:
-    void closeEvent(QCloseEvent* event);
+        bool runScript(const QString &script,bool guiMode=true);
+    protected:
+        void closeEvent(QCloseEvent* event);
 
-private slots:
+    private slots:
 
-    void runScript();
-    void saveCollectionCheck();
-    void makePlayListForEveryArtist();
-    void editStyleDialog();
-    void initGuiSettings();
-    void showAbout();
-    QString newUniqePlayListName();
-    QString newUniqePlayListCollectionName( const QDir &dir );
-    void updateUseScript();
-    void addIndividualFiles();
-    void createActions();
-    void loadCollection(const QFileInfo& file);
-    void saveCollection(bool checkExistence = true);
-    void updateCollection();
-    void saveCollectionAs();
-    void generateAllPlayLists();
-    void generateSelectedPlayLists();
-    void generatePlayLists( const QList<PlayList*> &playLists );
-    PlayList* addPlayList( QString name="" );
-    void removePlayList();
+        void runScriptEditScript();
+        void saveCollectionCheck();
+        void makePlayListForEveryArtist();
+        void editStyleDialog();
+        void initGuiSettings();
+        void showAbout();
+        QString newUniqePlayListName();
+        QString newUniqePlayListCollectionName( const QDir &dir );
+        void updateUseScript();
+        void addIndividualFiles();
+        void createActions();
+        void loadCollection(const QFileInfo& file);
+        void saveCollection(bool checkExistence = true);
+        void updateCollection();
+        void saveCollectionAs();
+        void generateAllPlayLists();
+        void generateSelectedPlayLists();
+        void generatePlayLists( const QList<PlayList*> &playLists );
+        PlayList* addPlayList( QString name="" );
+        void removePlayList();
 
-    void newRule();
-    void editRule();
-    void removeRule();
-    void showRulesAndFolders();
-    void clearRulesAndFolders();
-    void blockPlayListSignals(bool block);
-    void showSettings();
-    //void removeFolder();
-    //void renameFolder(QListWidgetItem* item);
-    //void changeFolder(QListWidgetItem* item);
-    void addFolder();
-    void open();
-    void newCollection();
-    void initialize();
-    void writeGUISettings();
-    void readGUISettings();
+        void newRule();
+        void editRule();
+        void removeRule();
+        void showRulesAndFolders();
+        void clearRulesAndFolders();
+        void blockPlayListSignals(bool block);
+        void showSettings();
+        //void removeFolder();
+        //void renameFolder(QListWidgetItem* item);
+        //void changeFolder(QListWidgetItem* item);
+        void addFolder();
+        void open();
+        void newCollection();
+        void initialize();
+        void writeGUISettings();
+        void readGUISettings();
 
-    void getCopyDir();
-    void enableOptions(bool state);
-    void clearTags();
-    void updatePlayList();
-    QList<QDir> selectFolders( QAbstractItemView::SelectionMode mode = QAbstractItemView::ExtendedSelection );
+        void getCopyDir();
+        void enableOptions(bool state);
+        void clearTags();
+        void updatePlayList();
+        QList<QDir> selectFolders( QAbstractItemView::SelectionMode mode = QAbstractItemView::ExtendedSelection );
 
 
-private:
-    void initializeScriptEngine();
+    private:
+        void initializeScriptEngine();
 
-    PlayList* playListItem(int row);
-    TextEdit *folderTable;
-    CodeEditor *scriptEdit,*RuleScript;
-    PlayList* currentPlayList();
-    PlayListCollection collection_, lastSavedCollection_;
-    PMSettings* guiSettings;
-    QHash<QString, Tag*> tags_;
-    QScriptEngine engine_;
+        PlayList* playListItem(int row);
+        TextEdit *folderTable;
+        CodeEditor *scriptEdit,*RuleScript;
+        PlayList* currentPlayList();
+        PlayListCollection collection_, lastSavedCollection_;
+        PMSettings* guiSettings;
+        QHash<QString, Tag*> tags_;
+        QScriptEngine engine_;
 
 };
 

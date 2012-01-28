@@ -256,9 +256,7 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
         if (includeExtInf_) {
             Tag *tag = tags->value(f.absoluteFilePath());
             if (tag->fileName().isEmpty()) {
-                tag = new Tag(f.absoluteFilePath());
-                tag->readTags();
-                tag->readFrames();
+                tag = new Tag(f.absoluteFilePath());                
                 if (keepTags) {
                     tags->insert(f.absoluteFilePath(), tag);
                 }
@@ -336,12 +334,6 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
         p.setCancelButtonText("Cancel");
 
 
-        if(showTaglibDebug){
-            // Redirect cerr to stringstream buffer
-            sbuf = std::cerr.rdbuf();
-            buffer = new std::stringstream;
-            std::cerr.rdbuf(buffer->rdbuf());
-        }
 
         //process each of the files matching the specified extensions, and see if
         //they matches the rules/script
@@ -366,11 +358,6 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
         }
         p.setValue(n);
 
-        if(showTaglibDebug){
-            //set the cerr back
-            std::cerr.rdbuf(sbuf);
-            delete buffer; buffer=0;
-        }
 
         qDebug() << "finished finding files";
     }
@@ -415,9 +402,6 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
     QString file = fileInfo.fileName();
     QString fullfile = fileInfo.absoluteFilePath();
 
-    if(showTaglibDebug){
-        buffer->str(""); //clear buffer for logging cerr/taglib debug
-    }
 
     Tag *tag=0;
     if (hasTagRule || hasAudioRule || includeExtInf_) {
@@ -425,9 +409,7 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
         //the original qhash of tags
         tag = tagsCopy->take(fullfile);        
         if (tag->fileName().isEmpty()) {
-            tag = new Tag(fullfile);
-            tag->readTags();
-            tag->readFrames();
+            tag = new Tag(fullfile);            
             if (keepTags) {
                 tags->insert(fullfile, tag);
             }
@@ -438,7 +420,7 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
     }
 
     if(showTaglibDebug){
-        QString taglibDebug = QString(buffer->str().c_str());
+        QString taglibDebug = tag->tagLibDebug();
         if(!taglibDebug.isEmpty()){
             log->append("\nTaglib Debug info: "+taglibDebug);
         }
@@ -520,7 +502,7 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
  \param fileInfo
  \param log
 */
-bool PlayList::evaluateScript( const Tag* tag, const QFileInfo& fileInfo, QString *log ) const {
+bool PlayList::evaluateScript( Tag* tag, const QFileInfo& fileInfo, QString *log ) const {
 
     //qDebug()<<script_;
     if(script_.isEmpty()){
@@ -601,7 +583,7 @@ bool PlayList::evaluateScript( const Tag* tag, const QFileInfo& fileInfo, QStrin
  \param allOk
  \param anyOk
 */
-void PlayList::evaluateRules(const Tag* tag, const QString& file, bool* allOk, bool* anyOk) const {
+void PlayList::evaluateRules( Tag* tag, const QString& file, bool* allOk, bool* anyOk) const {
 
     bool ok;
     for (int i = 0; i < rules_.size(); i++) {
@@ -707,7 +689,7 @@ void PlayList::evaluateRules(const Tag* tag, const QString& file, bool* allOk, b
  \param format_
  \return QString
 */
-QString PlayList::createExtInfString(const Tag* tag, const QString& file, const QString& format_) const {
+QString PlayList::createExtInfString(Tag *tag, const QString& file, const QString& format_) const {
 
     QString format = format_;
 

@@ -2,19 +2,13 @@
 #define PLAYLIST_H
 
 #include <QtGui>
-//#include <QtScript>
 #include "Rule.h"
 #include "Tag.h"
 #include <tag.h>
 #include <taglib.h>
 #include <fileref.h>
-//#include <DebugLogger.h>
 #include <vector>
-#include <iostream>
-#include <sstream>
-#include <fstream>
 #include <time.h>
-//#include "omp.h"
 #include <cstdlib>
 #include "M3uEntry.h"
 #include "GlobalFunctions.h"
@@ -71,9 +65,9 @@ class PlayList : public QListWidgetItem {
         bool writeM3U(const QString& file, const QList<M3uEntry> &songs, QString* log = 0) const;
         void checkRule(bool value, bool* allOk, bool* anyOk, bool shouldBeTrue) const;
         QList<M3uEntry> processFile(const QFileInfo& fileInfo, bool hasTagRule, bool hasAudioRule,bool keepTags, const QString &format, bool useScript, QString* log, QHash<QString, Tag*> *tags, QHash<QString, Tag*> *tagsCopy, bool *wasCanceled) const;
-        QString createExtInfString(const Tag* tag, const QString& file, const QString& format_) const;
-        void evaluateRules(const Tag* tag, const QString& file, bool* allOk, bool* anyOk) const;
-        bool evaluateScript( const Tag* tag, const QFileInfo& fileInfo, QString *log ) const;
+        QString createExtInfString( Tag* tag, const QString& file, const QString& format_) const;
+        void evaluateRules(Tag *tag, const QString& file, bool* allOk, bool* anyOk) const;
+        bool evaluateScript( Tag *tag, const QFileInfo& fileInfo, QString *log ) const;
 
         //QString name_;
         QVector<Rule> rules_;
@@ -92,8 +86,6 @@ class PlayList : public QListWidgetItem {
         QString script_;        
         //QDir outPutFolder_;        
         PMSettings* guiSettings;        
-        std::stringstream *buffer;
-        std::streambuf *sbuf;
 
         QHash<QString,QVariant> frameFields;
         bool artistEmpty,titleEmpty,albumEmpty,commentEmpty,genreEmpty,trackEmpty,yearEmpty;
@@ -103,7 +95,7 @@ class PlayList : public QListWidgetItem {
 
 };
 
-Q_DECLARE_METATYPE(PlayList);
+Q_DECLARE_METATYPE(PlayList)
 
 QDataStream& operator>>(QDataStream& in, PlayList& p);
 QDataStream& operator<<(QDataStream& out, const PlayList& p);
