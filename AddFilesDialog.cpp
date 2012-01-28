@@ -55,8 +55,7 @@ void AddFilesDialog::removeFiles() {
 void AddFilesDialog::chooseFiles() {
 
     PMSettings *settings = Global::guiSettings();
-    QString lastUsedDir = settings->value("AddFilesDialog/lastUsedDir",QDesktopServices::MusicLocation).toString();
-    qDebug()<<lastUsedDir;
+    QString lastUsedDir = settings->value("AddFilesDialog/lastUsedDir",QDesktopServices::MusicLocation).toString();    
     QStringList files = QFileDialog::getOpenFileNames(
                             this,
                             "Select files",

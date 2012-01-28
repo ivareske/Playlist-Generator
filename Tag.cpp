@@ -168,7 +168,6 @@ uint Tag::channels() {
  \return QString
 */
 QString Tag::fileName() const {
-    //qDebug()<<"Tag::fileName()";
     return filename_;
 }
 
@@ -389,7 +388,6 @@ void Tag::readTags() {
     std::cerr.rdbuf(buffer->rdbuf());
 
     tagIsRead_ = true;
-    //qDebug()<<"reading tags for "<<filename_;
     TagLib::FileRef f(filename_.toStdString().c_str());
     if(!f.isNull()){
 
@@ -432,7 +430,6 @@ QString Tag::tagLibDebug() const{
 */
 bool Tag::readASFAttributes( TagLib::ASF::Tag *asfTag, const QString &type ){
     if(asfTag){
-        qDebug()<<"found ASF tag";
         //ASF items
         QHash<QString,QStringList> list = frames_[type];
         for(TagLib::ASF::AttributeListMap::ConstIterator it = asfTag->attributeListMap().begin(); it != asfTag->attributeListMap().end(); ++it){
@@ -443,14 +440,12 @@ bool Tag::readASFAttributes( TagLib::ASF::Tag *asfTag, const QString &type ){
             for(uint i=0;i<attributes.size();i++){
                 data << TStringToQString(attributes[i].toString());
             }
-            //qDebug()<<type<<id<<data;
             list.insert(id,data);
         }
         frames_[type] = list;
         return true;
     }else{
         return false;
-        qDebug()<<"NO ASF TAG";
     }
 }
 
@@ -461,7 +456,6 @@ bool Tag::readASFAttributes( TagLib::ASF::Tag *asfTag, const QString &type ){
 */
 bool Tag::readMP4Items( TagLib::MP4::Tag *mp4Tag, const QString &type ){
     if(mp4Tag){
-        qDebug()<<"found mp4 tag";
 
         QHash<QString,QStringList> list = frames_[type];
         for(TagLib::MP4::ItemListMap::ConstIterator it = mp4Tag->itemListMap().begin(); it != mp4Tag->itemListMap().end(); ++it){
@@ -471,14 +465,12 @@ bool Tag::readMP4Items( TagLib::MP4::Tag *mp4Tag, const QString &type ){
             for(uint i=0;i<stringList.size();i++){
                 data << TStringToQString(stringList[i]);
             }
-            //qDebug()<<type<<id<<data;
             list.insert(id,data);
         }
         frames_[type]=list;
         return true;
     }else{
         return false;
-        qDebug()<<"NO MP4 TAG";
     }
 }
 
@@ -500,14 +492,12 @@ bool Tag::readXiphComment( TagLib::Ogg::XiphComment *tag, const QString &type ) 
             for(uint i=0;i<list2.size();i++){
                 data << TStringToQString(list2[i]);
             }
-            //qDebug()<<type<<id<<data;
             list.insert(id,data);
         }
         frames_[type] = list;
         return true;
     }else{
         return false;
-        qDebug()<<"NO "<<type<<" TAG";
     }
 
 }
@@ -529,12 +519,10 @@ bool Tag::readID3V2Frames( TagLib::ID3v2::Tag *id3v2tag, const QString &type ){
                 data << TStringToQString(l[i]->toString());
             }
             list.insert(id,data);
-            //qDebug()<<"Tag::readID3V2Frames: "<<type<<id<<data;
         }        
         frames_[type]=list;
         return true;
     }else{
-        qDebug()<<"no id3v2 tag in mpeg file";
         return false;
     }
 }
@@ -557,12 +545,10 @@ bool Tag::readAPEItems( TagLib::APE::Tag *ape, const QString &type ){
         QStringList keys = items.keys();
         for(int i=0;i<keys.size();i++){
             list.insert(keys[i],items[keys[i]]);
-            //qDebug()<<type<<keys[i]<<items[keys[i]];
         }        
         frames_[type]=list;
         return true;
     }else{
-        qDebug()<<"no ape tag";
         return false;
     }
 }

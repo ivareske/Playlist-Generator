@@ -79,7 +79,6 @@ QString PlayList::playListEntry(const M3uEntry& e) const {
 
     const QDir outPutPath(guiSettings->value("outPutPath") .toString());
     const QFileInfo file = e.originalFile();
-    //qDebug() << "original file: " << file.absoluteFilePath();
     QString playListEntryName = file.absoluteFilePath();
 
     bool useCopyFilesToPath = guiSettings->value("useCopyFilesToPath").toBool();
@@ -87,11 +86,8 @@ QString PlayList::playListEntry(const M3uEntry& e) const {
         playListEntryName = copyFilesToDir_.absolutePath() + "/" + file.fileName();
         bool keepFolderStructure = guiSettings->value("keepFolderStructure").toBool();
         if (keepFolderStructure) {
-            //qDebug()<<"file.absolutePath() "<<file.absolutePath();
             QStringList dirs = file.absolutePath().replace("\\", "/").split("/");
-            QString root = dirs[0];
-            //qDebug()<<"root: "<<root;
-            //qDebug()<<"copyFilesToDir_.absolutePath() "<<copyFilesToDir_.absolutePath();
+            QString root = dirs[0];            
             playListEntryName = file.absoluteFilePath().replace(root, copyFilesToDir_.absolutePath());
 
         }
@@ -100,8 +96,6 @@ QString PlayList::playListEntry(const M3uEntry& e) const {
     if (relativePath_) {
         playListEntryName = outPutPath.relativeFilePath(playListEntryName);
     }
-
-    //qDebug() << "playListEntryName: " << playListEntryName;
 
     return playListEntryName;
 }
@@ -133,11 +127,13 @@ bool PlayList::generate(QList<M3uEntry> *songsOut, QString* log, QHash<QString, 
     }
 
     int milliSecs = timer.elapsed();
-    QString timeUsed = Global::timeString(milliSecs);
-    qDebug() << "time used: " << timeUsed<<milliSecs;
+    QString timeUsed = Global::timeString(milliSecs);    
 
-    log->append("\n Found " + QString::number(songs.size()) + " songs for " + name());
-    log->append("\nTime used: " + timeUsed);
+    QString tmp =  "Found " + QString::number(songs.size()) + " songs for " + name();
+    qDebug()<<tmp;
+    log->append("\n"+tmp);
+    tmp = "Time used: " + timeUsed;
+    log->append("\n"+tmp);
 
     if (songs.isEmpty()) {
         QMessageBox::information(0, "",
@@ -183,7 +179,7 @@ bool PlayList::writeM3U(const QString& file, const QList<M3uEntry> &songs, QStri
     }
 
     f.close();
-    qDebug() << "Finished writing " << file;
+    qDebug() << "Wrote " << file;
     return true;
 }
 
@@ -198,7 +194,7 @@ bool PlayList::writeM3U(const QString& file, const QList<M3uEntry> &songs, QStri
 */
 QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString, Tag*> *tags){
 
-    qDebug() << "finding files...";
+    qDebug() << "Locating files...";
 
     //GATHER SOME SETTINGS HERE SO WE DON`T HAVE TO READ THEM FROM PMSettings EVERY TIME IN THE LOOP
     //UNSURE IF THAT WOULD HAVE SLOWED THINGS DOWN
@@ -316,7 +312,6 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
                 return plist;
             }
         }
-        qDebug() << "found " << fileInfo.size() << " files to process";
 
         //make unique
         fileInfo = fileInfo.toSet().toList();
@@ -359,7 +354,6 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
         p.setValue(n);
 
 
-        qDebug() << "finished finding files";
     }
     if (randomize_) {
         std::random_shuffle(plist.begin(), plist.end());
@@ -395,7 +389,6 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
 */
 QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRule, bool hasAudioRule, bool keepTags, const QString &format, bool useScript, QString* log, QHash<QString, Tag*> *tags, QHash<QString, Tag*> *tagsCopy, bool *wasCanceled ) const {
 
-    //qDebug()<<fileInfo.filePath();
 
     QList<M3uEntry> list;
 
@@ -462,7 +455,6 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
         if( useScript ){
             QString errorLog;
             bool scriptOk = evaluateScript( tag, fileInfo, &errorLog );
-            //qDebug()<<"scriptOk: "<<scriptOk;
             allOk = scriptOk; //both will be either false or true
             anyOk = scriptOk;
             if( !errorLog.isEmpty() ){
@@ -504,7 +496,6 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
 */
 bool PlayList::evaluateScript( Tag* tag, const QFileInfo& fileInfo, QString *log ) const {
 
-    //qDebug()<<script_;
     if(script_.isEmpty()){
         return true;
     }
@@ -530,7 +521,6 @@ bool PlayList::evaluateScript( Tag* tag, const QFileInfo& fileInfo, QString *log
             QStringList list = tagTypeFrames[tagTypeFramesKeys[i]];
             for(int k=0;k<list.size();k++){
                 v.setProperty(k, list[k]);
-                qDebug()<<type<<tagTypeFramesKeys[i]<<list[k];
             }
             array.setProperty(tagTypeFramesKeys[i].toUpper(), v);
         }
@@ -557,9 +547,7 @@ bool PlayList::evaluateScript( Tag* tag, const QFileInfo& fileInfo, QString *log
     engine.globalObject().setProperty("FILENAME",fileInfo.fileName());
     engine.globalObject().setProperty("FILEPATH",fileInfo.filePath());    
 
-    qDebug()<<"------------------------------evaluating script";
     QScriptValue result = engine.evaluate( containsFunctions+script_ );
-    qDebug()<<"------------------------------end evaluating script";
     if( engine.hasUncaughtException() ){
         QString err = engine.uncaughtExceptionBacktrace().join("\n");
         log->append(err);

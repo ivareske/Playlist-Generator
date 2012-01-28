@@ -70,12 +70,10 @@ void CodeEditor::beautify(){
 
     //QString text = this->textCursor().selectedText();
     QString text = this->toPlainText();
-    int current = currentLine();
-    qDebug()<<"CodeEditor::beautify "<<current;
+    int current = currentLine();    
     text = beautifyJavaScriptCode(text);
     this->setPlainText(text);
-    this->setCurrentLine(current);
-    qDebug()<<currentLine();
+    this->setCurrentLine(current);    
 
 }
 

@@ -66,9 +66,7 @@ void PlaylistManager::editStyleDialog() {
     s.setStyleSheetText(styleSheet);
     s.exec();
     guiSettings->setValue("style", s.currentStyle());
-    qDebug() << "s.currentStyle() " << s.currentStyle() << qApp->style()->metaObject()->className();
     guiSettings->setValue("styleSheet", s.styleSheetText());
-    qDebug() << s.styleSheetText();
     guiSettings->sync();
 }
 
@@ -513,8 +511,7 @@ void PlaylistManager::readGUISettings() {
     //setGUIStyle( guiSettings->value("style").toString() );
 
     qApp->setStyle(QStyleFactory::create(guiSettings->value("style").toString()));
-    qDebug() << guiSettings->value("style").toString();
-    qApp->setStyleSheet(guiSettings->value("styleSheet").toString());   //qDebug()<<guiSettings->value("styleSheet").toString();
+    qApp->setStyleSheet(guiSettings->value("styleSheet").toString());
 
     QFileInfo collectionFile(guiSettings->value("collection", PlayListCollection::defaultCollectionName() ).toString());
     loadCollection(collectionFile);
@@ -554,7 +551,6 @@ void PlaylistManager::open() {
 void PlaylistManager::initialize() {
     //initialize the collection_ (private member)
 
-    qDebug() << "Initializing";
     //enableOptions( false );
 
     scriptEdit->setPlainText(collection_.script());
@@ -917,11 +913,9 @@ void PlaylistManager::showRulesAndFolders() {
  \param file
 */
 void PlaylistManager::loadCollection(const QFileInfo& file) {
-    qDebug() << "Reading settings...";
 
     PlayListCollection collection;
 
-    //qDebug() << file.filePath() << PlayListCollection::defaultCollectionName();
     if (!file.exists()) {
         if (file != QFileInfo(PlayListCollection::defaultCollectionName())) {
             QMessageBox::critical(this, "",
@@ -941,8 +935,7 @@ void PlaylistManager::loadCollection(const QFileInfo& file) {
         }
         else {
             collection = tmp.value<PlayListCollection>();
-            qDebug() << "successfully loaded collection " << file.fileName();
-            qDebug() << collection_.playLists().size();
+            qDebug() << "Successfully loaded collection " << file.fileName();
         }
     }
 
@@ -973,9 +966,7 @@ void PlaylistManager::saveCollectionAs() {
         return;
     }
 
-    qDebug() << "PlaylistManager::saveCollectionAs " << fileName;
     collection_.setName(fileName);
-    qDebug() << "PlaylistManager::saveCollectionAs " << collection_.name();
     saveCollection(false);
 
 }
@@ -1004,7 +995,6 @@ void PlaylistManager::updateCollection() {
     QList<PlayList> playLists;
     for (int i = 0; i < playListTable->count(); i++) {
         PlayList* tmp = playListItem(i);
-        qDebug() << tmp;
         PlayList p = *tmp;
         playLists.append(p);
 
@@ -1031,8 +1021,6 @@ void PlaylistManager::saveCollection(bool checkExistence) {
         }
     }
 
-    qDebug() << "PlaylistManager::saveCollection " << collection_.name();
-
     updateCollection();
 
     PMSettings playListCollection(collection_.name(), PMSettings::IniFormat, this);
@@ -1042,7 +1030,7 @@ void PlaylistManager::saveCollection(bool checkExistence) {
     lastSavedCollection_ = collection_;
 
     statusBar()->showMessage(file.baseName() + " saved", 8000);
-
+    qDebug()<<"Saved "<<file.baseName();
 }
 
 
@@ -1240,8 +1228,6 @@ void PlaylistManager::removePlayList() {
         return;
     }
 
-    qDebug() << "indexes.size() " << indexes.size();
-
     enableOptions(false);
     clearRulesAndFolders();
     playListTable->blockSignals(true);
@@ -1364,7 +1350,6 @@ void PlaylistManager::removeRule() {
             QVector<Rule> rules = p->rules();
             QVector<Rule> newRules;
             for (int j = 0; j < rules.size(); j++) {
-                qDebug() << Rule::getRuleName(rules[j].type()) << Rule::getRuleName(r.type());
                 if (rules[j].type() != r.type()) {
                     newRules.append(rules[j]);
                 }

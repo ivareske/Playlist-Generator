@@ -42,9 +42,8 @@ int copyFoundFiles(const QStringList &files, const QString &copyFilesToDir, bool
 
     bool res = 1;
 
-    // bool overWrite = guiSettings->value("overWriteFiles").toBool();
 
-    qDebug() << "starting to copy " << files.size() << " files!";
+    qDebug() << "Starting to copy " << files.size() << " files";
     QProgressDialog pr("Copying files to " + copyFilesToDir_.absolutePath(), "Abort", 0, files.size(), 0);
     pr.setWindowModality(Qt::WindowModal);
     QPushButton* cancelButton = new QPushButton;
@@ -60,11 +59,8 @@ int copyFoundFiles(const QStringList &files, const QString &copyFilesToDir, bool
         QString copyToName = copyFilesToDir_.absolutePath() + "/" + file.fileName();
        // bool keepFolderStructure = guiSettings->value("keepFolderStructure").toBool();
         if (keepFolderStructure) {
-            //qDebug()<<"file.absolutePath() "<<file.absolutePath();
             QStringList dirs = file.absolutePath().replace("\\", "/").split("/");
-            QString root = dirs[0];
-            //qDebug()<<"root: "<<root;
-            //qDebug()<<"copyFilesToDir_.absolutePath() "<<copyFilesToDir_.absolutePath();
+            QString root = dirs[0];            
             copyToName = file.absoluteFilePath().replace(root, copyFilesToDir_.absolutePath());
 
         }
@@ -99,11 +95,15 @@ int copyFoundFiles(const QStringList &files, const QString &copyFilesToDir, bool
         if (!okf) {
             if (f2.exists()) {
                 if(log){
-                    log->append(file.filePath() + " was not copied as it already exists in " + copyFilesToDir_.absolutePath() + "\n");
+                    QString tmp = file.filePath() + " was not copied as it already exists in " + copyFilesToDir_.absolutePath();
+                    qDebug()<<tmp;
+                    log->append(tmp + "\n");
                 }
             }else {
                 if(log){
-                    log->append(file.filePath() + " could not be copied to " + copyFilesToDir_.absolutePath() + "\n");
+                    QString tmp = file.filePath() + " could not be copied to " + copyFilesToDir_.absolutePath();
+                    qDebug()<<tmp;
+                    log->append(tmp + "\n");
                 }
                 res = -3;
             }
@@ -117,8 +117,12 @@ int copyFoundFiles(const QStringList &files, const QString &copyFilesToDir, bool
 
     double secs = time.elapsed()/1000;
     if(log){
-        log->append(QString::number(nCopied) + " of " + QString::number(files.size()) + " files copied to " + copyFilesToDir_.absolutePath() + "\n");
-        log->append("Time used copying files: "+QString::number(secs)+" seconds\n");
+        QString tmp = QString::number(nCopied) + " of " + QString::number(files.size()) + " files copied to " + copyFilesToDir_.absolutePath();
+        qDebug()<<tmp;
+        log->append(tmp + "\n");
+        tmp = "Time used copying files: "+QString::number(secs)+" seconds";
+        qDebug()<<tmp;
+        log->append(tmp+"\n");
     }
     return res;
 }
@@ -170,7 +174,7 @@ QList<QFileInfo> getDirContent(const QString& aPath, bool includeSubFolders, con
     }
     p.close();
     delete dirIterator;
-    qDebug() << "getDirContent: searched "<<aPath<<", found "<<fileInfo.size()<<" files. Extensions: "<<extensions.join(",");
+    qDebug() << "Searched "<<aPath<<", found "<<fileInfo.size()<<" files.";
     return fileInfo;
 }
 
@@ -266,7 +270,6 @@ bool checkIntValue(QVector<int> *intvals, const QString& val) {
     intvals->clear();
     if (vals.size() == 1) {
         tmp = val.toInt(&ok, 10);
-        //qDebug()<<"single value: "<<tmp;
         if (ok) {
             intvals->append(tmp);
         }
@@ -281,12 +284,10 @@ bool checkIntValue(QVector<int> *intvals, const QString& val) {
             intvals->append(tmp1);
             intvals->append(tmp2);
         }
-        //qDebug()<<"range: "<<tmp1<<" - "<<tmp2;
     }
     else {
         ok = false;
     }
-    //qDebug()<<"ok: "<<ok;
     return ok;
 }
 

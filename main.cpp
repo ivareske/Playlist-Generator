@@ -11,14 +11,13 @@ int main(int argc, char* argv[]) {
     app.setApplicationName(APP_NAME);
 
     QStringList arguments = QApplication::arguments();
-    qDebug()<<arguments<<qApp->applicationFilePath();
     //remove application name if that exists as argument
     if(arguments.size()>0){
-        if(arguments[0].replace("/","\\")==qApp->applicationFilePath().replace("/","\\")){
+        QString tmp = arguments[0];
+        if(tmp.replace("/","\\")==qApp->applicationFilePath().replace("/","\\")){
             arguments.removeAt(0);
         }
     }
-    qDebug()<<arguments<<qApp->applicationFilePath();
 
     if(arguments.size()>1){
         usage();

@@ -214,24 +214,13 @@ void fromStringStringListHash(const QScriptValue &v, QHash<QString,QStringList> 
     QScriptValueIterator it(v);
     while(it.hasNext()){
         it.next();
-        //qDebug() << it.name();// << ": " << it.value().toVariant();
         QScriptValue v2 = it.value();
         if(v2.isArray()){
             QStringList vector;
             qScriptValueToSequence(v2,vector);
             hash.insert(it.name(),vector);
         }
-    }
-    //return hash;
-
-    /*QVariant var = v.toVariant();
-    qDebug()<<"fromStringStringListHash "<<var;
-    QHash<QString,QVariant> hash2 = var.toHash();
-    QStringList keys = hash2.keys();
-    for(int i=0;i<keys.size();i++){
-        hash.insert(keys[i],hash2[keys[i]].toStringList());
-    }
-    */
+    }    
 
 }
 
