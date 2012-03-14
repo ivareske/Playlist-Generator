@@ -5,11 +5,12 @@
 #include <QtScript>
 #include <PMSettings.h>
 #include "M3uEntry.h"
+#include <iostream>
 
 namespace Global {
 
     int copyFoundFiles(const QStringList &files, const QString &copyFilesToDir, bool keepFolderStructure=false, bool overWrite=true, QString* log=0) ;
-    QList<QFileInfo> getDirContent(const QString& aPath, bool includeSubFolders, const QStringList &extensions, bool *canceled=false);
+    QList<QFileInfo> getDirContent(const QString& aPath, const QStringList &extensions, bool includeSubFolders=true, bool hiddenFiles=true, bool *canceled=false);
     QString timeString( uint milliSeconds, const QString &format="hh:mm:ss:z" );
     QString versionCheck(QDataStream* in, bool* ok, QString* log);
     PMSettings* guiSettings(QObject * parent = 0);

@@ -27,6 +27,48 @@ PlayList::PlayList(const QString& name, QListWidget* parent) : QListWidgetItem(p
 
 }
 
+PlayList::PlayList(const PlayList &other){
+
+    *this=other;
+
+}
+
+PlayList& PlayList::operator=(const PlayList &other){
+    if (this == &other){
+        return *this;
+    }
+
+    rules_=other.rules();
+    folders_=other.folders();
+    extensions_=other.extensions();
+    randomize_=other.randomize();
+    includeSubFolders_=other.includeSubFolders();
+    relativePath_=other.relativePath();
+    allRulesTrue_=other.allRulesTrue();
+    includeExtInf_=other.includeExtInf();
+    makeUnique_=other.makeUnique();
+    copyFilesToDir_=other.copyFilesToDir();
+    copyFiles_=other.copyFiles();
+    individualFiles_=other.individualFiles();
+    script_=other.script();
+
+
+    guiSettings = Global::guiSettings(); //dont copy pointer!
+
+    QListWidgetItem::operator =(other);
+
+    return *this;
+}
+
+
+PlayList::~PlayList(){
+    if(guiSettings!=0){
+        //qDebug()<<guiSettings;
+        delete guiSettings;
+        guiSettings=0;
+    }
+}
+
 
 /*!
  \brief
@@ -99,7 +141,6 @@ QString PlayList::playListEntry(const M3uEntry& e) const {
 
     return playListEntryName;
 }
-
 
 
 
@@ -196,23 +237,10 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
 
     qDebug() << "Locating files...";
 
-    //GATHER SOME SETTINGS HERE SO WE DON`T HAVE TO READ THEM FROM PMSettings EVERY TIME IN THE LOOP
-    //UNSURE IF THAT WOULD HAVE SLOWED THINGS DOWN
-
-    //store the ID3v2 fields and APE item keys before processing files
-    frameFields = guiSettings->value("frameFields").toHash();
 
     bool keepTags = guiSettings->value("keepTags").toBool();
-    bool useScript = guiSettings->value("useScript").toBool();
-    showTaglibDebug = guiSettings->value("ShowTaglibDebug").toBool();
-    QString format = guiSettings->value("format").toString();
-    artistEmpty = guiSettings->value("artistEmpty").toBool();
-    titleEmpty = guiSettings->value("titleEmpty").toBool();
-    albumEmpty = guiSettings->value("albumEmpty").toBool();
-    commentEmpty = guiSettings->value("commentEmpty").toBool();
-    genreEmpty = guiSettings->value("genreEmpty").toBool();
-    trackEmpty = guiSettings->value("trackEmpty").toBool();
-    yearEmpty = guiSettings->value("yearEmpty").toBool();    
+    bool useScript = guiSettings->value("useScript").toBool();    
+    QString format = guiSettings->value("format").toString();    
 
     //the two first mandatory rules_
     QList<M3uEntry> plist;
@@ -251,8 +279,8 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
         M3uEntry e;
         if (includeExtInf_) {
             Tag *tag = tags->value(f.absoluteFilePath());
-            if (tag->fileName().isEmpty()) {
-                tag = new Tag(f.absoluteFilePath());                
+            if (!tag) {
+                tag = new Tag(f.absoluteFilePath(),0,true,true);
                 if (keepTags) {
                     tags->insert(f.absoluteFilePath(), tag);
                 }
@@ -306,7 +334,7 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
             }
 
             //get content from the specified folder(s)
-            fileInfo = fileInfo + Global::getDirContent(folders_[i].absolutePath(),includeSubFolders_,extensions_, canceled);
+            fileInfo = fileInfo + Global::getDirContent(folders_[i].absolutePath(),extensions_,includeSubFolders_, true, canceled);
             if(*canceled){
                 log->append("\n\nCanceled by user");
                 return plist;
@@ -394,21 +422,18 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
 
     QString file = fileInfo.fileName();
     QString fullfile = fileInfo.absoluteFilePath();
-
+    bool showTaglibDebug = guiSettings->value("ShowTaglibDebug").toBool();
 
     Tag *tag=0;
     if (hasTagRule || hasAudioRule || includeExtInf_) {
         //take tag from the inital copy of tags. If it doesnt exist there, read it, and insert into
         //the original qhash of tags
         tag = tagsCopy->take(fullfile);        
-        if (tag->fileName().isEmpty()) {
-            tag = new Tag(fullfile);            
+        if (!tag) {
+            tag = new Tag(fullfile,0,true,true); //read both tags and frames
             if (keepTags) {
                 tags->insert(fullfile, tag);
             }
-        }
-        if (!tag->tagOk()) {
-            log->append("\nCould not read tag");
         }
     }
 
@@ -500,10 +525,11 @@ bool PlayList::evaluateScript( Tag* tag, const QFileInfo& fileInfo, QString *log
         return true;
     }
 
-    QScriptEngine engine;
+    ScriptEngine engine;
+    QHash<QString,QVariant> frameFields = guiSettings->value("frameFields").toHash();
 
     //add all possible/specified id3v2 frames/ape items etc. to script, with empty array as value
-    QHash< QString, QHash<QString,QStringList> > tagFrames = tag->frames(); //returns both ID3v2 frames and APE items
+    QHash< QString, QHash<QString,QStringList> > tagFrames = tag->frames(); //returns both ID3v2,asf,mp4,xiph and APE frames/items
     QStringList frameTypes = frameFields.keys(); //defined list of possible frames
     for(int j=0;j<frameTypes.size();j++){
         QString type = frameTypes[j]; //e.g. APE, ID3V2 etc.
@@ -527,9 +553,8 @@ bool PlayList::evaluateScript( Tag* tag, const QFileInfo& fileInfo, QString *log
         engine.globalObject().setProperty(type,array);
     }
 
-    QString containsFunctions = "\nfunction contains(a, str) { print(a.length); for ( i = 0; i < a.length; i++) { print(a[i]); if(a[i]==str){return true;} } return false; }\n";
+    //QString containsFunctions = "\nfunction contains(a, str) { print(a.length); for ( i = 0; i < a.length; i++) { print(a[i]); if(a[i]==str){return true;} } return false; }\n";
 
-    //PROBLEMET MED SCRIPT ER AT . IKKE ER TILLAT I VARIABEL NAVN! HUSK og SLETTE INI SETTINGS
 
     //add tag data  as variables to script
     engine.globalObject().setProperty("ARTIST",tag->artist());
@@ -547,7 +572,7 @@ bool PlayList::evaluateScript( Tag* tag, const QFileInfo& fileInfo, QString *log
     engine.globalObject().setProperty("FILENAME",fileInfo.fileName());
     engine.globalObject().setProperty("FILEPATH",fileInfo.filePath());    
 
-    QScriptValue result = engine.evaluate( containsFunctions+script_ );
+    QScriptValue result = engine.evaluate( script_ );
     if( engine.hasUncaughtException() ){
         QString err = engine.uncaughtExceptionBacktrace().join("\n");
         log->append(err);
@@ -680,6 +705,14 @@ void PlayList::evaluateRules( Tag* tag, const QString& file, bool* allOk, bool* 
 QString PlayList::createExtInfString(Tag *tag, const QString& file, const QString& format_) const {
 
     QString format = format_;
+
+    bool artistEmpty = guiSettings->value("artistEmpty").toBool();
+    bool titleEmpty = guiSettings->value("titleEmpty").toBool();
+    bool albumEmpty = guiSettings->value("albumEmpty").toBool();
+    bool commentEmpty = guiSettings->value("commentEmpty").toBool();
+    bool genreEmpty = guiSettings->value("genreEmpty").toBool();
+    bool trackEmpty = guiSettings->value("trackEmpty").toBool();
+    bool yearEmpty = guiSettings->value("yearEmpty").toBool();
 
     if (tag->tagOk()) {
         QString artist = tag->artist();

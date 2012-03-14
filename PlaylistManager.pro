@@ -1,11 +1,7 @@
 #generate other playlist formats?
-#generate one playlist for each artist?
 #when renaming files in tag editor, specify a list of files to rename the renamed files.
-#git messages appear in console windows...? why? probably does not matter as the program wont be installed in a git folder
-#change to master branch
 
 #sjekk at frames/items leses rett
-#fix bruk av Global::guiSettings. new som ikke slettes
 #lag noe hjelpetekst for scripting og evt. annet
 #bytt til editingfinished for extensions
 #legg til dialog i settings for xiph, asf etc. frames
@@ -18,7 +14,7 @@ TARGET = PlayListGenerator
 TEMPLATE=app
 CONFIG += qt
 
-CONFIG += console
+#CONFIG += console
 QT += script
 
 win32{
@@ -35,13 +31,15 @@ HEADERS = PlaylistManager.h SettingsDialog.h RuleDialog.h PlayList.h Rule.h Glob
     TextEdit.h \
     PMSettings.h \
     ScriptWrappers.h \
-    metaTypes.h CodeEditor.h
+    metaTypes.h CodeEditor.h \
+    ScriptEngine.h
 FORMS   = PlaylistManager.ui SettingsDialog.ui RuleDialog.ui AddFilesDialog.ui TextViewer.ui StyleSheetEditor.ui
 SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp RuleDialog.cpp PlayList.cpp Rule.cpp GlobalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp \
     PlayListCollection.cpp StyleSheetEditor.cpp \
     TextEdit.cpp \
     PMSettings.cpp \
-    ScriptWrappers.cpp CodeEditor.cpp
+    ScriptWrappers.cpp CodeEditor.cpp \
+    ScriptEngine.cpp
 
 RC_FILE = PlaylistManager.rc
 

@@ -2,6 +2,7 @@
 
 namespace ScriptWrappers{
 
+
 QStringList scriptArrayToStringList( const QScriptValue &array ){
 
     QStringList list;
@@ -16,17 +17,21 @@ QScriptValue scriptGetDirContent(QScriptContext *context, QScriptEngine *engine)
 
     QList<QFileInfo> info;
     int nargin=context->argumentCount();
-    if( nargin>3 || nargin<2 ){
-        return context->throwError("2-3 arguments required. QStringList getDirContent( const QString &path, const QStringList &extensions, bool includeSubFolders=true ) ");
+    if( nargin>4 || nargin<2 ){
+        return context->throwError("2-4 arguments required. QStringList getDirContent( const QString &path, const QStringList &extensions, bool includeSubFolders=true, bool hiddenFiles=true ) ");
     }
     QString path = context->argument(0).toString();    
     QScriptValue array = context->argument(1);
     QStringList extensions = scriptArrayToStringList( array );
     bool includeSubFolders = true;
+    bool hiddenFiles = true;
     if(nargin>2){
         includeSubFolders = context->argument(2).toBool();
     }
-    info = Global::getDirContent( path, includeSubFolders, extensions );
+    if(nargin>3){
+        hiddenFiles = context->argument(3).toBool();
+    }
+    info = Global::getDirContent( path, extensions, includeSubFolders, hiddenFiles );
 
     return engine->toScriptValue(info);
 }

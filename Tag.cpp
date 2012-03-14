@@ -6,7 +6,7 @@
 
  \param fullfile
 */
-Tag::Tag(const QString& fullfile, QObject *parent) : QObject(parent){
+Tag::Tag(const QString& fullfile, QObject *parent, bool readTags_, bool readFrames_) : QObject(parent){
     artist_ = "";
     title_ = "";
     album_ = "";
@@ -25,6 +25,13 @@ Tag::Tag(const QString& fullfile, QObject *parent) : QObject(parent){
     bitRate_ = 0;
     sampleRate_ = 0;
     channels_ = 0;
+
+    if(readTags_){
+        readTags();
+    }
+    if(readFrames_){
+        readFrames();
+    }
 }
 
 

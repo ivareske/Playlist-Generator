@@ -4,13 +4,8 @@ function printArray(arr) {
     }
 }
 
-function m3uEntry(file, extinf) {
-    this.file = file;
-    this.extinf = extinf;
-}
-
-//var musicDir = '\\\\192.168.0.194/music/Ivar';
-var musicDir = 'C:/Users/Public/Music/Sample Music';
+var musicDir = '\\\\192.168.0.194/music/Ivar';
+//var musicDir = 'C:/Users/Public/Music/Sample Music';
 var outPutDir = 'C:/Playlist-Generator/output_test';
 var extensions = ["*.mp3", "*.ogg", "*.ape", "*.flac", "*.wav", "*.m4a"];
 

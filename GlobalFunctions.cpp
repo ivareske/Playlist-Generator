@@ -26,12 +26,16 @@ int copyFoundFiles(const QStringList &files, const QString &copyFilesToDir, bool
         ok = c.mkpath(copyFilesToDir_.absolutePath());
         if (ok) {
             if(log){
-                log->append("Created directory " + copyFilesToDir_.absolutePath() + "\n");
+                QString tmp = "Created directory " + copyFilesToDir_.absolutePath();
+                qDebug()<<tmp;
+                log->append(tmp + "\n");
             }
         }
         else {
             if(log){
-                log->append("Could not create directory " + copyFilesToDir_.absolutePath() + ", no copying performed\n");
+                QString tmp = "Could not create directory " + copyFilesToDir_.absolutePath() + ", no copying performed";
+                qDebug()<<tmp;
+                log->append(tmp+"\n");
             }
             return 0;
         }
@@ -71,12 +75,14 @@ int copyFoundFiles(const QStringList &files, const QString &copyFilesToDir, bool
             bool createPathOk = dir.mkpath(fi.dir().absolutePath());
             if (!createPathOk) {
                 if(log){
-                    log->append("\nCould not create path: " + fi.dir().absolutePath());
+                    QString tmp = "Could not create path: " + fi.dir().absolutePath();
+                    qDebug()<<tmp;
+                    log->append("\n"+tmp);
                     res = -1;
                 }
                 continue;
             }else{
-                qDebug()<<"Created path "<<fi.dir().absolutePath();
+                //qDebug()<<"Created path "<<fi.dir().absolutePath();
             }
         }
 
@@ -85,7 +91,9 @@ int copyFoundFiles(const QStringList &files, const QString &copyFilesToDir, bool
             bool removeOk = f2.remove();
             if(!removeOk){
                 if(log){
-                    log->append("\nCould not delete file "+copyToName);
+                    QString tmp = "Could not overwrite file "+copyToName;
+                    qDebug()<<tmp;
+                    log->append("\n"+tmp);
                 }
                 res = -2;
             }
@@ -137,7 +145,7 @@ int copyFoundFiles(const QStringList &files, const QString &copyFilesToDir, bool
  \param aPath
  \return QList<QFileInfo>
 */
-QList<QFileInfo> getDirContent(const QString& aPath, bool includeSubFolders, const QStringList &extensions, bool *canceled)  {
+QList<QFileInfo> getDirContent(const QString& aPath, const QStringList &extensions, bool includeSubFolders, bool hiddenFiles, bool *canceled)  {
 
     // append the filtered files to this list
 
@@ -145,35 +153,43 @@ QList<QFileInfo> getDirContent(const QString& aPath, bool includeSubFolders, con
     QDirIterator::IteratorFlag subdirFlag;
     if (includeSubFolders) {
         subdirFlag = QDirIterator::Subdirectories;
-    }
-    else {
+    }else {
         subdirFlag = QDirIterator::NoIteratorFlags;
+    }
+    QDir::Filters flags = QDir::Files | QDir::NoDotAndDotDot;
+    if (hiddenFiles) {
+        flags = flags | QDir::Hidden;
     }
 
     // set dir iterator
-    QDirIterator* dirIterator = new QDirIterator(aPath,
-                                                 extensions,
-                                                 QDir::Files | QDir::NoSymLinks,
-                                                 subdirFlag);
+    QDirIterator dirIterator(aPath,extensions,flags,subdirFlag);
 
 
+    qDebug()<<"Locating files in "<<aPath;
     QList<QFileInfo> fileInfo;
     QProgressDialog p("Locating files...", "Abort", 0, 0, 0);
     p.setWindowModality(Qt::WindowModal);
-
-    while (dirIterator->hasNext()) {
+    int k=0; int tot=0; int lim=100; bool first=true;
+    while (dirIterator.hasNext()) {
         if(p.wasCanceled()){
             if(canceled!=0){
                 *canceled=true;
             }
             return fileInfo;
         }
-        dirIterator->next();
-        fileInfo.append(dirIterator->fileInfo());
-
+        dirIterator.next();
+        fileInfo.append(dirIterator.fileInfo());
+        if(k==lim){
+            k=0;
+            if(first){
+                std::cout<<"Files found: ";
+                first=false;
+            }
+            std::cout<<tot<<" ";
+        }
+        tot++;k++;
     }
-    p.close();
-    delete dirIterator;
+    p.close();    
     qDebug() << "Searched "<<aPath<<", found "<<fileInfo.size()<<" files.";
     return fileInfo;
 }

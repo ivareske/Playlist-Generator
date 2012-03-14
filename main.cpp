@@ -19,6 +19,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
+
     if(arguments.size()>1){
         usage();
         return 0;

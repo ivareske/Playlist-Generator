@@ -66,6 +66,10 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent){
     highlightCurrentLine();
 }
 
+CodeEditor::~CodeEditor() {
+    delete s;s=0;
+}
+
 void CodeEditor::beautify(){
 
     //QString text = this->textCursor().selectedText();

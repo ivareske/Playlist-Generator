@@ -19,6 +19,7 @@
 #include "ScriptWrappers.h"
 #include "metaTypes.h"
 #include "ui_PlaylistManager.h"
+#include "ScriptEngine.h"
 
 
 
@@ -27,8 +28,10 @@ class PlaylistManager : public QMainWindow, private Ui::playListGenerator {
 
     public:
 
-        PlaylistManager(QWidget* parent = 0);
-    public slots:
+    PlaylistManager(QWidget* parent = 0);
+    ~PlaylistManager();
+
+public slots:
 
         bool runScript(const QString &script,bool guiMode=true);
     protected:
@@ -91,7 +94,7 @@ class PlaylistManager : public QMainWindow, private Ui::playListGenerator {
         PlayListCollection collection_, lastSavedCollection_;
         PMSettings* guiSettings;
         QHash<QString, Tag*> tags_;
-        QScriptEngine engine_;
+        ScriptEngine engine_;
 
 };
 

@@ -9,7 +9,7 @@
 */
 PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
     setupUi(this); // this sets up GUI
-
+    guiSettings = Global::guiSettings();
 
     if(!ScriptOnlyFrame->layout()){
         ScriptOnlyFrame->setLayout(new QVBoxLayout);
@@ -23,14 +23,16 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
     if(!folderFrame->layout()){
         folderFrame->setLayout(new QGridLayout);
     }
+
     folderFrame->layout()->addWidget(folderTable);
     QString tip = "Use QtScript. The result of the script should return true or false, to determine if the file being processed should be included or not.\n";
     tip += "Available parameters:\n";
     tip += "String: FILENAME, FILEPATH, ARTIST, ALBUM, TITLE, GENRE, COMMENT\n";
     tip += "Unsigned int: YEAR, TRACK, LENGTH (seconds), BITRATE (kb/s), SAMPLERATE (Hz), CHANNELS \n";
+    tip += "QHash<QString,QStringList>: ID3V2, ASF, MP4, XIPH, APE\n";
     tip += "Example to return all Beatles or Elvis music with length between 120 and 200 seconds, and a high bitrate (>300 kb/s):\n";
     tip += "LENGTH>120 && LENGTH<200 && BITRATE>300 && (ARTIST==\"Beatles\" || ARTIST==\"Elvis\")\n";
-    tip += "\nAvailable ID3v2 frames and APE item keys for the script can be edited in the settings dialog.";
+    tip += "\nAvailable ID3v2/XIPH/APE/ASF/MP4 frame/item keys for the script can be edited in the settings dialog.";
     RuleScript->setToolTip(tip);    
 
     createActions();
@@ -43,8 +45,7 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
     qRegisterMetaTypeStreamOperators<PlayListCollection>("PlayListCollection");
 
 
-    //playListCollection=0;
-    guiSettings = Global::guiSettings();        
+    //playListCollection=0;    
     initGuiSettings();
 
     readGUISettings();
@@ -53,6 +54,9 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
 
 }
 
+PlaylistManager::~PlaylistManager(){
+    delete guiSettings;guiSettings=0;
+}
 
 /*!
  \brief
@@ -241,7 +245,7 @@ void PlaylistManager::createActions() {
 
     //playlist settings
     connect(folderTable, SIGNAL(editingFinished()), this, SLOT(updatePlayList()));
-    connect(extensions, SIGNAL(textEdited(const QString&)), this, SLOT(updatePlayList()));
+    connect(extensions, SIGNAL(editingFinished()), this, SLOT(updatePlayList()));
     connect(RuleScript, SIGNAL(editingFinished()), this, SLOT(updatePlayList()));
     connect(randomize, SIGNAL(stateChanged(int)), this, SLOT(updatePlayList()));
     connect(allRulesTrue, SIGNAL(stateChanged(int)), this, SLOT(updatePlayList()));
@@ -250,7 +254,7 @@ void PlaylistManager::createActions() {
     connect(relativePath, SIGNAL(stateChanged(int)), this, SLOT(updatePlayList()));
     connect(makeUnique, SIGNAL(stateChanged(int)), this, SLOT(updatePlayList()));
     connect(copyFilesToButton, SIGNAL(clicked()), this, SLOT(getCopyDir()));
-    connect(copyFilesText, SIGNAL(textEdited(const QString&)), this, SLOT(updatePlayList()));
+    connect(copyFilesText, SIGNAL(editingFinished()), this, SLOT(updatePlayList()));
     connect(copyFilesCheckBox, SIGNAL(stateChanged(int)), this, SLOT(updatePlayList()));
 
 
@@ -297,7 +301,7 @@ void PlaylistManager::makePlayListForEveryArtist() {
     QList<QFileInfo> content;
     bool keepTags = guiSettings->value("keepTags").toBool();
     for(int i=0;i<folders.size();i++){
-        content += Global::getDirContent( folders[i].absolutePath(), true, extensions );
+        content += Global::getDirContent( folders[i].absolutePath(), extensions );
     }
     QStringList artists;
     QProgressDialog pd("Processing files...", "Abort", 0, content.size() );
@@ -306,8 +310,8 @@ void PlaylistManager::makePlayListForEveryArtist() {
         pd.setValue(i);
         QString file = content[i].absoluteFilePath();
         Tag *tag = tags_[file];
-        if (tag->fileName().isEmpty()) {
-            tag = new Tag(file);            
+        if (!tag) {
+            tag = new Tag(file,0,true,true);
         }
         if (keepTags) {
             tags_.insert(file, tag);
@@ -396,22 +400,39 @@ void PlaylistManager::getCopyDir() {
 */
 void PlaylistManager::updatePlayList() {
 
+
+
+
+
     QList<QListWidgetItem*> selected = playListTable->selectedItems();
     if (selected.size() == 0) {
         return;
     }
 
     if (selected.size() > 1) {
-        int ret = QMessageBox::warning(this, "", "This will set the edited value for all selected playlists, continue?", QMessageBox::Yes, QMessageBox::No);
+        folderTable->blockSignals(true);
+        extensions->blockSignals(true);
+        RuleScript->blockSignals(true);
+        copyFilesText->blockSignals(true);
+        int ret = QMessageBox::warning(this, "", "This will set the edited value for the "+QString::number(selected.size())+" selected playlists, continue?", QMessageBox::Yes, QMessageBox::No);
+        folderTable->blockSignals(false);
+        extensions->blockSignals(false);
+        RuleScript->blockSignals(false);
+        copyFilesText->blockSignals(false);
         if (ret == QMessageBox::No) {
             return;
-        }
-    }
+        }        
+    }   
+
+
+    //setFocus();
 
     QObject* s = QObject::sender();
-    for (int i = 0; i < selected.size(); i++) {
-        PlayList* p = static_cast<PlayList*>(selected[i]);
+    qDebug()<<s->objectName();
 
+
+    for (int i = 0; i < selected.size(); i++) {
+        PlayList* p = static_cast<PlayList*>(selected[i]);        
         if (s == folderTable) {
             QStringList folders = folderTable->toPlainText().split("\n");
             QList<QDir> dirs;
@@ -456,9 +477,10 @@ void PlaylistManager::updatePlayList() {
         else {
             qDebug() << "BUG, unknown sender to updatePlayList";
         }
-    }
 
+    }
     showRulesAndFolders();
+
 }
 
 
@@ -492,9 +514,7 @@ void PlaylistManager::writeGUISettings() {
     guiSettings->setValue("pos", this->pos());
     guiSettings->endGroup();
     guiSettings->setValue("collection", collection_.name());        
-    guiSettings->sync();
-    delete guiSettings;
-
+    guiSettings->sync();    
 
 }
 
@@ -1410,16 +1430,9 @@ void PlaylistManager::initializeScriptEngine(){
 
     engine_.globalObject().setProperty("Tag",engine_.newFunction(ScriptWrappers::constructTag) );
 
-    engine_.globalObject().setProperty("getDirContent",engine_.newFunction(ScriptWrappers::scriptGetDirContent));
-    engine_.globalObject().setProperty("copyFiles",engine_.newFunction(ScriptWrappers::scriptCopyFiles));
-    engine_.globalObject().setProperty("writeFile",engine_.newFunction(ScriptWrappers::writeFile));
-    engine_.globalObject().setProperty("contains",engine_.newFunction(ScriptWrappers::scriptContains));
-    engine_.globalObject().setProperty("unique",engine_.newFunction(ScriptWrappers::scriptUnique));
-    engine_.globalObject().setProperty("shuffle",engine_.newFunction(ScriptWrappers::scriptRandomize));
-    engine_.globalObject().setProperty("relativeTo",engine_.newFunction(ScriptWrappers::scriptRelativeTo));
 
     QString tip = "Available functions:\n";
-    tip += "QStringList getDirContent( const QString &path, const QStringList &extensions, bool includeSubFolders=true )\n";
+    tip += "QStringList getDirContent( const QString &path, const QStringList &extensions, bool includeSubFolders=true, bool hiddenFiles=true )\n";
     tip += "QStringList randomize(const QStringList &list)\n";
     tip += "QString relativeTo(const QString &dir,const QString &file)\n";
     tip += "QStringList relativeTo(const QString &dir,const QStringList &files)\n";

@@ -42,7 +42,7 @@ class Tag : public QObject{
         //Q_PROPERTY( QString fileName READ fileName )
     public:
         enum TagField { ARTIST, ALBUM, TITLE, GENRE, TRACK, YEAR, COMMENT, LENGTH, BITRATE, SAMPLERATE, CHANNELS, NTAGFIELDS };
-        Tag(const QString& fullfile = "",QObject *parent=0);
+        Tag(const QString& fullfile = "",QObject *parent=0, bool readTags_=false, bool readFrames_=false);
         QHash< QString, QHash<QString,QStringList> > frames();
 
         QString tagLibDebug() const;
@@ -65,19 +65,19 @@ class Tag : public QObject{
         uint sampleRate();
         uint channels() ;
 
+        void readFrames();
+        void readTags();
+        void clearFrames();
+        bool tagIsRead() const;
+        void clearTags();
+
         QHash<QString,QStringList> xiphFrames() ;
         QHash<QString,QStringList> ID3v2Frames() ;
         QHash<QString,QStringList> APEItems() ;
         QHash<QString,QStringList> MP4Items() ;
         QHash<QString,QStringList> ASFAttributes() ;
 
-    private:
-
-        void readFrames();
-        void clearFrames();
-        bool tagIsRead() const;
-        void readTags();
-        void clearTags();
+    private:        
 
         bool readXiphComment(TagLib::Ogg::XiphComment *tag, const QString &type="XIPH");
         bool readID3V2Frames(TagLib::ID3v2::Tag *id3v2tag, const QString &type="ID3V2");

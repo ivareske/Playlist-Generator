@@ -13,7 +13,7 @@ TextViewer::TextViewer(QWidget* parent, const QString& text) : QDialog(parent) {
     QVBoxLayout *layout = new QVBoxLayout(frame);
     textEdit = new CodeEditor(this);
     layout->addWidget(textEdit);
-    frame->setLayout(layout);
+    textEditFrame->setLayout(layout);
     this->setWindowTitle(qApp->applicationName());
     s = Global::guiSettings(this);
     s->beginGroup("TextViewer");

@@ -23,7 +23,6 @@ void fromStringStringListHash(const QScriptValue &v, QHash<QString,QStringList> 
 QScriptValue toStringStringListHash(QScriptEngine *e, const QHash<QString,QStringList> &hash );
 
 
-
 }
 
 #endif // SCRIPTWRAPPERS_H

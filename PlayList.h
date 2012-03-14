@@ -13,14 +13,16 @@
 #include "M3uEntry.h"
 #include "GlobalFunctions.h"
 #include <QtScript>
+#include "ScriptEngine.h"
 
 
 class PlayList : public QListWidgetItem {
 
     public:
         PlayList(const QString& name = "New playlist", QListWidget* parent = 0);
-        //~PlayList();
-        //PlayList( const PlayList &other );
+        ~PlayList();
+        PlayList(const PlayList &other);
+        PlayList & operator=(const PlayList &other);
         bool generate(QList<M3uEntry> *songsOut, QString* log, QHash<QString, Tag*> *tags);        
 
         QString name() const;
@@ -79,7 +81,6 @@ class PlayList : public QListWidgetItem {
         bool allRulesTrue_;
         bool includeExtInf_;
         bool makeUnique_;
-        bool showTaglibDebug;
         QDir copyFilesToDir_;
         bool copyFiles_;
         QList<QFileInfo> individualFiles_;
@@ -87,8 +88,8 @@ class PlayList : public QListWidgetItem {
         //QDir outPutFolder_;        
         PMSettings* guiSettings;        
 
-        QHash<QString,QVariant> frameFields;
-        bool artistEmpty,titleEmpty,albumEmpty,commentEmpty,genreEmpty,trackEmpty,yearEmpty;
+        //QHash<QString,QVariant> frameFields;
+        //bool artistEmpty,titleEmpty,albumEmpty,commentEmpty,genreEmpty,trackEmpty,yearEmpty;
 
 
 
