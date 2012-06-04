@@ -236,7 +236,7 @@ QScriptValue constructTag(QScriptContext *context, QScriptEngine *engine){
         return context->throwError(QScriptContext::SyntaxError, "please use the 'new' operator (var tag = new Tag(fileName);)");
     }
     if(context->argumentCount()!=1 ){
-        return context->throwError("1 argument required (Full filename/string): var tag = new Tag(fileName)");
+        return context->throwError("1 argument required (Full filename/string): var tag = new Tag(fileName);");
     }
     QString file = context->argument(0).toString();
     // store the shared pointer in the script object that we are constructing
