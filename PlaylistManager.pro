@@ -1,4 +1,4 @@
-Show command line output in when in pure script mode (or always/as option?)
+#Show command line output in when in pure script mode (or always/as option?) QDebugStream?
 #generate other playlist formats?
 #sjekk at frames/items leses rett
 #lag noe hjelpetekst for scripting og evt. annet
