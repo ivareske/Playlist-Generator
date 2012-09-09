@@ -1,0 +1,1 @@
+C:\Playlist-Generator\debug\PlayListGenerator.exe C:\Playlist-Generator\testscript.js
