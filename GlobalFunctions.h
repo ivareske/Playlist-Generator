@@ -7,7 +7,7 @@
 
 namespace Global {
 
-    QList<QFileInfo> getDirContent(const QString& aPath, bool includeSubFolders, const QStringList &extensions, bool *canceled=false);
+    QList<QFileInfo> getDirContent(const QString& aPath, bool includeSubFolders, const QStringList &extensions, bool *canceled=0);
     QString timeString( uint milliSeconds, const QString &format="hh:mm:ss:z" );
     QString versionCheck(QDataStream* in, bool* ok, QString* log);
     PMSettings* guiSettings(QObject * parent = 0);

@@ -739,7 +739,7 @@ bool PlayList::evaluateScript( const Tag* tag, const QFileInfo& fileInfo, QStrin
  \param allOk
  \param anyOk
 */
-void PlayList::evaluateRules(const Tag* tag, const QString& file, bool* allOk, bool* anyOk) const {
+bool PlayList::evaluateRules(const Tag* tag, const QString& file, bool* allOk, bool* anyOk) const {
 
     bool ok;
     for (int i = 0; i < rules_.size(); i++) {
@@ -833,7 +833,7 @@ void PlayList::evaluateRules(const Tag* tag, const QString& file, bool* allOk, b
             checkRange(intvals, tmp, allOk, anyOk, shouldBeTrue);
         }
     }
-
+    return ok;
 }
 
 
