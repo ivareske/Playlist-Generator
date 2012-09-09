@@ -1,6 +1,5 @@
+Show command line output in when in pure script mode (or always/as option?)
 #generate other playlist formats?
-#when renaming files in tag editor, specify a list of files to rename the renamed files.
-
 #sjekk at frames/items leses rett
 #lag noe hjelpetekst for scripting og evt. annet
 #bytt til editingfinished for extensions
