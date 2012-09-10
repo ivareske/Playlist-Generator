@@ -201,6 +201,11 @@ bool PlayList::generate(QList<M3uEntry> *songsOut, QString* log, QHash<QString, 
 bool PlayList::writeM3U(const QString& file, const QList<M3uEntry> &songs, QString* log) const {
 
     QFile f(file);
+    QFileInfo fi(file);
+    QDir d = fi.absoluteDir();
+    if(!d.exists()){
+        d.mkpath(d.absolutePath());
+    }
     if (!f.open(QIODevice::WriteOnly)) {
 
         if (log) {
@@ -518,6 +523,7 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
  \param tag
  \param fileInfo
  \param log
+ \return bool
 */
 bool PlayList::evaluateScript( Tag* tag, const QFileInfo& fileInfo, QString *log ) const {
 
@@ -595,10 +601,11 @@ bool PlayList::evaluateScript( Tag* tag, const QFileInfo& fileInfo, QString *log
  \param file
  \param allOk
  \param anyOk
+ \return bool
 */
-void PlayList::evaluateRules( Tag* tag, const QString& file, bool* allOk, bool* anyOk) const {
+bool PlayList::evaluateRules( Tag* tag, const QString& file, bool* allOk, bool* anyOk) const {
 
-    bool ok;
+    bool ok=true;
     for (int i = 0; i < rules_.size(); i++) {
         Rule r = rules_[i];
         Rule::RuleType t = r.type();
@@ -690,7 +697,7 @@ void PlayList::evaluateRules( Tag* tag, const QString& file, bool* allOk, bool* 
             checkRange(intvals, tmp, allOk, anyOk, shouldBeTrue);
         }
     }
-
+    return ok;
 }
 
 

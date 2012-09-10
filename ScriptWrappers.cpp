@@ -13,6 +13,24 @@ QStringList scriptArrayToStringList( const QScriptValue &array ){
     return list;
 }
 
+QScriptValue myPrint( QScriptContext * ctx, QScriptEngine * eng ) {
+    Q_UNUSED(eng);
+    QString result;
+    for (int i=0; i<ctx->argumentCount(); i++){
+        if(i!=0){
+            result.append(QLatin1String(" "));
+        }
+        QString s = ctx->argument(i).toString();
+        if (ctx->state() == QScriptContext::ExceptionState){
+            break;
+        }
+        result.append(s);
+    }
+    std::cout<<result.toStdString()<<std::endl;
+    return ctx->engine()->toScriptValue(result);
+}
+
+
 QScriptValue scriptGetDirContent(QScriptContext *context, QScriptEngine *engine){
 
     QList<QFileInfo> info;

@@ -31,7 +31,7 @@ HEADERS = PlaylistManager.h SettingsDialog.h RuleDialog.h PlayList.h Rule.h Glob
     PMSettings.h \
     ScriptWrappers.h \
     metaTypes.h CodeEditor.h \
-    ScriptEngine.h
+    ScriptEngine.h QDebugStream.h
 FORMS   = PlaylistManager.ui SettingsDialog.ui RuleDialog.ui AddFilesDialog.ui TextViewer.ui StyleSheetEditor.ui
 SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp RuleDialog.cpp PlayList.cpp Rule.cpp GlobalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp \
     PlayListCollection.cpp StyleSheetEditor.cpp \

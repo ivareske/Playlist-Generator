@@ -20,6 +20,8 @@
 #include "metaTypes.h"
 #include "ui_PlaylistManager.h"
 #include "ScriptEngine.h"
+#include "QConsole.h"
+#include "QDebugStream.h"
 
 
 
@@ -47,7 +49,7 @@ public slots:
         void showAbout();
         QString newUniqePlayListName();
         QString newUniqePlayListCollectionName( const QDir &dir );
-        void updateUseScript();
+        void guiModeChanged();
         void addIndividualFiles();
         void createActions();
         void loadCollection(const QFileInfo& file);
@@ -95,6 +97,8 @@ public slots:
         PMSettings* guiSettings;
         QHash<QString, Tag*> tags_;
         ScriptEngine engine_;
+        QTextEdit *console_;
+        QDebugStream *qout;
 
 };
 

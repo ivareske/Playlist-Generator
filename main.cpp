@@ -6,6 +6,7 @@ void usage();
 
 int main(int argc, char* argv[]) {
 
+
     QApplication app(argc, argv);
     app.setApplicationVersion(APP_VERSION);
     app.setApplicationName(APP_NAME);
