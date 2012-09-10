@@ -20,7 +20,6 @@
 #include "metaTypes.h"
 #include "ui_PlaylistManager.h"
 #include "ScriptEngine.h"
-#include "QConsole.h"
 #include "QDebugStream.h"
 
 
@@ -41,6 +40,7 @@ public slots:
 
     private slots:
 
+        void clearScriptOutput();
         void runScriptEditScript();
         void saveCollectionCheck();
         void makePlayListForEveryArtist();

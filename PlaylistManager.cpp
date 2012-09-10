@@ -25,10 +25,11 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
     }
 
     console_ = new QTextEdit(ConsoleFrame);
+    console_->setMinimumHeight(50);
     //console_->setTextFormat(Qt::LogText);
     console_->setReadOnly(true);
     if(!ConsoleFrame->layout()){
-        ConsoleFrame->setLayout(new QGridLayout);
+        ConsoleFrame->setLayout(new QVBoxLayout);
     }       
     ConsoleFrame->layout()->addWidget(console_);    
 
@@ -280,9 +281,13 @@ void PlaylistManager::createActions() {
     connect(actionGUIMode, SIGNAL(triggered()), this, SLOT(guiModeChanged()));
     connect(actionGUIRules, SIGNAL(triggered()), this, SLOT(guiModeChanged()));
 
+    connect(clearScriptOutputButton,SIGNAL(clicked()),this,SLOT(clearScriptOutput()));
 
 }
 
+void PlaylistManager::clearScriptOutput(){
+    console_->clear();
+}
 
 /*!
  \brief
@@ -1501,7 +1506,7 @@ void PlaylistManager::initializeScriptEngine(){
 
 bool PlaylistManager::runScript(const QString &script,bool guiMode) {
 
-    console_->append("--------"+QDateTime::currentDateTime().toString()+"--------");
+    console_->append("--------"+QDateTime::currentDateTime().toString("dd-MM-yyyy HH:mm:ss")+"--------");
     qout = new QDebugStream(std::cout, console_);
     engine_.evaluate(script);
     if(engine_.hasUncaughtException()){
