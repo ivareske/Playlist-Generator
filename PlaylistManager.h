@@ -21,6 +21,7 @@
 #include "ui_PlaylistManager.h"
 #include "ScriptEngine.h"
 #include "QDebugStream.h"
+#include "scriptsyntaxhighlighter.h"
 
 
 
@@ -91,7 +92,9 @@ public slots:
 
         PlayList* playListItem(int row);
         SimpleTextEdit *folderTable;
-        CodeEditor *scriptEdit,*RuleScript;
+        CodeEditor *scriptEdit;
+        ScriptSyntaxHighlighter *scriptSyntax,*ruleSyntax;
+        CodeEditor *RuleScript;
         PlayList* currentPlayList();
         PlayListCollection collection_, lastSavedCollection_;
         PMSettings* guiSettings;

@@ -31,16 +31,19 @@ HEADERS = PlaylistManager.h SettingsDialog.h RuleDialog.h PlayList.h Rule.h Glob
     PMSettings.h \
     ScriptWrappers.h \
     metaTypes.h CodeEditor.h \
-    ScriptEngine.h QDebugStream.h
+    ScriptEngine.h QDebugStream.h scriptsyntaxhighlighter.h
+
 FORMS   = PlaylistManager.ui SettingsDialog.ui RuleDialog.ui AddFilesDialog.ui TextViewer.ui StyleSheetEditor.ui
+
 SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp RuleDialog.cpp PlayList.cpp Rule.cpp GlobalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp \
     PlayListCollection.cpp StyleSheetEditor.cpp \
     SimpleTextEdit.cpp \
     PMSettings.cpp \
     ScriptWrappers.cpp CodeEditor.cpp \
-    ScriptEngine.cpp
+    ScriptEngine.cpp scriptsyntaxhighlighter.cpp
 
 RC_FILE = PlaylistManager.rc
+RESOURCES += PlaylistManager.qrc
 
 
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"

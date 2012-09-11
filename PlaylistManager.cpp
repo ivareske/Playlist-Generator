@@ -15,9 +15,11 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
         ScriptOnlyFrame->setLayout(new QVBoxLayout);
     }
     scriptEdit = new CodeEditor(this);
+    scriptSyntax = new ScriptSyntaxHighlighter(scriptEdit->document());
     ScriptOnlyFrame->layout()->addWidget(scriptEdit);
 
     RuleScript = new CodeEditor(this);
+    ruleSyntax = new ScriptSyntaxHighlighter(RuleScript->document());
     rulesGroupBox->layout()->addWidget(RuleScript);
     folderTable = new SimpleTextEdit(this);
     if(!folderFrame->layout()){
