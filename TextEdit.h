@@ -3,11 +3,11 @@
 
 #include <QtGui>
 
-class TextEdit : public QTextEdit
+class SimpleTextEdit : public QTextEdit
 {
     Q_OBJECT
 public:
-    explicit TextEdit(QWidget *parent = 0);
+    explicit SimpleTextEdit(QWidget *parent = 0);
         QString text() const;
 signals:
     void editingFinished();

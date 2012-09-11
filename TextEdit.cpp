@@ -1,20 +1,20 @@
-#include "TextEdit.h"
+#include "SimpleTextEdit.h"
 
-TextEdit::TextEdit(QWidget *parent) : QTextEdit(parent){
+SimpleTextEdit::SimpleTextEdit(QWidget *parent) : QTextEdit(parent){
 
 }
 
-QString TextEdit::text() const{
+QString SimpleTextEdit::text() const{
     return this->toPlainText();
 }
 
 
-void TextEdit::focusOutEvent ( QFocusEvent * event ){
+void SimpleTextEdit::focusOutEvent ( QFocusEvent * event ){
     QTextEdit::focusOutEvent(event);
     emit editingFinished();
 }
 
-void TextEdit::focusInEvent(QFocusEvent *e){
+void SimpleTextEdit::focusInEvent(QFocusEvent *e){
     QTextEdit::focusInEvent(e);
     emit entered();
 }

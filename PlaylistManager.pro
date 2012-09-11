@@ -27,7 +27,7 @@ unix{
 
 HEADERS = PlaylistManager.h SettingsDialog.h RuleDialog.h PlayList.h Rule.h GlobalFunctions.h M3uEntry.h AddFilesDialog.h TextViewer.h Tag.h \
     PlayListCollection.h StyleSheetEditor.h \
-    TextEdit.h \
+    SimpleTextEdit.h \
     PMSettings.h \
     ScriptWrappers.h \
     metaTypes.h CodeEditor.h \
@@ -35,7 +35,7 @@ HEADERS = PlaylistManager.h SettingsDialog.h RuleDialog.h PlayList.h Rule.h Glob
 FORMS   = PlaylistManager.ui SettingsDialog.ui RuleDialog.ui AddFilesDialog.ui TextViewer.ui StyleSheetEditor.ui
 SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp RuleDialog.cpp PlayList.cpp Rule.cpp GlobalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp \
     PlayListCollection.cpp StyleSheetEditor.cpp \
-    TextEdit.cpp \
+    SimpleTextEdit.cpp \
     PMSettings.cpp \
     ScriptWrappers.cpp CodeEditor.cpp \
     ScriptEngine.cpp

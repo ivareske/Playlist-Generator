@@ -19,7 +19,7 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
 
     RuleScript = new CodeEditor(this);
     rulesGroupBox->layout()->addWidget(RuleScript);
-    folderTable = new TextEdit(this);
+    folderTable = new SimpleTextEdit(this);
     if(!folderFrame->layout()){
         folderFrame->setLayout(new QGridLayout);
     }

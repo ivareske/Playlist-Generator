@@ -14,7 +14,7 @@
 #include "RuleDialog.h"
 #include "PlayListCollection.h"
 #include "StyleSheetEditor.h"
-#include "TextEdit.h"
+#include "SimpleTextEdit.h"
 #include "PMSettings.h"
 #include "ScriptWrappers.h"
 #include "metaTypes.h"
@@ -90,7 +90,7 @@ public slots:
         void initializeScriptEngine();
 
         PlayList* playListItem(int row);
-        TextEdit *folderTable;
+        SimpleTextEdit *folderTable;
         CodeEditor *scriptEdit,*RuleScript;
         PlayList* currentPlayList();
         PlayListCollection collection_, lastSavedCollection_;
