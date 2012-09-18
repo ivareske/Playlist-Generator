@@ -23,6 +23,8 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
     if(!folderFrame->layout()){
         folderFrame->setLayout(new QGridLayout);
     }
+    scriptDebugger_.attachTo(&engine_);
+    //scriptDebugger_.setAutoShowStandardWindow(false);
 
     folderFrame->layout()->addWidget(folderTable);
     QString tip = "Use QtScript. The result of the script should return true or false, to determine if the file being processed should be included or not.\n";

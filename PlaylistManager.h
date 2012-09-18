@@ -20,6 +20,7 @@
 #include "metaTypes.h"
 #include "ui_PlaylistManager.h"
 #include "ScriptEngine.h"
+#include <QtScriptTools/QtScriptTools>
 
 
 
@@ -95,6 +96,7 @@ public slots:
         PMSettings* guiSettings;
         QHash<QString, Tag*> tags_;
         ScriptEngine engine_;
+        QScriptEngineDebugger scriptDebugger_;
 
 };
 
