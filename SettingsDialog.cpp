@@ -100,8 +100,7 @@ void SettingsDialog::onFinish(int result) {
 
         settings->setValue("outPutPath", out);
         settings->setValue("defaultExtensions", DefaultExtensions->text().split(";"));
-        //settings->setValue("useScript", UseScript->isChecked());
-        settings->setValue("scriptType", scriptTypeComboBox->currentIndex());
+        //settings->setValue("useScript", UseScript->isChecked());        
         settings->setValue("format", Format->text());
         settings->setValue("showLog", ShowLog->isChecked());
         settings->setValue("artistEmpty", Artist->isChecked());
@@ -116,6 +115,7 @@ void SettingsDialog::onFinish(int result) {
         settings->setValue("overWriteFiles", overWriteFilesCheckBox->isChecked());
         settings->setValue("keepTags", keepTagsCheckBox->isChecked());
         settings->setValue("ShowTagLibDebug", ShowTagLibDebug->isChecked());
+        settings->setValue("debugScriptCheckBox", debugScript->isChecked());
         settings->sync();
     }
 
@@ -133,7 +133,6 @@ void SettingsDialog::setSettings() {
     DefaultExtensions->setText(settings->value("defaultExtensions").toStringList().join(";"));
     Format->setText(settings->value("format").toString());
     //UseScript->setChecked(settings->value("useScript").toBool());
-    scriptTypeComboBox->setCurrentIndex(settings->value("scriptType",0).toInt());
     ShowLog->setChecked(settings->value("showLog").toBool());
     Artist->setChecked(settings->value("artistEmpty").toBool());
     Title->setChecked(settings->value("titleEmpty").toBool());
@@ -147,6 +146,7 @@ void SettingsDialog::setSettings() {
     overWriteFilesCheckBox->setChecked(settings->value("overWriteFiles").toBool());
     keepTagsCheckBox->setChecked(settings->value("keepTags").toBool());
     ShowTagLibDebug->setChecked(settings->value("ShowTagLibDebug").toBool());
+    debugScriptCheckBox->setChecked(settings->value("debugScript").toBool());
 
 
 }

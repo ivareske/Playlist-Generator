@@ -9,6 +9,7 @@
 namespace ScriptWrappers{
 
 QStringList scriptArrayToStringList( const QScriptValue &array );
+QScriptValue myPrint( QScriptContext * ctx, QScriptEngine * eng );
 QScriptValue scriptGetDirContent(QScriptContext *context, QScriptEngine *engine);
 QScriptValue scriptCopyFiles(QScriptContext *context, QScriptEngine *engine);
 QScriptValue writeFile(QScriptContext *context, QScriptEngine *engine);

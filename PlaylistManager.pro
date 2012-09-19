@@ -4,6 +4,8 @@
 #lag noe hjelpetekst for scripting og evt. annet
 #bytt til editingfinished for extensions
 #legg til dialog i settings for xiph, asf etc. frames
+#add script.txt to resources. Temporarily removed
+#Use qcompleter in qscript?
 
 # The application version
 VERSION = 1.0
@@ -15,6 +17,7 @@ CONFIG += qt
 
 #CONFIG += console
 QT += script
+QT += scripttools
 
 win32{
     INCLUDEPATH  += ./taglib ./
@@ -27,20 +30,23 @@ unix{
 
 HEADERS = PlaylistManager.h SettingsDialog.h RuleDialog.h PlayList.h Rule.h GlobalFunctions.h M3uEntry.h AddFilesDialog.h TextViewer.h Tag.h \
     PlayListCollection.h StyleSheetEditor.h \
-    TextEdit.h \
+    SimpleTextEdit.h \
     PMSettings.h \
     ScriptWrappers.h \
     metaTypes.h CodeEditor.h \
-    ScriptEngine.h
+    ScriptEngine.h QDebugStream.h scriptsyntaxhighlighter.h
+
 FORMS   = PlaylistManager.ui SettingsDialog.ui RuleDialog.ui AddFilesDialog.ui TextViewer.ui StyleSheetEditor.ui
+
 SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp RuleDialog.cpp PlayList.cpp Rule.cpp GlobalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp \
     PlayListCollection.cpp StyleSheetEditor.cpp \
-    TextEdit.cpp \
+    SimpleTextEdit.cpp \
     PMSettings.cpp \
     ScriptWrappers.cpp CodeEditor.cpp \
-    ScriptEngine.cpp
+    ScriptEngine.cpp scriptsyntaxhighlighter.cpp
 
 RC_FILE = PlaylistManager.rc
+RESOURCES += PlaylistManager.qrc
 
 
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"

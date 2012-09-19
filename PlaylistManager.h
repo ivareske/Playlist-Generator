@@ -14,13 +14,15 @@
 #include "RuleDialog.h"
 #include "PlayListCollection.h"
 #include "StyleSheetEditor.h"
-#include "TextEdit.h"
+#include "SimpleTextEdit.h"
 #include "PMSettings.h"
 #include "ScriptWrappers.h"
 #include "metaTypes.h"
 #include "ui_PlaylistManager.h"
 #include "ScriptEngine.h"
 #include <QtScriptTools/QtScriptTools>
+#include "QDebugStream.h"
+#include "scriptsyntaxhighlighter.h"
 
 
 
@@ -40,6 +42,7 @@ public slots:
 
     private slots:
 
+        void clearScriptOutput();
         void runScriptEditScript();
         void saveCollectionCheck();
         void makePlayListForEveryArtist();
@@ -48,7 +51,7 @@ public slots:
         void showAbout();
         QString newUniqePlayListName();
         QString newUniqePlayListCollectionName( const QDir &dir );
-        void updateUseScript();
+        void guiModeChanged();
         void addIndividualFiles();
         void createActions();
         void loadCollection(const QFileInfo& file);
@@ -89,14 +92,18 @@ public slots:
         void initializeScriptEngine();
 
         PlayList* playListItem(int row);
-        TextEdit *folderTable;
-        CodeEditor *scriptEdit,*RuleScript;
+        SimpleTextEdit *folderTable;
+        CodeEditor *scriptEdit;
+        ScriptSyntaxHighlighter *scriptSyntax,*ruleSyntax;
+        CodeEditor *RuleScript;
         PlayList* currentPlayList();
         PlayListCollection collection_, lastSavedCollection_;
         PMSettings* guiSettings;
         QHash<QString, Tag*> tags_;
         ScriptEngine engine_;
         QScriptEngineDebugger scriptDebugger_;
+        QTextEdit *console_;
+        QDebugStream *qout;
 
 };
 

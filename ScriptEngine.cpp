@@ -9,5 +9,6 @@ ScriptEngine::ScriptEngine(QObject *parent) : QScriptEngine(parent){
     globalObject().setProperty("unique",newFunction(ScriptWrappers::scriptUnique));
     globalObject().setProperty("shuffle",newFunction(ScriptWrappers::scriptRandomize));
     globalObject().setProperty("relativeTo",newFunction(ScriptWrappers::scriptRelativeTo));
+    globalObject().setProperty( "print", newFunction( ScriptWrappers::myPrint ) );
 
 }

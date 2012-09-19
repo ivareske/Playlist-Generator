@@ -15,16 +15,27 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
         ScriptOnlyFrame->setLayout(new QVBoxLayout);
     }
     scriptEdit = new CodeEditor(this);
+    scriptSyntax = new ScriptSyntaxHighlighter(scriptEdit->document());
     ScriptOnlyFrame->layout()->addWidget(scriptEdit);
 
     RuleScript = new CodeEditor(this);
+    ruleSyntax = new ScriptSyntaxHighlighter(RuleScript->document());
     rulesGroupBox->layout()->addWidget(RuleScript);
-    folderTable = new TextEdit(this);
+    folderTable = new SimpleTextEdit(this);
     if(!folderFrame->layout()){
         folderFrame->setLayout(new QGridLayout);
     }
-    scriptDebugger_.attachTo(&engine_);
-    //scriptDebugger_.setAutoShowStandardWindow(false);
+
+
+    console_ = new QTextEdit(ConsoleFrame);
+    console_->setMinimumHeight(50);
+    //console_->setTextFormat(Qt::LogText);
+    console_->setReadOnly(true);
+    if(!ConsoleFrame->layout()){
+        ConsoleFrame->setLayout(new QVBoxLayout);
+    }       
+    ConsoleFrame->layout()->addWidget(console_);    
+
 
     folderFrame->layout()->addWidget(folderTable);
     QString tip = "Use QtScript. The result of the script should return true or false, to determine if the file being processed should be included or not.\n";
@@ -51,8 +62,13 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
     initGuiSettings();
 
     readGUISettings();
-    updateUseScript();
+    guiModeChanged();
     initializeScriptEngine();
+
+    if(guiSettings->value("debugScript").toBool()){
+        scriptDebugger_.attachTo(&engine_);
+        //scriptDebugger_.setAutoShowStandardWindow(false);
+    }
 
 }
 
@@ -191,6 +207,9 @@ void PlaylistManager::initGuiSettings() {
     if (!guiSettings->value("showLog").canConvert(QVariant::Bool)) {
         guiSettings->setValue("showLog", true);
     }
+    if (!guiSettings->value("debugScript").canConvert(QVariant::Bool)) {
+        guiSettings->setValue("debugScript", true);
+    }
     if (!guiSettings->value("useCopyFilesToPath").canConvert(QVariant::Bool)) {
         guiSettings->setValue("useCopyFilesToPath", false);
     }
@@ -269,10 +288,17 @@ void PlaylistManager::createActions() {
     connect(actionClearTags, SIGNAL(triggered()), this, SLOT(clearTags()));
     connect(actionMakeOnePlaylistForEveryArtist, SIGNAL(triggered()), this, SLOT(makePlayListForEveryArtist()));
     connect(actionAbout, SIGNAL(triggered()), this, SLOT(showAbout()));
+    connect(actionScriptOnly, SIGNAL(triggered()), this, SLOT(guiModeChanged()));
+    connect(actionGUIMode, SIGNAL(triggered()), this, SLOT(guiModeChanged()));
+    connect(actionGUIRules, SIGNAL(triggered()), this, SLOT(guiModeChanged()));
 
+    connect(clearScriptOutputButton,SIGNAL(clicked()),this,SLOT(clearScriptOutput()));
 
 }
 
+void PlaylistManager::clearScriptOutput(){
+    console_->clear();
+}
 
 /*!
  \brief
@@ -585,7 +611,7 @@ void PlaylistManager::initialize() {
         playListTable->addItem(p);
     }
     guiSettings->setValue("outPutPath", collection_.outPutPath().absolutePath());
-    updateUseScript();
+    guiModeChanged();
     showRulesAndFolders();
 
     this->setWindowTitle(collection_.name());
@@ -596,12 +622,28 @@ void PlaylistManager::initialize() {
  \brief
 
 */
-void PlaylistManager::updateUseScript() {
+void PlaylistManager::guiModeChanged() {
     //switch between using script or a set of rules
 
-    int type = guiSettings->value("scriptType").toInt();
+    QAction *a  = qobject_cast<QAction*>(QObject::sender());
+    int type = guiSettings->value("scriptType",Global::RULES).toInt();
+    actionScriptOnly->setChecked(false);
+    actionGUIMode->setChecked(false);
+    actionGUIRules->setChecked(false);
+    if(a==actionScriptOnly){
+        type = Global::SCRIPTONLY;
+    }else if(a==actionGUIMode){
+        type=Global::SCRIPTANDPLAYLIST;
+    }else if(a==actionGUIRules){
+        type=Global::RULES;
+    }
+    guiSettings->setValue("scriptType",type);
+
+
     actionMakeOnePlaylistForEveryArtist->setVisible(true);
-    if (type==Global::RULES) {                
+    if (type==Global::SCRIPTANDPLAYLIST) {
+        actionGUIMode->setChecked(true);
+        ConsoleFrame->hide();
         rulesFrame->hide();
         RuleScript->show();
         //allRulesTrue->setEnabled(false);
@@ -609,7 +651,9 @@ void PlaylistManager::updateUseScript() {
         OptionsFrame->show();
         PlayListGroupBox->show();
         ScriptOnlyFrame->hide();        
-    }else if(type==Global::SCRIPTANDPLAYLIST){        
+    }else if(type==Global::RULES){
+        actionGUIRules->setChecked(true);
+        ConsoleFrame->hide();
         rulesFrame->show();
         RuleScript->hide();
         //allRulesTrue->setEnabled(true);
@@ -618,6 +662,8 @@ void PlaylistManager::updateUseScript() {
         PlayListGroupBox->show();
         ScriptOnlyFrame->hide();
     }else if(type==Global::SCRIPTONLY){
+        actionScriptOnly->setChecked(true);
+        ConsoleFrame->show();
         rulesFrame->hide();
         RuleScript->hide();
         //allRulesTrue->setEnabled(false);
@@ -1111,10 +1157,12 @@ void PlaylistManager::generatePlayLists(const QList<PlayList*> &playLists) {
 
     QDir d(collection_.outPutPath());// guiSettings->value("outPutPath").toString();
     if (!d.exists()) {
-        QMessageBox::critical(this, "",
+        /*QMessageBox::critical(this, "",
                               "Output folder is not a valid path",
-                              QMessageBox::Ok, QMessageBox::Ok);
+                              QMessageBox::Ok, QMessageBox::Ok);                              
         return;
+        */
+        d.mkpath(d.absolutePath());
     }
 
     QString log;
@@ -1408,10 +1456,14 @@ void PlaylistManager::showSettings() {
     SettingsDialog s(this);
     if (s.exec() == QDialog::Accepted) {
 
-        updateUseScript();
         collection_.setOutPutPath( QDir(guiSettings->value("outPutPath").toString()) );
         if (!guiSettings->value("keepTags").toBool()) {
             tags_.clear();
+        }
+        if(guiSettings->value("debugScript").toBool()){
+            scriptDebugger_.attachTo(&engine_);
+        }else{
+            scriptDebugger_.detach();
         }
     }
 
@@ -1470,6 +1522,8 @@ void PlaylistManager::initializeScriptEngine(){
 
 bool PlaylistManager::runScript(const QString &script,bool guiMode) {
 
+    console_->append("--------"+QDateTime::currentDateTime().toString("dd-MM-yyyy HH:mm:ss")+"--------");
+    qout = new QDebugStream(std::cout, console_);
     engine_.evaluate(script);
     if(engine_.hasUncaughtException()){
         QString err = "Uncaught exception at line "
@@ -1483,6 +1537,8 @@ bool PlaylistManager::runScript(const QString &script,bool guiMode) {
         }
         return false;
     }
+    delete qout;
+    console_->append("\n\n");
     qDebug()<<"Successfully evaluated script";
     return true;
 }
