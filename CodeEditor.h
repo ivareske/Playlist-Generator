@@ -45,6 +45,7 @@
 #include <QPlainTextEdit>
 #include <QObject>
 #include <QtScript>
+#include <QCompleter>
 #include "GlobalFunctions.h"
 
 QT_BEGIN_NAMESPACE
@@ -76,29 +77,43 @@ public:
     void setText(const QString &text);
     QString text() const;
 
+    void setCompleter(QCompleter *completer);
+    QCompleter *completer() const;
+
+
+    void setCompletionWords(const QStringList &words);
+    QStringList completionWords() const;
+    void addCompletionWords(const QStringList &words);
 public slots:
     void beautify();
 
 protected:
+    void focusInEvent(QFocusEvent *e);
     void contextMenuEvent(QContextMenuEvent *event);
     void focusOutEvent(QFocusEvent *e);
     void resizeEvent(QResizeEvent *event);
+    void keyPressEvent(QKeyEvent *e);
 
 signals:
     void editingFinished();
 
 private slots:
+    void insertCompletion(const QString &completion);
     void fontDialog();
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect &, int);
     void insertExample();
+    QStringListModel* modelFromFile( const QString &fileName);
 
 private:
+    QString textUnderCursor() const;
+
     QSettings *s;
     QString example_;
     QWidget *lineNumberArea;
     QAction *beautifyAction;
+    QCompleter *completer_;
 };
 
 //![codeeditordefinition]

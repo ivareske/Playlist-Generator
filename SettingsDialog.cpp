@@ -115,7 +115,7 @@ void SettingsDialog::onFinish(int result) {
         settings->setValue("overWriteFiles", overWriteFilesCheckBox->isChecked());
         settings->setValue("keepTags", keepTagsCheckBox->isChecked());
         settings->setValue("ShowTagLibDebug", ShowTagLibDebug->isChecked());
-        settings->setValue("debugScriptCheckBox", debugScript->isChecked());
+        settings->setValue("debugScript", debugScriptCheckBox->isChecked());
         settings->sync();
     }
 

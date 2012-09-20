@@ -5,7 +5,7 @@
 #bytt til editingfinished for extensions
 #legg til dialog i settings for xiph, asf etc. frames
 #add script.txt to resources. Temporarily removed
-#Use qcompleter in qscript?
+#add function names to completion list
 
 # The application version
 VERSION = 1.0
