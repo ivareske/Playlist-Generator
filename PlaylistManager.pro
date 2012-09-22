@@ -1,11 +1,7 @@
-#Show command line output in when in pure script mode (or always/as option?) QDebugStream?
 #generate other playlist formats?
 #sjekk at frames/items leses rett
 #lag noe hjelpetekst for scripting og evt. annet
-#bytt til editingfinished for extensions
-#legg til dialog i settings for xiph, asf etc. frames
-#add script.txt to resources. Temporarily removed
-#add function names to completion list
+#add content of script.txt to scriptsyntaxhighlighter. Temporarily removed
 
 # The application version
 VERSION = 1.0

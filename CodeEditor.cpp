@@ -47,6 +47,12 @@
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent){
     lineNumberArea = new LineNumberArea(this);
 
+    qtScriptReservedWords_<<"break"<<"case"<<"catch"<<"continue"<<"debugger"<<"default"<<"delete"<<"do"<<"else"<<"finally"<<\
+    "for"<<"function"<<"if"<<"in"<<"instanceof"<<"new"<<"return"<<"switch"<<"this"<<"throw"<<"try"<<\
+    "typeof"<<"var"<<"void"<<"while"<<"with";
+
+    syntaxHighlighter_ = new ScriptSyntaxHighlighter(this->document());
+
     s = Global::guiSettings(this);
     s->beginGroup("CodeEditor");
     QFont font = s->value("font",this->font()).value<QFont>();
@@ -66,7 +72,7 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent){
     highlightCurrentLine();
 
     completer_ = new QCompleter(this);
-    completer_->setModel(modelFromFile(":/qtScriptReservedWords.txt"));
+    completer_->setModel(modelFromStringList(qtScriptReservedWords_));
     completer_->setModelSorting(QCompleter::CaseInsensitivelySortedModel);
     completer_->setCaseSensitivity(Qt::CaseInsensitive);
     completer_->setWrapAround(false);
@@ -78,7 +84,8 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent){
 void CodeEditor::addCompletionWords(const QStringList& words){
     QStringList words2=completionWords();
     words2.append(words);
-    qSort(words2.begin(),words2.end());
+    words2=words2.toSet().toList();
+    qSort(words2.begin(),words2.end(),Global::stringLessThanCaseInSensitive);
     QStringListModel *model = qobject_cast<QStringListModel*>(completer_->model());
     if(model){
         model->setStringList(words2);
@@ -87,7 +94,8 @@ void CodeEditor::addCompletionWords(const QStringList& words){
 
 void CodeEditor::setCompletionWords(const QStringList& words){
     QStringList words2=words;
-    qSort(words2.begin(),words2.end());
+    words2=words2.toSet().toList();
+    qSort(words2.begin(),words2.end(),Global::stringLessThanCaseInSensitive);
     QStringListModel *model = qobject_cast<QStringListModel*>(completer_->model());
     if(model){
         model->setStringList(words2);
@@ -108,11 +116,26 @@ void CodeEditor::insertCompletion(const QString& completion){
         return;
     }
     QTextCursor tc = textCursor();
+
+    //Delete the characters that the user has entered as it might be in
+    //wrong case, and insert entire completion word.
+    tc.movePosition(QTextCursor::StartOfWord);
+    int toDelete = completer_->completionPrefix().length();
+    for(int i=0;i<toDelete;i++){
+        tc.deleteChar();
+    }
+    tc.insertText(completion);
+    setTextCursor(tc);
+
+    /*
+    //original code, insert only missing characters and keep the characters
+    //the user has already entered.
     int extra = completion.length() - completer_->completionPrefix().length();
     tc.movePosition(QTextCursor::Left);
     tc.movePosition(QTextCursor::EndOfWord);
     tc.insertText(completion.right(extra));
     setTextCursor(tc);
+    */
 }
 
 QString CodeEditor::textUnderCursor() const{
@@ -335,27 +358,10 @@ void CodeEditor::insertExample(){
     this->insertPlainText(example_);
 }
 
-QStringListModel *CodeEditor::modelFromFile(const QString &fileName){
-    QFile file(fileName);
-    if (!file.open(QFile::ReadOnly)){
-        return new QStringListModel(completer_);
-    }
-#ifndef QT_NO_CURSOR
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-#endif
-    QStringList words;
+QStringListModel *CodeEditor::modelFromStringList(const QStringList &list){
 
-    while (!file.atEnd()) {
-        QByteArray line = file.readLine();
-        if (!line.isEmpty()){
-            words << line.trimmed();
-        }
-    }
-
-#ifndef QT_NO_CURSOR
-    QApplication::restoreOverrideCursor();
-#endif
-    qSort(words.begin(),words.end());
+    QStringList words=list.toSet().toList();
+    qSort(words.begin(),words.end(),Global::stringLessThanCaseInSensitive);
     return new QStringListModel(words, completer_);
 }
 

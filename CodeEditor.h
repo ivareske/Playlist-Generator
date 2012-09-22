@@ -47,6 +47,7 @@
 #include <QtScript>
 #include <QCompleter>
 #include "GlobalFunctions.h"
+#include "scriptsyntaxhighlighter.h"
 
 QT_BEGIN_NAMESPACE
 class QPaintEvent;
@@ -104,16 +105,18 @@ private slots:
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect &, int);
     void insertExample();
-    QStringListModel* modelFromFile( const QString &fileName);
+    QStringListModel* modelFromStringList( const QStringList &list);
 
 private:
     QString textUnderCursor() const;
 
     QSettings *s;
     QString example_;
+    QStringList qtScriptReservedWords_;
     QWidget *lineNumberArea;
     QAction *beautifyAction;
     QCompleter *completer_;
+    ScriptSyntaxHighlighter *syntaxHighlighter_;
 };
 
 //![codeeditordefinition]

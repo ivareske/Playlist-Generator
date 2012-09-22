@@ -14,12 +14,10 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
     if(!ScriptOnlyFrame->layout()){
         ScriptOnlyFrame->setLayout(new QVBoxLayout);
     }
-    scriptEdit = new CodeEditor(this);
-    scriptSyntax = new ScriptSyntaxHighlighter(scriptEdit->document());
+    scriptEdit = new CodeEditor(this);    
     ScriptOnlyFrame->layout()->addWidget(scriptEdit);
 
-    RuleScript = new CodeEditor(this);
-    ruleSyntax = new ScriptSyntaxHighlighter(RuleScript->document());
+    RuleScript = new CodeEditor(this);    
     rulesGroupBox->layout()->addWidget(RuleScript);
     folderTable = new SimpleTextEdit(this);
     if(!folderFrame->layout()){
@@ -38,15 +36,26 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
 
 
     folderFrame->layout()->addWidget(folderTable);
-    QString tip = "Use QtScript. The result of the script should return true or false, to determine if the file being processed should be included or not.\n";
+    QString tip = "The result of the script should return true or false, to determine if the file being processed should be included or not.\n";
     tip += "Available parameters:\n";
     tip += "String: FILENAME, FILEPATH, ARTIST, ALBUM, TITLE, GENRE, COMMENT\n";
     tip += "Unsigned int: YEAR, TRACK, LENGTH (seconds), BITRATE (kb/s), SAMPLERATE (Hz), CHANNELS \n";
+    tip += "Boolean: TAGOK, AUDIOPROPERTIESOK\n";
     tip += "QHash<QString,QStringList>: ID3V2, ASF, MP4, XIPH, APE\n";
     tip += "Example to return all Beatles or Elvis music with length between 120 and 200 seconds, and a high bitrate (>300 kb/s):\n";
     tip += "LENGTH>120 && LENGTH<200 && BITRATE>300 && (ARTIST==\"Beatles\" || ARTIST==\"Elvis\")\n";
     tip += "\nAvailable ID3v2/XIPH/APE/ASF/MP4 frame/item keys for the script can be edited in the settings dialog.";
-    RuleScript->setToolTip(tip);    
+    tip += "\nExample how to use ID3v2/XIPH/APE/ASF/MP4 frame/items:";
+    tip += "\nID3V2[\"TPE1\"]==\"Beatles\"\n\n";
+    QStringList completions;
+    QString functionTips = scriptFunctionsHelpText(&completions);
+    tip.append(functionTips);
+    tip += "\n\nNote: If you create a string variable named \"EXTINF\" in the script, this will be used as EXTINF in the playlist.";
+    RuleScript->setToolTip(tip);
+    completions<<"FILENAME"<<"FILEPATH"<<"ARTIST"<<"ALBUM"<<"TITLE"<<"GENRE"<<"COMMENT"<<\
+                                         "YEAR"<<"TRACK"<<"LENGTH"<<"BITRATE"<<"SAMPLERATE"<<"CHANNELS"<<"ID3V2"<<"ASF"\
+                                      <<"MP4"<<"XIPH"<<"APE"<<"TAGOK"<<"AUDIOPROPERTIESOK";
+    RuleScript->addCompletionWords(completions);
 
     createActions();
 
@@ -65,7 +74,7 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
     guiModeChanged();
     initializeScriptEngine();
 
-    if(guiSettings->value("debugScript").toBool()){
+    if(guiSettings->value("debugScript").toBool() && this->isVisible()){
         scriptDebugger_.attachTo(&engine_);
         //scriptDebugger_.setAutoShowStandardWindow(false);
     }
@@ -626,7 +635,7 @@ void PlaylistManager::guiModeChanged() {
     //switch between using script or a set of rules
 
     QAction *a  = qobject_cast<QAction*>(QObject::sender());
-    int type = guiSettings->value("scriptType",Global::RULES).toInt();
+    int type = guiSettings->value("scriptType",Global::SCRIPTANDPLAYLIST).toInt();
     actionScriptOnly->setChecked(false);
     actionGUIMode->setChecked(false);
     actionGUIRules->setChecked(false);
@@ -634,11 +643,11 @@ void PlaylistManager::guiModeChanged() {
         type = Global::SCRIPTONLY;
     }else if(a==actionGUIMode){
         type=Global::SCRIPTANDPLAYLIST;
-    }else if(a==actionGUIRules){
-        type=Global::RULES;
     }
     guiSettings->setValue("scriptType",type);
-
+    if(type!=Global::SCRIPTANDPLAYLIST && type!=Global::SCRIPTONLY){
+        type=Global::SCRIPTANDPLAYLIST;
+    }
 
     actionMakeOnePlaylistForEveryArtist->setVisible(true);
     if (type==Global::SCRIPTANDPLAYLIST) {
@@ -651,16 +660,6 @@ void PlaylistManager::guiModeChanged() {
         OptionsFrame->show();
         PlayListGroupBox->show();
         ScriptOnlyFrame->hide();        
-    }else if(type==Global::RULES){
-        actionGUIRules->setChecked(true);
-        ConsoleFrame->hide();
-        rulesFrame->show();
-        RuleScript->hide();
-        //allRulesTrue->setEnabled(true);
-        allRulesTrue->show();
-        OptionsFrame->show();
-        PlayListGroupBox->show();
-        ScriptOnlyFrame->hide();
     }else if(type==Global::SCRIPTONLY){
         actionScriptOnly->setChecked(true);
         ConsoleFrame->show();
@@ -1460,7 +1459,7 @@ void PlaylistManager::showSettings() {
         if (!guiSettings->value("keepTags").toBool()) {
             tags_.clear();
         }
-        if(guiSettings->value("debugScript").toBool()){
+        if(guiSettings->value("debugScript").toBool() && this->isVisible()){
             scriptDebugger_.attachTo(&engine_);
         }else{
             scriptDebugger_.detach();
@@ -1470,10 +1469,38 @@ void PlaylistManager::showSettings() {
 
 }
 
+QString PlaylistManager::scriptFunctionsHelpText( QStringList *completions  ){
+
+    QStringList c;
+    QString tip = "Available functions:\n";
+    tip += "QStringList getDirContent( const QString &path, const QStringList &extensions, bool includeSubFolders=true, bool hiddenFiles=true )\n";c<<"getDirContent";
+    tip += "QStringList randomize(const QStringList &list)\n";c<<"randomize";
+    tip += "QString fileRelativeTo(const QString &dir,const QString &file)\n";c<<"fileRelativeTo";
+    tip += "QStringList fileRelativeTo(const QString &dir,const QStringList &files)\n";
+    tip += "QStringList unique(const QStringList &list)\n";c<<"unique";
+    tip += "bool contains(const QStringList &list, const QString &val, bool caseSensitive=true)\n";
+    tip += "bool contains(const QString &str, const QString &val, bool caseSensitive=true)\n";c<<"contains";
+    tip += "(Output is array)[int res, QString log] = copyFiles(const QStringList &files,\n";c<<"copyFiles";
+    tip +="    const QString &copyFilesToDir, bool keepFolderStructure=false, bool overWrite=true)\n";
+    tip += "bool writeFile( const QStringList &lines, const QString &file, bool append=false )\n";c<<"writeFile";
+
+    if(completions){
+        completions->append(c);
+    }
+
+    return tip;
+}
+
 /*!
  \brief Initialize script engine
 */
 void PlaylistManager::initializeScriptEngine(){
+
+    static bool initialized = false;
+    if(initialized){
+        return;
+    }
+    initialized=true;
 
     //qScriptRegisterSequenceMetaType<FrameList>(&engine_);
     //qScriptRegisterSequenceMetaType<FrameListList>(&engine_);
@@ -1485,18 +1512,11 @@ void PlaylistManager::initializeScriptEngine(){
     engine_.globalObject().setProperty("Tag",engine_.newFunction(ScriptWrappers::constructTag) );
 
 
-    QString tip = "Available functions:\n";
-    tip += "QStringList getDirContent( const QString &path, const QStringList &extensions, bool includeSubFolders=true, bool hiddenFiles=true )\n";
-    tip += "QStringList randomize(const QStringList &list)\n";
-    tip += "QString relativeTo(const QString &dir,const QString &file)\n";
-    tip += "QStringList relativeTo(const QString &dir,const QStringList &files)\n";
-    tip += "QStringList unique(const QStringList &list)\n";
-    tip += "bool contains(const QStringList &list, const QString &val, bool caseSensitive=true)\n";
-    tip += "bool contains(const QString &str, const QString &val, bool caseSensitive=true)\n";
-    tip += "(Output is array)[int res, QString log] = copyFoundFiles(const QStringList &files,\n";
-    tip +="    const QString &copyFilesToDir, bool keepFolderStructure=false, bool overWrite=true)\n";
-    tip += "bool writeFile( const QStringList &lines, const QString &file, bool append=false )\n";
-    tip += "var tag = new Tag(const QString &fileName)\n\nTag functions:\n";
+    QStringList c;
+
+    QString tip = scriptFunctionsHelpText(&c);
+    tip +="\nTag functions:";
+    tip += "\nvar tag = new Tag(const QString &fileName)";c<<"Tag";
     tip += "bool tagOk() const;\n";
     tip += "bool audioPropertiesOk() const;\n";
     tip += "QString fileName() const;\n";
@@ -1510,14 +1530,15 @@ void PlaylistManager::initializeScriptEngine(){
     tip += "uint length() const;\n";
     tip += "uint bitRate() const;\n";
     tip += "uint sampleRate() const;\n";
-    tip += "uint channels() const;\n";    
-    tip += "QHash<QString,QStringList> xiphFrames() const;\n";
-    tip += "QHash<QString,QStringList> ID3v2Frames() const;\n";
-    tip += "QHash<QString,QStringList> APEItems() const;\n";
-    tip += "QHash<QString,QStringList> MP4Items() const;\n";
-    tip += "QHash<QString,QStringList> ASFAttributes() const;";
+    tip += "uint channels() const;\n";
+    tip += "QHash<QString,QStringList> xiphFrames() const;\n";c<<"xiphFrames";
+    tip += "QHash<QString,QStringList> ID3v2Frames() const;\n";c<<"ID3v2Frames";
+    tip += "QHash<QString,QStringList> APEItems() const;\n";c<<"APEItems";
+    tip += "QHash<QString,QStringList> MP4Items() const;\n";c<<"MP4Items";
+    tip += "QHash<QString,QStringList> ASFAttributes() const;";c<<"ASFAttributes";
 
     scriptEdit->setToolTip(tip);
+    scriptEdit->addCompletionWords(c);
 }
 
 bool PlaylistManager::runScript(const QString &script,bool guiMode) {

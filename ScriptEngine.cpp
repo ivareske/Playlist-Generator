@@ -7,8 +7,8 @@ ScriptEngine::ScriptEngine(QObject *parent) : QScriptEngine(parent){
     globalObject().setProperty("writeFile",newFunction(ScriptWrappers::writeFile));
     globalObject().setProperty("contains",newFunction(ScriptWrappers::scriptContains));
     globalObject().setProperty("unique",newFunction(ScriptWrappers::scriptUnique));
-    globalObject().setProperty("shuffle",newFunction(ScriptWrappers::scriptRandomize));
-    globalObject().setProperty("relativeTo",newFunction(ScriptWrappers::scriptRelativeTo));
+    globalObject().setProperty("randomize",newFunction(ScriptWrappers::scriptRandomize));
+    globalObject().setProperty("fileRelativeTo",newFunction(ScriptWrappers::scriptRelativeTo));
     globalObject().setProperty( "print", newFunction( ScriptWrappers::myPrint ) );
 
 }

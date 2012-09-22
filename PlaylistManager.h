@@ -22,7 +22,7 @@
 #include "ScriptEngine.h"
 #include <QtScriptTools/QtScriptTools>
 #include "QDebugStream.h"
-#include "scriptsyntaxhighlighter.h"
+
 
 
 
@@ -89,12 +89,12 @@ public slots:
 
 
     private:
+        QString scriptFunctionsHelpText(QStringList *completions);
         void initializeScriptEngine();
 
         PlayList* playListItem(int row);
         SimpleTextEdit *folderTable;
-        CodeEditor *scriptEdit;
-        ScriptSyntaxHighlighter *scriptSyntax,*ruleSyntax;
+        CodeEditor *scriptEdit;        
         CodeEditor *RuleScript;
         PlayList* currentPlayList();
         PlayListCollection collection_, lastSavedCollection_;

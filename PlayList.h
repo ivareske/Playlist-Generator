@@ -69,7 +69,7 @@ class PlayList : public QListWidgetItem {
         QList<M3uEntry> processFile(const QFileInfo& fileInfo, bool hasTagRule, bool hasAudioRule,bool keepTags, const QString &format, bool useScript, QString* log, QHash<QString, Tag*> *tags, QHash<QString, Tag*> *tagsCopy, bool *wasCanceled) const;
         QString createExtInfString( Tag* tag, const QString& file, const QString& format_) const;
         bool evaluateRules(Tag *tag, const QString& file, bool* allOk, bool* anyOk) const;
-        bool evaluateScript( Tag *tag, const QFileInfo& fileInfo, QString *log ) const;
+        bool evaluateScript( Tag *tag, const QFileInfo& fileInfo, QString *log, QString *extInf ) const;
 
         //QString name_;
         QVector<Rule> rules_;

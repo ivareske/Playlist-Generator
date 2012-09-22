@@ -15,7 +15,8 @@ namespace Global {
     QString versionCheck(QDataStream* in, bool* ok, QString* log);
     PMSettings* guiSettings(QObject * parent = 0);
     bool checkIntValue(QVector<int> *intvals, const QString& val);
-    bool stringLessThan(const QString& s1, const QString& s2);
+    bool stringLessThanCaseSensitive(const QString& s1, const QString& s2);
+    bool stringLessThanCaseInSensitive(const QString& s1, const QString& s2);
     int naturalCompare(const QString& _a, const QString& _b, Qt::CaseSensitivity caseSensitivity);
 
     //const QString version = "1.0";

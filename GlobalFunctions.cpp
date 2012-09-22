@@ -263,10 +263,13 @@ PMSettings* guiSettings(QObject * parent) {
      \param s2
      \return bool
     */
-bool stringLessThan(const QString& s1, const QString& s2) {
+bool stringLessThanCaseSensitive(const QString& s1, const QString& s2) {
     return naturalCompare(s1, s2, Qt::CaseSensitive) < 0 ;
 }
 
+bool stringLessThanCaseInSensitive(const QString& s1, const QString& s2) {
+    return naturalCompare(s1, s2, Qt::CaseInsensitive) < 0 ;
+}
 
 /*!
      \brief

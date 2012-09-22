@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>964</width>
+    <width>1012</width>
     <height>657</height>
    </rect>
   </property>
@@ -888,8 +888,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>964</width>
-     <height>21</height>
+     <width>1012</width>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuTools">
@@ -917,9 +917,8 @@
     <property name="title">
      <string>Mode</string>
     </property>
-    <addaction name="actionScriptOnly"/>
     <addaction name="actionGUIMode"/>
-    <addaction name="actionGUIRules"/>
+    <addaction name="actionScriptOnly"/>
    </widget>
    <addaction name="menuTools"/>
    <addaction name="menuMode"/>
@@ -1046,7 +1045,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Script only</string>
+    <string>Full script mode</string>
    </property>
   </action>
   <action name="actionGUIMode">
@@ -1054,7 +1053,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Default with script-rules</string>
+    <string>Default</string>
    </property>
   </action>
   <action name="actionGUIRules">

@@ -463,12 +463,8 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
     //loop list of individual files. If file matches one of the indiviudally specified files, it is
     //added.
 
-    //if use script and nos cript specified, always include file
-    bool skipRules = false;
-    if (useScript && script_.isEmpty()) {
-        skipRules = true;
-    }
 
+    /*
     //if the file equals one of the specified individual files,
     //always include it regardless of rules
     for (int i = 0; i < individualFiles_.size(); i++) {
@@ -479,30 +475,34 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
             break;
         }
     }
+    */
 
-    //process script    
-    if (!skipRules) {
-        if( useScript ){
-            QString errorLog;
-            bool scriptOk = evaluateScript( tag, fileInfo, &errorLog );
-            allOk = scriptOk; //both will be either false or true
-            anyOk = scriptOk;
-            if( !errorLog.isEmpty() ){
-                //cancel generation if an error is found in the script
-                *wasCanceled = true;
-                log->append("\nError occurred in script: "+errorLog);
-                return list;
-            }
-        }else{
-            evaluateRules(tag, file, &allOk, &anyOk);
+    //process script
+    QString extInf;
+    if( useScript ){
+        QString errorLog;
+        bool scriptOk = evaluateScript( tag, fileInfo, &errorLog, &extInf );
+        allOk = scriptOk; //both will be either false or true
+        anyOk = scriptOk;
+        if( !errorLog.isEmpty() ){
+            //cancel generation if an error is found in the script
+            *wasCanceled = true;
+            log->append("\nError occurred in script: "+errorLog);
+            return list;
         }
+    }else{
+        evaluateRules(tag, file, &allOk, &anyOk);
     }
     //decide to include or not
     M3uEntry e;
     if ( (allRulesTrue_ && allOk) || (!allRulesTrue_ && anyOk) ) {
         //extinf info for m3u
         if (includeExtInf_) {
-            e.setExtInf(createExtInfString(tag, file, format));
+            if(!extInf.isEmpty()){
+                e.setExtInf(extInf);
+            }else{
+                e.setExtInf(createExtInfString(tag, file, format));
+            }
         }
         e.setOriginalFile(fileInfo);
         list.append(e);
@@ -525,7 +525,7 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool hasTagRul
  \param log
  \return bool
 */
-bool PlayList::evaluateScript( Tag* tag, const QFileInfo& fileInfo, QString *log ) const {
+bool PlayList::evaluateScript( Tag* tag, const QFileInfo& fileInfo, QString *log, QString *extInf ) const {
 
     if(script_.isEmpty()){
         return true;
@@ -559,8 +559,6 @@ bool PlayList::evaluateScript( Tag* tag, const QFileInfo& fileInfo, QString *log
         engine.globalObject().setProperty(type,array);
     }
 
-    //QString containsFunctions = "\nfunction contains(a, str) { print(a.length); for ( i = 0; i < a.length; i++) { print(a[i]); if(a[i]==str){return true;} } return false; }\n";
-
 
     //add tag data  as variables to script
     engine.globalObject().setProperty("ARTIST",tag->artist());
@@ -574,11 +572,16 @@ bool PlayList::evaluateScript( Tag* tag, const QFileInfo& fileInfo, QString *log
     engine.globalObject().setProperty("BITRATE",tag->bitRate());
     engine.globalObject().setProperty("SAMPLERATE",tag->sampleRate());
     engine.globalObject().setProperty("CHANNELS",tag->channels());
+    engine.globalObject().setProperty("TAGOK",tag->tagOk());
+    engine.globalObject().setProperty("AUDIOPROPERTIESOK",tag->audioPropertiesOk());
 
     engine.globalObject().setProperty("FILENAME",fileInfo.fileName());
     engine.globalObject().setProperty("FILEPATH",fileInfo.filePath());    
 
     QScriptValue result = engine.evaluate( script_ );
+
+    *extInf = engine.globalObject().property("EXTINF").toString();
+
     if( engine.hasUncaughtException() ){
         QString err = engine.uncaughtExceptionBacktrace().join("\n");
         log->append(err);
