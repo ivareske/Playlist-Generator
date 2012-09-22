@@ -24,7 +24,7 @@ unix{
     LIBS += -L/usr/lib/ -ltag
 }
 
-HEADERS = PlaylistManager.h SettingsDialog.h RuleDialog.h PlayList.h Rule.h GlobalFunctions.h M3uEntry.h AddFilesDialog.h TextViewer.h Tag.h \
+HEADERS = PlaylistManager.h SettingsDialog.h PlayList.h GlobalFunctions.h M3uEntry.h AddFilesDialog.h TextViewer.h Tag.h \
     PlayListCollection.h StyleSheetEditor.h \
     SimpleTextEdit.h \
     PMSettings.h \
@@ -32,9 +32,9 @@ HEADERS = PlaylistManager.h SettingsDialog.h RuleDialog.h PlayList.h Rule.h Glob
     metaTypes.h CodeEditor.h \
     ScriptEngine.h QDebugStream.h scriptsyntaxhighlighter.h
 
-FORMS   = PlaylistManager.ui SettingsDialog.ui RuleDialog.ui AddFilesDialog.ui TextViewer.ui StyleSheetEditor.ui
+FORMS   = PlaylistManager.ui SettingsDialog.ui AddFilesDialog.ui TextViewer.ui StyleSheetEditor.ui
 
-SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp RuleDialog.cpp PlayList.cpp Rule.cpp GlobalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp \
+SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp PlayList.cpp GlobalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp \
     PlayListCollection.cpp StyleSheetEditor.cpp \
     SimpleTextEdit.cpp \
     PMSettings.cpp \

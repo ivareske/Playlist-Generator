@@ -123,7 +123,7 @@ QDataStream& operator>>(QDataStream& in, PlayListCollection& p) {
     p = PlayListCollection(name);
     p.setPlayLists(playLists);
     p.setOutPutPath(QDir(outPutPath));
-    p.setSCript(script);
+    p.setScript(script);
     return in;
 }
 
@@ -157,7 +157,7 @@ QString PlayListCollection::defaultCollectionName() {
 
  \param script
 */
-void PlayListCollection::setSCript(const QString &script){
+void PlayListCollection::setScript(const QString &script){
     script_=script;
 }
 

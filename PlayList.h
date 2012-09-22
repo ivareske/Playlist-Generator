@@ -2,7 +2,6 @@
 #define PLAYLIST_H
 
 #include <QtGui>
-#include "Rule.h"
 #include "Tag.h"
 #include <tag.h>
 #include <taglib.h>
@@ -26,13 +25,11 @@ class PlayList : public QListWidgetItem {
         bool generate(QList<M3uEntry> *songsOut, QString* log, QHash<QString, Tag*> *tags);        
 
         QString name() const;
-        QVector<Rule> rules() const;
         QList<QDir> folders() const;
         QStringList extensions() const;
         bool randomize() const;
         bool includeSubFolders() const;
         bool relativePath() const;
-        bool allRulesTrue() const;
         bool includeExtInf() const;
         bool makeUnique() const;
         QDir copyFilesToDir() const;
@@ -42,14 +39,12 @@ class PlayList : public QListWidgetItem {
         QString playListEntry(const M3uEntry& e) const;
 
 
-        void setName(const QString& name);
-        void setRules(const QVector<Rule> &rules);
+        void setName(const QString& name);        
         void setFolders(const QList<QDir> &folders);
         void setExtensions(const QStringList& extensions);
         void setRandomize(bool randomize);
         void setIncludeSubFolders(bool includeSubFolders);
         void setRelativePath(bool setRelativePath);
-        void setAllRulesTrue(bool allRulesTrue);
         void setIncludeExtInf(bool includeExtInf);
         void setMakeUnique(bool makeUnique);
         void setCopyFilesToDir(const QDir& copyFilesToDir);
@@ -62,34 +57,25 @@ class PlayList : public QListWidgetItem {
 
     private:
 
-        QList<M3uEntry> findFiles(bool* canceled, QString* log, QHash<QString, Tag*> *tags);
-        void checkRange(const QVector<int> &intvals, int value, bool* allOk, bool* anyOk, bool shouldBeTrue) const;
-        bool writeM3U(const QString& file, const QList<M3uEntry> &songs, QString* log = 0) const;
-        void checkRule(bool value, bool* allOk, bool* anyOk, bool shouldBeTrue) const;
-        QList<M3uEntry> processFile(const QFileInfo& fileInfo, bool hasTagRule, bool hasAudioRule,bool keepTags, const QString &format, bool useScript, QString* log, QHash<QString, Tag*> *tags, QHash<QString, Tag*> *tagsCopy, bool *wasCanceled) const;
-        QString createExtInfString( Tag* tag, const QString& file, const QString& format_) const;
-        bool evaluateRules(Tag *tag, const QString& file, bool* allOk, bool* anyOk) const;
+        QList<M3uEntry> findFiles(bool* canceled, QString* log, QHash<QString, Tag*> *tags);        
+        bool writeM3U(const QString& file, const QList<M3uEntry> &songs, QString* log = 0) const;        
+        QList<M3uEntry> processFile(const QFileInfo& fileInfo, bool keepTags, const QString &format, QString* log, QHash<QString, Tag*> *tags, QHash<QString, Tag*> *tagsCopy, bool *wasCanceled) const;
+        QString createExtInfString( Tag* tag, const QString& file, const QString& format_) const;        
         bool evaluateScript( Tag *tag, const QFileInfo& fileInfo, QString *log, QString *extInf ) const;
 
         //QString name_;
-        QVector<Rule> rules_;
         QList<QDir> folders_;
         QStringList extensions_;
         bool randomize_;
         bool includeSubFolders_;
         bool relativePath_;
-        bool allRulesTrue_;
         bool includeExtInf_;
         bool makeUnique_;
         QDir copyFilesToDir_;
         bool copyFiles_;
         QList<QFileInfo> individualFiles_;
-        QString script_;        
-        //QDir outPutFolder_;        
+        QString script_;
         PMSettings* guiSettings;        
-
-        //QHash<QString,QVariant> frameFields;
-        //bool artistEmpty,titleEmpty,albumEmpty,commentEmpty,genreEmpty,trackEmpty,yearEmpty;
 
 
 

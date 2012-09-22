@@ -5,13 +5,11 @@
 #include <stdio.h>
 #include <string>
 #include <QtGui>
-#include "Rule.h"
 #include "PlayList.h"
 #include "GlobalFunctions.h"
 #include "SettingsDialog.h"
 #include "AddFilesDialog.h"
 #include "TextViewer.h"
-#include "RuleDialog.h"
 #include "PlayListCollection.h"
 #include "StyleSheetEditor.h"
 #include "SimpleTextEdit.h"
@@ -42,10 +40,10 @@ public slots:
 
     private slots:
 
+        void scriptEdited();
         void clearScriptOutput();
         void runScriptEditScript();
         void saveCollectionCheck();
-        void makePlayListForEveryArtist();
         void editStyleDialog();
         void initGuiSettings();
         void showAbout();
@@ -64,9 +62,6 @@ public slots:
         PlayList* addPlayList( QString name="" );
         void removePlayList();
 
-        void newRule();
-        void editRule();
-        void removeRule();
         void showRulesAndFolders();
         void clearRulesAndFolders();
         void blockPlayListSignals(bool block);

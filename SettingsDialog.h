@@ -2,7 +2,6 @@
 #define SETTINGSDIALOG_H
 
 #include <QtGui>
-#include "Rule.h"
 #include "PlayList.h"
 #include "GlobalFunctions.h"
 #include "TextViewer.h"
