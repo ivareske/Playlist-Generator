@@ -22,19 +22,18 @@ ScriptSyntaxHighlighter::ScriptSyntaxHighlighter(QTextDocument* parent): QSyntax
         HighlightingRule rule;
         rule.format.setForeground(Qt::darkBlue);
         rule.format.setFontWeight(QFont::Bold);
-        QFile file(":/script.txt");
-        if (file.open(QIODevice::ReadOnly | QIODevice::Text))
-        {
-                while (!file.atEnd())
-                {
-                        QString pattern = file.readLine();
-                        if (pattern.trimmed().length())
-                        {
-                                rule.pattern = QRegExp("\\b" + pattern.trimmed() + "\\b");
-                                highlightingRules.append(rule);
-                        }
-                }
-                file.close();
+
+        QStringList highlighting;highlighting<<"break"<<"else"<<"new"<<"var"<<"case"<<"finally"<<"return"<<"void"<<\
+                "catch"<<"for"<<"switch"<<"while"<<"continue"<<"function"<<"this"<<"with"<<"default"<<\
+                "if"<<"throw"<<"delete"<<"in"<<"try"<<"do"<<"instanceof"<<"typeof"<<"abstract"<<\
+                "enum"<<"int"<<"short"<<"boolean"<<"export"<<"interface"<<"static"<<"byte"<<\
+                "extends"<<"long"<<"super"<<"char"<<"final"<<"native"<<"synchronized"<<"class"<<\
+                "float"<<"package"<<"throws"<<"const"<<"goto"<<"private"<<"transient"<<"debugger"<<\
+                "implements"<<"protected"<<"volatile"<<"double"<<"import"<<"public";
+
+        for(int i=0;i<highlighting.size();i++){
+            rule.pattern = QRegExp("\\b" + highlighting[i] + "\\b");
+            highlightingRules.append(rule);
         }
 
         rule.format.setForeground(Qt::blue);
