@@ -1,12 +1,8 @@
-#Show command line output in when in pure script mode (or always/as option?) QDebugStream?
 #generate other playlist formats?
 #sjekk at frames/items leses rett
 #lag noe hjelpetekst for scripting og evt. annet
-#bytt til editingfinished for extensions
-#legg til dialog i settings for xiph, asf etc. frames
-#http://ariya.blogspot.no/2010/09/minimalistic-javascript-editing-widget.html
-#stackoverflow.com/questions/3734085/qt4-source-code-editor-widget
-#http://code.google.com/p/exaro/source/browse/?name=exaro-2.0#hg%2Fapps%2Fdesigner%253Fstate%253Dclosed
+#add content of script.txt to scriptsyntaxhighlighter. Temporarily removed
+
 # The application version
 VERSION = 1.0
 #NAME = $$quote(Playlist Generator)
@@ -17,6 +13,7 @@ CONFIG += qt
 
 #CONFIG += console
 QT += script
+QT += scripttools
 
 win32{
     INCLUDEPATH  += ./taglib ./
@@ -27,7 +24,7 @@ unix{
     LIBS += -L/usr/lib/ -ltag
 }
 
-HEADERS = PlaylistManager.h SettingsDialog.h RuleDialog.h PlayList.h Rule.h GlobalFunctions.h M3uEntry.h AddFilesDialog.h TextViewer.h Tag.h \
+HEADERS = PlaylistManager.h SettingsDialog.h PlayList.h GlobalFunctions.h M3uEntry.h AddFilesDialog.h TextViewer.h Tag.h \
     PlayListCollection.h StyleSheetEditor.h \
     SimpleTextEdit.h \
     PMSettings.h \
@@ -35,9 +32,9 @@ HEADERS = PlaylistManager.h SettingsDialog.h RuleDialog.h PlayList.h Rule.h Glob
     metaTypes.h CodeEditor.h \
     ScriptEngine.h QDebugStream.h scriptsyntaxhighlighter.h
 
-FORMS   = PlaylistManager.ui SettingsDialog.ui RuleDialog.ui AddFilesDialog.ui TextViewer.ui StyleSheetEditor.ui
+FORMS   = PlaylistManager.ui SettingsDialog.ui AddFilesDialog.ui TextViewer.ui StyleSheetEditor.ui
 
-SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp RuleDialog.cpp PlayList.cpp Rule.cpp GlobalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp \
+SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp PlayList.cpp GlobalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp \
     PlayListCollection.cpp StyleSheetEditor.cpp \
     SimpleTextEdit.cpp \
     PMSettings.cpp \

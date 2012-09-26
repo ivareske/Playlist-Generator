@@ -5,13 +5,11 @@
 #include <stdio.h>
 #include <string>
 #include <QtGui>
-#include "Rule.h"
 #include "PlayList.h"
 #include "GlobalFunctions.h"
 #include "SettingsDialog.h"
 #include "AddFilesDialog.h"
 #include "TextViewer.h"
-#include "RuleDialog.h"
 #include "PlayListCollection.h"
 #include "StyleSheetEditor.h"
 #include "SimpleTextEdit.h"
@@ -20,8 +18,9 @@
 #include "metaTypes.h"
 #include "ui_PlaylistManager.h"
 #include "ScriptEngine.h"
+#include <QtScriptTools/QtScriptTools>
 #include "QDebugStream.h"
-#include "scriptsyntaxhighlighter.h"
+
 
 
 
@@ -41,10 +40,10 @@ public slots:
 
     private slots:
 
+        void scriptEdited();
         void clearScriptOutput();
         void runScriptEditScript();
         void saveCollectionCheck();
-        void makePlayListForEveryArtist();
         void editStyleDialog();
         void initGuiSettings();
         void showAbout();
@@ -63,9 +62,6 @@ public slots:
         PlayList* addPlayList( QString name="" );
         void removePlayList();
 
-        void newRule();
-        void editRule();
-        void removeRule();
         void showRulesAndFolders();
         void clearRulesAndFolders();
         void blockPlayListSignals(bool block);
@@ -88,18 +84,19 @@ public slots:
 
 
     private:
+        QString scriptFunctionsHelpText(QStringList *completions);
         void initializeScriptEngine();
 
         PlayList* playListItem(int row);
         SimpleTextEdit *folderTable;
-        CodeEditor *scriptEdit;
-        ScriptSyntaxHighlighter *scriptSyntax,*ruleSyntax;
+        CodeEditor *scriptEdit;        
         CodeEditor *RuleScript;
         PlayList* currentPlayList();
         PlayListCollection collection_, lastSavedCollection_;
         PMSettings* guiSettings;
         QHash<QString, Tag*> tags_;
         ScriptEngine engine_;
+        QScriptEngineDebugger scriptDebugger_;
         QTextEdit *console_;
         QDebugStream *qout;
 

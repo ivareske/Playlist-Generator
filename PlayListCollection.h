@@ -9,7 +9,7 @@ class PlayListCollection {
     public:
         PlayListCollection(const QString& name = "");
         QString script() const;
-        void setSCript( const QString &script );
+        void setScript( const QString &script );
         QString name() const;
         void setName(const QString& name);
         QList<PlayList> playLists() const;
@@ -29,7 +29,7 @@ class PlayListCollection {
 
 };
 
-Q_DECLARE_METATYPE(PlayListCollection);
+Q_DECLARE_METATYPE(PlayListCollection)
 
 QDataStream& operator>>(QDataStream& in, PlayListCollection& p);
 QDataStream& operator<<(QDataStream& out, const PlayListCollection& p);

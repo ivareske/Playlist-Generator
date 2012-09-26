@@ -45,7 +45,9 @@
 #include <QPlainTextEdit>
 #include <QObject>
 #include <QtScript>
+#include <QCompleter>
 #include "GlobalFunctions.h"
+#include "scriptsyntaxhighlighter.h"
 
 QT_BEGIN_NAMESPACE
 class QPaintEvent;
@@ -76,29 +78,45 @@ public:
     void setText(const QString &text);
     QString text() const;
 
+    void setCompleter(QCompleter *completer);
+    QCompleter *completer() const;
+
+
+    void setCompletionWords(const QStringList &words);
+    QStringList completionWords() const;
+    void addCompletionWords(const QStringList &words);
 public slots:
     void beautify();
 
 protected:
+    void focusInEvent(QFocusEvent *e);
     void contextMenuEvent(QContextMenuEvent *event);
     void focusOutEvent(QFocusEvent *e);
     void resizeEvent(QResizeEvent *event);
+    void keyPressEvent(QKeyEvent *e);
 
 signals:
     void editingFinished();
 
 private slots:
+    void insertCompletion(const QString &completion);
     void fontDialog();
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect &, int);
     void insertExample();
+    QStringListModel* modelFromStringList( const QStringList &list);
 
 private:
+    QString textUnderCursor() const;
+
     QSettings *s;
     QString example_;
+    QStringList qtScriptReservedWords_;
     QWidget *lineNumberArea;
     QAction *beautifyAction;
+    QCompleter *completer_;
+    ScriptSyntaxHighlighter *syntaxHighlighter_;
 };
 
 //![codeeditordefinition]
