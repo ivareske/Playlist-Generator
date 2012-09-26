@@ -4,7 +4,9 @@
 #lag noe hjelpetekst for scripting og evt. annet
 #bytt til editingfinished for extensions
 #legg til dialog i settings for xiph, asf etc. frames
-
+#http://ariya.blogspot.no/2010/09/minimalistic-javascript-editing-widget.html
+#stackoverflow.com/questions/3734085/qt4-source-code-editor-widget
+#http://code.google.com/p/exaro/source/browse/?name=exaro-2.0#hg%2Fapps%2Fdesigner%253Fstate%253Dclosed
 # The application version
 VERSION = 1.0
 #NAME = $$quote(Playlist Generator)
