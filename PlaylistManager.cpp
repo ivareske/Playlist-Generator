@@ -194,6 +194,25 @@ void PlaylistManager::initGuiSettings() {
     if (!guiSettings->value("debugScript").canConvert(QVariant::Bool)) {
         guiSettings->setValue("debugScript", true);
     }
+    if (!guiSettings->value("ShowTagLibDebug").canConvert(QVariant::Bool)) {
+        guiSettings->setValue("ShowTagLibDebug", true);
+    }
+    if (!guiSettings->value("RedirectCout").canConvert(QVariant::Bool)) {
+        guiSettings->setValue("RedirectCout", true);
+    }
+    if (!guiSettings->value("RedirectCerr").canConvert(QVariant::Bool)) {
+        guiSettings->setValue("RedirectCerr", true);
+    }
+    if (!guiSettings->value("UseFilenameAsExtInfIfNoTag").canConvert(QVariant::Bool)) {
+        guiSettings->setValue("UseFilenameAsExtInfIfNoTag", true);
+    }
+    if (!guiSettings->value("ReplaceInFileName").canConvert(QVariant::Hash)) {
+        QHash<QString,QVariant> replace;replace.insert("\\","_");
+        replace.insert("/","_");replace.insert("*","_");replace.insert("\"","_");
+        replace.insert("|","_");replace.insert(":","_");replace.insert("%","_");
+        replace.insert(">","_");replace.insert("<","_");replace.insert("?","_");
+        guiSettings->setValue("ReplaceInFileName", replace);
+    }
     if (!guiSettings->value("useCopyFilesToPath").canConvert(QVariant::Bool)) {
         guiSettings->setValue("useCopyFilesToPath", false);
     }
@@ -220,12 +239,25 @@ void PlaylistManager::runScriptEditScript() {
 }
 
 
+void PlaylistManager::checkIfCollectionChanged(){
+    QString t = this->windowTitle();
+    if(t.right(1)=="*"){
+        t.chop(1);
+    }
+    if(collection_!=lastSavedCollection_){
+        t.append("*");
+    }
+    this->setWindowTitle(t);
+}
+
 /*!
  \brief
 
 */
 void PlaylistManager::createActions() {
 
+    checkIfCollectionChangedTimer_.start(2000);
+    connect(&checkIfCollectionChangedTimer_,SIGNAL(timeout()),this,SLOT(checkIfCollectionChanged()));
 
     connect(runScriptButton,SIGNAL(clicked()),this,SLOT(runScriptEditScript()));
 
@@ -271,7 +303,6 @@ void PlaylistManager::createActions() {
 
 void PlaylistManager::scriptEdited(){
 
-    qDebug()<<"PlaylistManager::scriptEdited";
     collection_.setScript(scriptEdit->text());
 
 }
@@ -1231,7 +1262,8 @@ QString PlaylistManager::scriptFunctionsHelpText( QStringList *completions  ){
     tip += "bool contains(const QString &str, const QString &val, bool caseSensitive=true)\n";c<<"contains";
     tip += "(Output is array)[int res, QString log] = copyFiles(const QStringList &files,\n";c<<"copyFiles";
     tip +="    const QString &copyFilesToDir, bool keepFolderStructure=false, bool overWrite=true)\n";
-    tip += "bool writeFile( const QStringList &lines, const QString &file, bool append=false )\n";c<<"writeFile";
+    tip += "bool writeFile( const QStrin &content, const QString &path, const QString &name, bool append=false )\n";;
+    tip += "bool writeFile( const QStringList &lines, const QString &path, const QString &name, bool append=false )\n";c<<"writeFile";
 
     if(completions){
         completions->append(c);
@@ -1293,8 +1325,18 @@ void PlaylistManager::initializeScriptEngine(){
 bool PlaylistManager::runScript(const QString &script,bool guiMode) {
 
     console_->append("--------"+QDateTime::currentDateTime().toString("dd-MM-yyyy HH:mm:ss")+"--------");
-    qout = new QDebugStream(std::cout, console_);
+    if( guiSettings->value("RedirectCout",false).toBool() ){
+        QDebugStream qout(std::cout, console_);
+        Q_UNUSED(qout);
+    }
+    if( guiSettings->value("RedirectCerr",false).toBool() ){
+        QDebugStream qout2(std::cerr, console_);
+        Q_UNUSED(qout2);
+    }
+    QDebugStream qout3(std::clog, console_); //clog is used in the qtscript "print" function
+    Q_UNUSED(qout3);
     engine_.evaluate(script);
+    engine_.setProcessEventsInterval(1000);
     if(engine_.hasUncaughtException()){
         QString err = "Uncaught exception at line "
                           + QString::number(engine_.uncaughtExceptionLineNumber()) + ": "
@@ -1307,9 +1349,9 @@ bool PlaylistManager::runScript(const QString &script,bool guiMode) {
         }
         return false;
     }
-    delete qout;
+    engine_.setProcessEventsInterval(-1);
     console_->append("\n\n");
-    qDebug()<<"Successfully evaluated script";
+    //qDebug()<<"Successfully evaluated script";
     return true;
 }
 

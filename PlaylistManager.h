@@ -40,6 +40,7 @@ public slots:
 
     private slots:
 
+        void checkIfCollectionChanged();
         void scriptEdited();
         void clearScriptOutput();
         void runScriptEditScript();
@@ -97,8 +98,8 @@ public slots:
         QHash<QString, Tag*> tags_;
         ScriptEngine engine_;
         QScriptEngineDebugger scriptDebugger_;
-        QTextEdit *console_;
-        QDebugStream *qout;
+        QTextEdit *console_;        
+        QTimer checkIfCollectionChangedTimer_;
 
 };
 

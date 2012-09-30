@@ -10,6 +10,8 @@
 SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     setupUi(this); // this sets up GUI
 
+    ShowTagLibDebug->hide(); //done differently for now, option to log cerr/cout instead
+
     #ifndef HAVE_TAGLIB_APEFILE_H
         apeItemKeysButton->hide();
     #endif
@@ -26,11 +28,22 @@ SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent) {
     connect(okButton, SIGNAL(clicked()), this, SLOT(accept()));
     connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
     connect(fileDialog, SIGNAL(clicked()), this, SLOT(setOutPutDir()));
+    connect(ReplaceFileNameDialogButton, SIGNAL(clicked()), this, SLOT(showRelaceFileNameDialog()));
     connect(this, SIGNAL(finished(int)), this, SLOT(onFinish(int)));
+
 
     setSettings();
     //UseScript->setChecked(false);
     //UseScript->hide();
+}
+
+void SettingsDialog::showRelaceFileNameDialog(){
+
+    ReplaceInFileNameDialog d(this);
+    if (d.exec() != QDialog::Accepted) {
+        return;
+    }
+
 }
 
 /*!
@@ -110,6 +123,7 @@ void SettingsDialog::onFinish(int result) {
         settings->setValue("keepTags", keepTagsCheckBox->isChecked());
         settings->setValue("ShowTagLibDebug", ShowTagLibDebug->isChecked());
         settings->setValue("debugScript", debugScriptCheckBox->isChecked());
+        settings->setValue("RedirectCout", RedirectCout->isChecked());
         settings->sync();
     }
 
@@ -135,7 +149,7 @@ void SettingsDialog::setSettings() {
     keepTagsCheckBox->setChecked(settings->value("keepTags").toBool());
     ShowTagLibDebug->setChecked(settings->value("ShowTagLibDebug").toBool());
     debugScriptCheckBox->setChecked(settings->value("debugScript").toBool());
-
+    RedirectCout->setChecked(settings->value("RedirectCout").toBool());
 
 }
 

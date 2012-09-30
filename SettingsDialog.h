@@ -5,28 +5,30 @@
 #include "PlayList.h"
 #include "GlobalFunctions.h"
 #include "TextViewer.h"
+#include "ReplaceInFileNameDialog.h"
 #include "ui_SettingsDialog.h"
 
 
 class SettingsDialog : public QDialog, private Ui::SettingsDialog {
-        Q_OBJECT
+    Q_OBJECT
 
-    public:
+public:
 
-        SettingsDialog(QWidget* parent = 0);
-        ~SettingsDialog();
+    SettingsDialog(QWidget* parent = 0);
+    ~SettingsDialog();
 
 protected:
 
-    private:        
-        PMSettings* settings;
-        void setSettings();
-        QString chooseDir();
+private slots:
+    void showRelaceFileNameDialog();
+    void editFrameFields();
+    void onFinish(int result);
+    void setOutPutDir();
 
-    private slots:
-        void editFrameFields();
-        void onFinish(int result);
-        void setOutPutDir();
+private:
+    PMSettings* settings;
+    void setSettings();
+    QString chooseDir();
 
 };
 

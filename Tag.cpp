@@ -276,12 +276,6 @@ void Tag::readFrames() {
 
     frames_.clear();
 
-    sbuf = std::cerr.rdbuf();
-    buffer = new std::stringstream;
-    std::cerr.rdbuf(buffer->rdbuf());
-
-    //https://code.launchpad.net/~mixxxdevelopers/mixxx/features_recording2/+merge/55016
-
     TagLib::FileRef file(filename_.toStdString().c_str(),false);
 
     //MPEG ID3v2 tags
@@ -373,11 +367,6 @@ void Tag::readFrames() {
     }
 
 
-    tagLibDebug_.append(QString(buffer->str().c_str()));
-
-    std::cerr.rdbuf(sbuf);
-    delete buffer; buffer=0;
-
     framesAreRead_=true;
 }
 
@@ -390,9 +379,6 @@ void Tag::readFrames() {
 
 void Tag::readTags() {
 
-    sbuf = std::cerr.rdbuf();
-    buffer = new std::stringstream;
-    std::cerr.rdbuf(buffer->rdbuf());
 
     tagIsRead_ = true;
     TagLib::FileRef f(filename_.toStdString().c_str());
@@ -417,17 +403,7 @@ void Tag::readTags() {
         }
     }
 
-    tagLibDebug_.append(QString(buffer->str().c_str()));
-
-    std::cerr.rdbuf(sbuf);
-    delete buffer; buffer=0;
-
 }
-
-QString Tag::tagLibDebug() const{
-    return tagLibDebug_;
-}
-
 
 
 /*!

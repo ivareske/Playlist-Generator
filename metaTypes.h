@@ -26,7 +26,7 @@
     };                                                                  \
     QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE2( QHash<QString,QStringList> );
+Q_DECLARE_METATYPE2( QHash<QString,QStringList> )
 ///typedef QHash<QString,QStringList> FrameList;
 //Q_DECLARE_METATYPE(FrameList)
 //typedef QHash<QString,FrameList> FrameListList;

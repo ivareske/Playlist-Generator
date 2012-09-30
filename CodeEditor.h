@@ -46,8 +46,11 @@
 #include <QObject>
 #include <QtScript>
 #include <QCompleter>
+#include <QShortcut>
 #include "GlobalFunctions.h"
 #include "scriptsyntaxhighlighter.h"
+#include "finddialog.h"
+#include "findreplacedialog.h"
 
 QT_BEGIN_NAMESPACE
 class QPaintEvent;
@@ -85,7 +88,9 @@ public:
     void setCompletionWords(const QStringList &words);
     QStringList completionWords() const;
     void addCompletionWords(const QStringList &words);
+
 public slots:
+
     void beautify();
 
 protected:
@@ -99,6 +104,8 @@ signals:
     void editingFinished();
 
 private slots:
+    void findReplaceDialog();
+    void findDialog();
     void insertCompletion(const QString &completion);
     void fontDialog();
     void updateLineNumberAreaWidth(int newBlockCount);
@@ -114,9 +121,11 @@ private:
     QString example_;
     QStringList qtScriptReservedWords_;
     QWidget *lineNumberArea;
-    QAction *beautifyAction;
+    QAction *beautifyAction,*findAction,*findReplaceAction;
     QCompleter *completer_;
     ScriptSyntaxHighlighter *syntaxHighlighter_;
+    FindDialog *findDialog_;
+    FindReplaceDialog *findReplaceDialog_;
 };
 
 //![codeeditordefinition]

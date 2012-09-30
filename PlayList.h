@@ -13,6 +13,7 @@
 #include "GlobalFunctions.h"
 #include <QtScript>
 #include "ScriptEngine.h"
+#include "QDebugStream.h"
 
 
 class PlayList : public QListWidgetItem {
@@ -58,7 +59,7 @@ class PlayList : public QListWidgetItem {
     private:
 
         QList<M3uEntry> findFiles(bool* canceled, QString* log, QHash<QString, Tag*> *tags);        
-        bool writeM3U(const QString& file, const QList<M3uEntry> &songs, QString* log = 0) const;        
+        bool writeM3U(const QString& path, const QString &name, const QList<M3uEntry> &songs, QString* log = 0) const;
         QList<M3uEntry> processFile(const QFileInfo& fileInfo, bool keepTags, const QString &format, QString* log, QHash<QString, Tag*> *tags, QHash<QString, Tag*> *tagsCopy, bool *wasCanceled) const;
         QString createExtInfString( Tag* tag, const QString& file, const QString& format_) const;        
         bool evaluateScript( Tag *tag, const QFileInfo& fileInfo, QString *log, QString *extInf ) const;

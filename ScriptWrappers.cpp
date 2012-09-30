@@ -26,7 +26,7 @@ QScriptValue myPrint( QScriptContext * ctx, QScriptEngine * eng ) {
         }
         result.append(s);
     }
-    std::cout<<result.toStdString()<<std::endl;
+    std::clog<<result.toStdString()<<std::endl;
     return ctx->engine()->toScriptValue(result);
 }
 
@@ -177,11 +177,37 @@ QScriptValue writeFile(QScriptContext *context, QScriptEngine *engine){
 
     int nargin=context->argumentCount();
     if (nargin<2 || nargin>3){
-        return context->throwError("2 or 3 arguments required: bool writeFile( const QStringList &lines, const QString &file, bool append=false )");
+        return context->throwError("3 or 4 arguments required:\nbool writeFile( const QStringList &lines, const QString &path, const QString &name, bool append=false )\n"\
+                                   "bool writeFile( const QString &content, const QString &path, const QString &name, bool append=false )");
     }
-    QScriptValue array = context->argument(0);
-    QStringList lines = scriptArrayToStringList( array );
-    QString file = context->argument(1).toString();
+    QString content;
+    QScriptValue arg0 = context->argument(0);
+    if(arg0.isArray()){
+        QScriptValue array = arg0;
+        content = scriptArrayToStringList( array ).join("\n");
+    }else if(arg0.isString()){
+        content = arg0.toString();
+    }else{
+        return context->throwError("The first argument (the content of the file) must be an array or string or a string.");
+    }
+    if(!context->argument(1).isString()){
+        return context->throwError("The second argument (path) must be a string.");
+    }
+    if(!context->argument(2).isString()){
+        return context->throwError("The third argument (filename) must be a string.");
+    }
+    if(context->argumentCount()==4){
+        if(!context->argument(3).isBool()){
+            return context->throwError("The fourth argument (append) must be boolean/logical.");
+        }
+    }
+    QString path = context->argument(1).toString();
+    QString name = context->argument(2).toString();
+    QString sep="";
+    if(path.right(1)!="\\"&&path.right(1)!="/"){
+        sep="/";
+    }
+    QString file = path+sep+Global::createValidFileName(name);
     bool append = false;
     if(nargin==3){
         append = context->argument(2).toBool();
@@ -197,12 +223,15 @@ QScriptValue writeFile(QScriptContext *context, QScriptEngine *engine){
         return engine->toScriptValue(false);
     }
     QTextStream out(&f);
+    out << content;
+    /*
     for(int i=0;i<lines.size();i++){
         out << lines[i].replace("/","\\");
         if(i<lines.size()-1){
             out << "\n";
         }
     }
+    */
     f.close();
     return engine->toScriptValue(true);
 }

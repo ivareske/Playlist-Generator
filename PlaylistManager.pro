@@ -2,6 +2,9 @@
 #sjekk at frames/items leses rett
 #lag noe hjelpetekst for scripting og evt. annet
 #add content of script.txt to scriptsyntaxhighlighter. Temporarily removed
+#test redirection of clog/cout. what about qDebug(), is that redirected when cout is?
+#multiple tabs for script, and one commoon script-functions tabs
+#fix findreplacedialog linking for unix
 
 # The application version
 VERSION = 1.0
@@ -18,6 +21,7 @@ QT += scripttools
 win32{
     INCLUDEPATH  += ./taglib ./
     LIBS += $$PWD/libtag.dll
+    LIBS += $$PWD/qtfindreplacedialog.dll
 }
 unix{
     INCLUDEPATH += /usr/include/taglib/
@@ -30,16 +34,17 @@ HEADERS = PlaylistManager.h SettingsDialog.h PlayList.h GlobalFunctions.h M3uEnt
     PMSettings.h \
     ScriptWrappers.h \
     metaTypes.h CodeEditor.h \
-    ScriptEngine.h QDebugStream.h scriptsyntaxhighlighter.h
+    ScriptEngine.h QDebugStream.h scriptsyntaxhighlighter.h ReplaceInFileNameDialog.h
 
-FORMS   = PlaylistManager.ui SettingsDialog.ui AddFilesDialog.ui TextViewer.ui StyleSheetEditor.ui
+FORMS   = PlaylistManager.ui SettingsDialog.ui AddFilesDialog.ui TextViewer.ui StyleSheetEditor.ui \
+    ReplaceInFileNameDialog.ui
 
 SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp PlayList.cpp GlobalFunctions.cpp M3uEntry.cpp AddFilesDialog.cpp TextViewer.cpp Tag.cpp \
     PlayListCollection.cpp StyleSheetEditor.cpp \
     SimpleTextEdit.cpp \
     PMSettings.cpp \
     ScriptWrappers.cpp CodeEditor.cpp \
-    ScriptEngine.cpp scriptsyntaxhighlighter.cpp
+    ScriptEngine.cpp scriptsyntaxhighlighter.cpp  ReplaceInFileNameDialog.cpp
 
 RC_FILE = PlaylistManager.rc
 RESOURCES += PlaylistManager.qrc

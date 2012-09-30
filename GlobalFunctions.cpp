@@ -3,6 +3,18 @@
 
 namespace Global {
 
+QString createValidFileName( const QString &filename ){
+    PMSettings *settings = guiSettings();
+    QString newName = filename;
+    QHash<QString,QVariant> replace = settings->value("ReplaceInFileName").toHash();
+    QStringList keys = replace.keys();
+    for(int i=0;i<keys.size();i++){
+        newName = newName.replace(keys[i],replace[keys[i]].toString());
+    }
+    delete settings;
+    return newName;
+}
+
 /*!
  \brief
 

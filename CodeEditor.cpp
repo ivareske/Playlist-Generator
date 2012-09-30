@@ -47,6 +47,14 @@
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent){
     lineNumberArea = new LineNumberArea(this);
 
+    findDialog_ = new FindDialog(this);
+    findDialog_->setModal(false);
+    findDialog_->setTextEdit(this);
+
+    findReplaceDialog_ = new FindReplaceDialog(this);
+    findReplaceDialog_->setModal(false);
+    findReplaceDialog_->setTextEdit(this);
+
     qtScriptReservedWords_<<"break"<<"case"<<"catch"<<"continue"<<"debugger"<<"default"<<"delete"<<"do"<<"else"<<"finally"<<\
     "for"<<"function"<<"if"<<"in"<<"instanceof"<<"new"<<"return"<<"switch"<<"this"<<"throw"<<"try"<<\
     "typeof"<<"var"<<"void"<<"while"<<"with";
@@ -59,10 +67,21 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent){
     this->setFont(font);
     s->endGroup();
 
+    findAction = new QAction("Find...",this);
+    connect(findAction, SIGNAL(triggered()), this, SLOT(findDialog()));
+    findAction->setShortcut(tr("Ctrl+F"));
+    addAction(findAction);
+
+    findReplaceAction = new QAction("Replace...",this);
+    connect(findReplaceAction, SIGNAL(triggered()), this, SLOT(findReplaceDialog()));
+    findReplaceAction->setShortcut(tr("Ctrl+R"));
+    addAction(findReplaceAction);
+
     beautifyAction = new QAction("Beautify javascript code",this);
     connect(beautifyAction, SIGNAL(triggered()), this, SLOT(beautify()));
     beautifyAction->setShortcut(tr("Ctrl+B"));
     addAction(beautifyAction);
+
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
@@ -80,6 +99,13 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent){
 
 }
 
+void CodeEditor::findDialog() {
+    findDialog_->show();
+}
+
+void CodeEditor::findReplaceDialog() {
+    findReplaceDialog_->show();
+}
 
 void CodeEditor::addCompletionWords(const QStringList& words){
     QStringList words2=completionWords();

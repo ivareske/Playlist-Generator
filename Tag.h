@@ -45,7 +45,6 @@ class Tag : public QObject{
         Tag(const QString& fullfile = "",QObject *parent=0, bool readTags_=false, bool readFrames_=false);
         QHash< QString, QHash<QString,QStringList> > frames();
 
-        QString tagLibDebug() const;
     public slots:
 
         bool tagOk() const;
@@ -104,9 +103,6 @@ class Tag : public QObject{
         uint sampleRate_;
         uint channels_;
 
-        QString tagLibDebug_;
-        std::stringstream *buffer;
-        std::streambuf *sbuf;
 
 };
 

@@ -1,30 +1,34 @@
 
-
+;UAC.nsh must be in the include folder in the nsis install directory, and uac.dll in the plugins directory!
 ;=============================SETUP==========================================
 
-!define PRODUCT_NAME "M3U playlist generator"
+!define PRODUCT_NAME "Ivar's Playlist Generator"
 !define PRODUCT_VERSION "1.0"
 !define PRODUCT_PUBLISHER "Ivar Eskerud Smith"
-!define PRODUCT_WEB_SITE "http://www.ivarsmith.com"  ;Comment out this line if you don`t want a website link
-!define INSTALLER_NAME "Playlist Generator Setup.exe"
-!define INSTALL_FOLDER_NAME "M3U playlist generator"
-!define MAIN_EXECUTABLE "playListGenerator.exe"
-!define LICENSE "lgpl.txt"
-!define PROMPT_DELETE_SETTINGS "playListGenerator.ini" 
+;!define PRODUCT_WEB_SITE "http://www.ivarsmith.no"  ;Comment out this line if you don`t want a website link
+!define INSTALLER_NAME "${PRODUCT_NAME} ${PRODUCT_VERSION} setup.exe"
+!define INSTALL_FOLDER_NAME "${PRODUCT_NAME}-${PRODUCT_VERSION}"
+!define MAIN_EXECUTABLE "PlayListGenerator.exe"
+!define RUN_ON_FINISH "PlayListGenerator.exe"
+;!define LICENSE "lgpl.txt"
+;!define PROMPT_DELETE_SETTINGS "settings.ini" 
 ;Comment out this line if the installer should not promt about keeping settings on uninstall. If not empty, the value should be the name of the settings file to keep/delete
 ;The programs folder folder in programfiles (INSTALL_FOLDER_NAME) will not be deleted if one wants to keep the settings
 
 ;=============================END OF SETUP====================================
 
-
+;!addplugindir "C:\Program Files\NSIS\Plugins"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${MAIN_EXECUTABLE}"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
 !define PRODUCT_STARTMENU_REGVAL "NSIS:StartMenuDir"
 
+!addincludedir "./"
+!addplugindir "./"
+!include UAC.nsh
+
 ; MUI 1.67 compatible ------
 !include "MUI.nsh"
-!include UAC.nsh
 
 ; MUI Settings
 !define MUI_ABORTWARNING
@@ -34,7 +38,9 @@
 ; Welcome page
 !insertmacro MUI_PAGE_WELCOME
 ; License page
-!insertmacro MUI_PAGE_LICENSE ${LICENSE}
+!ifdef LICENSE
+	!insertmacro MUI_PAGE_LICENSE ${LICENSE}
+!endif
 ; Directory page
 !insertmacro MUI_PAGE_DIRECTORY
 ; Start menu page
@@ -47,8 +53,12 @@ var ICONS_GROUP
 !insertmacro MUI_PAGE_STARTMENU Application $ICONS_GROUP
 ; Instfiles page
 !insertmacro MUI_PAGE_INSTFILES
-!define MUI_FINISHPAGE_RUN "$INSTDIR\${MAIN_EXECUTABLE}" ; Finish page
+
+!define MUI_FINISHPAGE_RUN
+!define MUI_FINISHPAGE_RUN_FUNCTION FinishRun
 !insertmacro MUI_PAGE_FINISH
+;!define MUI_FINISHPAGE_RUN "$INSTDIR\${MAIN_EXECUTABLE}" ; Finish page
+
 
 ; Uninstaller pages
 !insertmacro MUI_UNPAGE_INSTFILES
@@ -70,18 +80,27 @@ ShowUnInstDetails show
 Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
-  File "../release\playListGenerator.exe"
-  File "../release\examples.ini"
-  File "C:\Program Files\taglib\bin\libtag.dll"
-  File "C:\MinGW\bin\zlib1.dll"
+  File "../release\PlayListGenerator.exe"  
+  File "..\libtag.dll"
+  File "..\example.js"
+  File "..\zlib1.dll"
   File "C:\MinGW\bin\libstdc++-6.dll"
   File "C:\MinGW\bin\libgcc_s_dw2-1.dll"
+  File "C:\MinGW\bin\mingwm10.dll"
+  File "../release\beautify.js"
+  File $%QTDIR%\bin\QtCore4.dll
+  File $%QTDIR%\bin\QtGui4.dll
+  File $%QTDIR%\bin\QtScript4.dll
+  File $%QTDIR%\bin\QtScriptTools4.dll
+  
+  SetOutPath "$INSTDIR" ;the application will be started in the last outpath that is set!
+  
 
 ; Shortcuts
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
   CreateDirectory "$SMPROGRAMS\$ICONS_GROUP"
   CreateShortCut "$SMPROGRAMS\$ICONS_GROUP\${PRODUCT_NAME}.lnk" "$INSTDIR\${MAIN_EXECUTABLE}"
-  CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\${MAIN_EXECUTABLE}"
+  CreateShortCut "$DESKTOP\${PRODUCT_NAME}-${PRODUCT_VERSION}.lnk" "$INSTDIR\${MAIN_EXECUTABLE}"
   !insertmacro MUI_STARTMENU_WRITE_END
 SectionEnd
 
@@ -102,22 +121,25 @@ Section -Post
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\${MAIN_EXECUTABLE}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
+  !ifdef PRODUCT_WEB_SITE
+	WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
+  !endif
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
 SectionEnd
 
 ; Attempt to give the UAC plug-in a user process and an admin process.
 Function .OnInit
- 
+
+
 UAC_tryagain:
         !insertmacro UAC_RunElevated
-        ${Switch} $0
+       ${Switch} $0
         ${Case} 0
         	${IfThen} $1 = 1 ${|} Quit ${|}
         	${IfThen} $3 <> 0 ${|} ${Break} ${|}
         	${If} $1 = 3
         		MessageBox MB_ICONEXCLAMATION|MB_TOPMOST|MB_SETFOREGROUND "Administrative rights required to continue, aborting." /SD IDNO IDOK UAC_tryagain IDNO 0
-        	${EndIf}
+       	${EndIf}
         ${Case} 1223
         	MessageBox MB_ICONSTOP|MB_TOPMOST|MB_SETFOREGROUND "Administrative rights required to continue, aborting."
         	Quit
@@ -129,19 +151,12 @@ UAC_tryagain:
         	Quit
         ${EndSwitch}
  
-;!insertmacro UAC_RunElevated
-;${Switch} $0
-;${Case} 0
-;    ${IfThen} $1 = 1 ${|} Quit ${|} ;we are the outer process, the inner process has done its work, we are done
-;    ${IfThen} $3 <> 0 ${|} ${Break} ${|} ;we are admin, let the show go on
-;${Case} 1062
-;    #MessageBox mb_IconStop|mb_TopMost|mb_SetForeground "Logon service not running, aborting!"
-;    #Quit
-;${EndSwitch}
-    ;${If} ${UAC_IsAdmin}
-    ;StrCpy $INSTDIR ${INSTDIR_ADMIN}
-    ;${EndIf}
+
  
+FunctionEnd
+
+Function FinishRun
+	!insertmacro UAC_AsUser_ExecShell "" "$INSTDIR\${RUN_ON_FINISH}" "" "" ""
 FunctionEnd
 
 Function .OnInstFailed
@@ -149,9 +164,9 @@ Function .OnInstFailed
 FunctionEnd
  
 Function un.onUninstSuccess
-  ;UAC::Unload ;Must call unload!
+  ;UAC.Unload ;Must call unload!
   HideWindow
-  MessageBox MB_ICONINFORMATION|MB_OK "$(^Name) was successfully removed from your computer."
+  MessageBox MB_ICONINFORMATION|MB_OK "$(^Name) was successfully removed from your computer. Note that your license and setting files might be left in the installation folder."
 FunctionEnd
 
 Function un.onInit
@@ -179,29 +194,43 @@ Function un.onInit
 	MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Are you sure you want to completely remove $(^Name) and all of its components?" IDYES +2
     Abort	
 	
-    ;!insertmacro UAC_RunElevated
-    ;${Switch} $0
-    ;${Case} 0
-    ;${IfThen} $1 = 1 ${|} Quit ${|} ;we are the outer process, the inner process has done its work, we are done
-    ;${IfThen} $3 <> 0 ${|} ${Break} ${|} ;we are admin, let the show go on
-    ;${Case} 1062
-    ;#MessageBox mb_IconStop|mb_TopMost|mb_SetForeground "Logon service not running, aborting!"
-    ;#Quit
-    ;${EndSwitch}
-  ;MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Are you sure you want to completely remove $(^Name) and all of its components?" IDYES +2
-  ;Abort
+
 FunctionEnd
 
 Section Uninstall
+	; close program if running
+		;FindWindow $0 "RainmeterTrayClass"
+		;${If} $0 != "0"
+		;	Exec '"$INSTDIR\Rainmeter.exe" !RainmeterQuit'
+;
+;			; wait up to for up to 5 seconds for Rainmeter to close
+;			StrCpy $1 "0"
+;			${DoWhile} ${ProcessExists} "Rainmeter.exe"
+;				IntOp $1 $1 + 1
+;				${If} $1 >= "10"
+;					MessageBox MB_RETRYCANCEL|MB_ICONSTOP "Error: Failed to close Rainmeter.$\n$\nPlease close Rainmeter manually and try again." IDRETRY +2
+;					Quit
+;				${EndIf}
+;				Sleep 500
+;			${Loop}
+;		${EndIf}
+
   !insertmacro MUI_STARTMENU_GETFOLDER "Application" $ICONS_GROUP
   Delete "$INSTDIR\${PRODUCT_NAME}.url"
   Delete "$INSTDIR\uninst.exe"
-  Delete "$INSTDIR\zlib1.dll"
+  Delete "$INSTDIR\iRes.exe"
+  Delete "$INSTDIR\PlayListGenerator.exe"
+  Delete "$INSTDIR\example.js"
   Delete "$INSTDIR\libtag.dll"
-  Delete "$INSTDIR\examples.ini"
+  Delete "$INSTDIR\zlib1.dll"
   Delete "$INSTDIR\libstdc++-6.dll"
   Delete "$INSTDIR\libgcc_s_dw2-1.dll"
-  Delete "$INSTDIR\playListGenerator.exe"
+  Delete "$INSTDIR\mingwm10.dll"
+  Delete "$INSTDIR\beautify.js"
+  Delete "$INSTDIR\QtCore4.dll"
+  Delete "$INSTDIR\QtGui4.dll"
+  Delete "$INSTDIR\QtScript4.dll"
+  Delete "$INSTDIR\QtScriptTools4.dll"
 
   Delete "$SMPROGRAMS\$ICONS_GROUP\Uninstall.lnk"
   Delete "$SMPROGRAMS\$ICONS_GROUP\${PRODUCT_NAME} website.lnk"
@@ -209,10 +238,6 @@ Section Uninstall
   Delete "$SMPROGRAMS\$ICONS_GROUP\${PRODUCT_NAME}.lnk"
 
   RMDir "$SMPROGRAMS\$ICONS_GROUP"
-  !ifdef PROMPT_DELETE_SETTINGS
-	MessageBox MB_YESNO "Delete settings?" /SD IDYES IDNO +3
-  !endif
-  Delete "$INSTDIR\${PROMPT_DELETE_SETTINGS}" ;+3 means that 2 instructions will be skipped if yes was pressed
   RMDir "$INSTDIR"  
 
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"

@@ -180,8 +180,8 @@ bool PlayList::generate(QList<M3uEntry> *songsOut, QString* log, QHash<QString, 
     }
 
     QString outPutPath = guiSettings->value("outPutPath").toString();
-    QString file = outPutPath + "/" + name() + ".m3u";
-    writeM3U(file, songs, log);
+    QString file = name() + ".m3u";
+    writeM3U(outPutPath, file, songs, log);
 
     return canceled;
 }
@@ -194,10 +194,15 @@ bool PlayList::generate(QList<M3uEntry> *songsOut, QString* log, QHash<QString, 
  \param log
  \return bool
 */
-bool PlayList::writeM3U(const QString& file, const QList<M3uEntry> &songs, QString* log) const {
+bool PlayList::writeM3U( const QString &path, const QString& name, const QList<M3uEntry> &songs, QString* log) const {
 
-    QFile f(file);
-    QFileInfo fi(file);
+    QString sep="";
+    if(path.right(1)!="\\"&&path.right(1)!="/"){
+        sep="/";
+    }
+    QString filename=path+sep+Global::createValidFileName(name);
+    QFile f(filename);
+    QFileInfo fi(filename);
     QDir d = fi.absoluteDir();
     if(!d.exists()){
         d.mkpath(d.absolutePath());
@@ -205,7 +210,7 @@ bool PlayList::writeM3U(const QString& file, const QList<M3uEntry> &songs, QStri
     if (!f.open(QIODevice::WriteOnly)) {
 
         if (log) {
-            log->append("\nCould not open " + file + " for writing");
+            log->append("\nCould not open " + filename + " for writing");
         }
         return false;
     }
@@ -221,7 +226,7 @@ bool PlayList::writeM3U(const QString& file, const QList<M3uEntry> &songs, QStri
     }
 
     f.close();
-    qDebug() << "Wrote " << file;
+    qDebug() << "Wrote " << filename;
     return true;
 }
 
@@ -396,7 +401,15 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool keepTags,
 
     QString file = fileInfo.fileName();
     QString fullfile = fileInfo.absoluteFilePath();
-    bool showTaglibDebug = guiSettings->value("ShowTaglibDebug").toBool();
+
+    bool redirectCerr = guiSettings->value("RedirectCerr").toBool();
+    std::streambuf *sbuf=0;
+    std::stringstream *buffer=0;
+    if(redirectCerr){
+        sbuf = std::cerr.rdbuf();
+        buffer = new std::stringstream;
+        std::cerr.rdbuf(buffer->rdbuf());
+    }
 
     Tag *tag=0;
     if (includeExtInf_) {
@@ -410,13 +423,13 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool keepTags,
             }
         }
     }
-
-    if(showTaglibDebug){
-        QString taglibDebug = tag->tagLibDebug();
-        if(!taglibDebug.isEmpty()){
-            log->append("\nTaglib Debug info: "+taglibDebug);
-        }
+    QString cerr = QString(buffer->str().c_str());
+    if(!cerr.isEmpty()&&log!=0){
+        log->append(cerr);
     }
+    std::cerr.rdbuf(sbuf);
+    delete buffer; buffer=0;
+
 
     //loop list of individual files. If file matches one of the indiviudally specified files, it is
     //added.
