@@ -267,6 +267,8 @@ QString CodeEditor::beautifyJavaScriptCode( const QString &source ){
 void CodeEditor::contextMenuEvent(QContextMenuEvent *event){
     QMenu *menu = this->createStandardContextMenu();
     menu->addAction(beautifyAction);
+    menu->addAction(findAction);
+    menu->addAction(findReplaceAction);
 
     QAction *editFontAction = new QAction("Edit font...",this);
     connect(editFontAction,SIGNAL(triggered()),this,SLOT(fontDialog()));

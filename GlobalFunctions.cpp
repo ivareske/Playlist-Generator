@@ -56,7 +56,7 @@ int copyFoundFiles(const QStringList &files, const QString &copyFilesToDir, bool
     QTime time;
     time.start();
 
-    bool res = 1;
+    int res = 1;
 
 
     qDebug() << "Starting to copy " << files.size() << " files";

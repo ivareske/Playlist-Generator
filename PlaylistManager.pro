@@ -60,21 +60,19 @@ DEFINES += APP_NAME=\\\"$$TARGET\\\"
 #Download the Zlib source (zlib125.zip) and unpack it with unzip or 7zip. Then, compile Zlib like this:
 #cd zlib-1.2.5/ 
 #mingw32-make -f win32/Makefile.gcc
-#Manually copy the files as follows:
-#copy zlib1.dll c:\mingw\bin
-#copy zlib.h c:\mingw\include
-#copy zconf.h c:\mingw\include
-#copy libz.a c:\mingw\lib
-#copy libzdll.a c:\mingw\lib\libz.dll.a
+#or from visual studio command prompt:
+#nmake -f win32/Makefile.msc
 #install cmake, choose where the source code is (e.g. C:\taglib-1.6.3) and where to build
-#prews configure, choose mingw makefiles and "use default native compilers"
+#for visual studio, first open a nmake command prompt (as administrator! If not, "nmake install" will fail)
+#and start the cmake gui from there. I also had to remove mingw from path first.
+#If not, cmake would try to use some mingw executables.
+#press configure, choose "nmake makefiles" or "mingw makefiles" and "use default native compilers"
 #toggle advanced view
-#set CMAKE_INSTALL_DIR to where you want to install, and set ZLIB_INCLUDE_DIR to c:/mingw/include
-#and ZLIB_LIBRARY to C:/MinGW/bin/zlib1.dll
-#check build_examples
-#check with_asf and with_mp4
-#In CMAKE_EXE_LINKER_FLAGS and CMAKE_SHARED_LINKER_FLAGS add the following text: -Wl,--enable-auto-import
+#set CMAKE_INSTALL_DIR to where you want to install, and set ZLIB_INCLUDE_DIR to the main zlib dir
+#and ZLIB_LIBRARY to zlib1.dll for mingw, or zlib.lib for nmake.
+#check build_examples to build examples.
+#check with_asf and with_mp4 (not possible anymore?)
+#(Not needed anymore?)In CMAKE_EXE_LINKER_FLAGS and CMAKE_SHARED_LINKER_FLAGS add the following text: -Wl,--enable-auto-import
 #press configure again
-#press generate. in the build directory you choose, type mingw32-make, and then mingw32-make install
+#press generate. in the build directory you choose, type mingw32-make, and then mingw32-make install (or nmake, nmake install)
 #you can now delete the taglib source and binaries
-#build qt static: configure -static -no-exceptions; mingw32-make sub-src
