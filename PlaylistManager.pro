@@ -20,8 +20,8 @@ QT += scripttools
 
 win32{
     INCLUDEPATH  += ./taglib ./
-    LIBS += $$PWD/libtag.dll
-    LIBS += $$PWD/qtfindreplacedialog.dll
+    LIBS += $$PWD/tag.lib
+    LIBS += $$PWD/qtfindreplacedialog.lib
 }
 unix{
     INCLUDEPATH += /usr/include/taglib/
