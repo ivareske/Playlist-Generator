@@ -6,10 +6,16 @@
 #multiple tabs for script, and one commoon script-functions tabs
 #fix findreplacedialog linking for unix
 
+#TEMPLATE = subdirs
+#SUBDIRS += ./iRes
+#SUBDIRS += ./SignalProcessorDialog
+
+
 # The application version
 VERSION = 1.0
 #NAME = $$quote(Playlist Generator)
 TARGET = PlayListGenerator
+
 
 TEMPLATE=app
 CONFIG += qt
@@ -18,14 +24,30 @@ CONFIG += qt
 QT += script
 QT += scripttools
 
+SUFFIX_STR =
+LIB_PATH = ./release
+DESTDIR = ./release
+CONFIG(debug, debug|release) {
+    SUFFIX_STR = d
+    LIB_PATH = ./debug
+    DESTDIR = ./debug
+}
+
 win32{
     INCLUDEPATH  += ./taglib ./
-    LIBS += $$PWD/tag.lib
-    LIBS += $$PWD/qtfindreplacedialog.lib
+    win32-g++ {
+        LINKEXT = .dll
+    }
+    win32-msvc*{
+        LINKEXT = .lib
+    }
+    LIBS += $$LIB_PATH/tag$${LINKEXT}
+    LIBS += $$LIB_PATH/qtfindreplacedialog$${LINKEXT}
 }
 unix{
     INCLUDEPATH += /usr/include/taglib/
     LIBS += -L/usr/lib/ -ltag
+    LIBS += -L/usr/lib/ -lqtfindreplacedialog    #check that this works
 }
 
 HEADERS = PlaylistManager.h SettingsDialog.h PlayList.h GlobalFunctions.h M3uEntry.h AddFilesDialog.h TextViewer.h Tag.h \
