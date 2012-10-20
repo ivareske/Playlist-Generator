@@ -3,6 +3,30 @@
 
 namespace Global {
 
+QString scriptFunctionsHelpText( QStringList *completions  ){
+
+    QStringList c;
+    QString tip = "Available functions:\n";
+    tip += "QStringList getDirContent( const QString &path, const QStringList &extensions, bool includeSubFolders=true, bool hiddenFiles=true )\n";c<<"getDirContent";
+    tip += "QStringList randomize(const QStringList &list)\n";c<<"randomize";
+    tip += "QString fileRelativeTo(const QString &dir,const QString &file)\n";c<<"fileRelativeTo";
+    tip += "QStringList fileRelativeTo(const QString &dir,const QStringList &files)\n";
+    tip += "QStringList unique(const QStringList &list)\n";c<<"unique";
+    tip += "bool contains(const QStringList &list, const QString &val, bool caseSensitive=true)\n";
+    tip += "bool contains(const QString &str, const QString &val, bool caseSensitive=true)\n";c<<"contains";
+    tip += "(Output is array)[int res, QString log] = copyFiles(const QStringList &files,\n";c<<"copyFiles";
+    tip +="    const QString &copyFilesToDir, bool keepFolderStructure=false, bool overWrite=true)\n";
+    tip += "bool writeFile( const QStrin &content, const QString &path, const QString &name, bool append=false )\n";;
+    tip += "bool writeFile( const QStringList &lines, const QString &path, const QString &name, bool append=false )\n";c<<"writeFile";
+
+    if(completions){
+        completions->append(c);
+    }
+
+    return tip;
+}
+
+
 QString createValidFileName( const QString &filename ){
     PMSettings *settings = guiSettings();
     QString newName = filename;

@@ -78,7 +78,7 @@ bool PlayListCollection::operator ==(const PlayListCollection& other) const {
     bool res = name_ == other.name();
     res &= playLists_ == other.playLists();
     res &= outPutPath_ == other.outPutPath();
-    res &= script_ == other.script();
+    res &= scripts_ == other.scripts();
     return res;
 }
 
@@ -118,12 +118,13 @@ QDataStream& operator>>(QDataStream& in, PlayListCollection& p) {
 
     QString name;
     QList<PlayList> playLists;
-    QString outPutPath,script;
-    in >> name >> playLists >> outPutPath >> script;
+    QString outPutPath;
+    QList< QPair<QString,QString> > scripts;
+    in >> name >> playLists >> outPutPath >> scripts;
     p = PlayListCollection(name);
     p.setPlayLists(playLists);
     p.setOutPutPath(QDir(outPutPath));
-    p.setScript(script);
+    p.setScripts(scripts);
     return in;
 }
 
@@ -139,7 +140,7 @@ QDataStream& operator<<(QDataStream& out, const PlayListCollection& p) {
     out << out.version();
     out << qApp->applicationVersion();
 
-    out << p.name() << p.playLists() << p.outPutPath().absolutePath() << p.script();
+    out << p.name() << p.playLists() << p.outPutPath().absolutePath() << p.scripts();
     return out;
 }
 
@@ -157,15 +158,15 @@ QString PlayListCollection::defaultCollectionName() {
 
  \param script
 */
-void PlayListCollection::setScript(const QString &script){
-    script_=script;
+void PlayListCollection::setScripts(const QList< QPair<QString,QString> > &scripts){
+    scripts_=scripts;
 }
 
 /*!
  \brief
 
- return QString
+ return QHash<QString,QString>
 */
-QString PlayListCollection::script() const{
-    return script_;
+QList<QPair<QString, QString> > PlayListCollection::scripts() const{
+    return scripts_;
 }

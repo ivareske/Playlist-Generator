@@ -20,7 +20,8 @@
 #include "ScriptEngine.h"
 #include <QtScriptTools/QtScriptTools>
 #include "QDebugStream.h"
-
+#include "CodeEditor.h"
+#include "tabwidget.h"
 
 
 
@@ -32,14 +33,16 @@ class PlaylistManager : public QMainWindow, private Ui::playListGenerator {
     PlaylistManager(QWidget* parent = 0);
     ~PlaylistManager();
 
+
 public slots:
 
-        bool runScript(const QString &script,bool guiMode=true);
+        bool runScript(const QString &script,bool guiMode=true);        
     protected:
         void closeEvent(QCloseEvent* event);
 
     private slots:
 
+        void runAllScriptEditScripts();
         void checkIfCollectionChanged();
         void scriptEdited();
         void clearScriptOutput();
@@ -84,13 +87,11 @@ public slots:
         QList<QDir> selectFolders( QAbstractItemView::SelectionMode mode = QAbstractItemView::ExtendedSelection );
 
 
-    private:
-        QString scriptFunctionsHelpText(QStringList *completions);
+    private:                
         void initializeScriptEngine();
 
         PlayList* playListItem(int row);
-        SimpleTextEdit *folderTable;
-        CodeEditor *scriptEdit;        
+        SimpleTextEdit *folderTable;        
         CodeEditor *RuleScript;
         PlayList* currentPlayList();
         PlayListCollection collection_, lastSavedCollection_;
@@ -100,6 +101,7 @@ public slots:
         QScriptEngineDebugger scriptDebugger_;
         QTextEdit *console_;        
         QTimer checkIfCollectionChangedTimer_;
+        TabWidget *tabWidget;
 
 };
 

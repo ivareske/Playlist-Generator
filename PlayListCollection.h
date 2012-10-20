@@ -8,8 +8,8 @@
 class PlayListCollection {
     public:
         PlayListCollection(const QString& name = "");
-        QString script() const;
-        void setScript( const QString &script );
+        QList< QPair<QString,QString> > scripts() const;
+        void setScripts(const QList<QPair<QString, QString> > &scripts );
         QString name() const;
         void setName(const QString& name);
         QList<PlayList> playLists() const;
@@ -25,7 +25,7 @@ class PlayListCollection {
         QString name_;
         QList<PlayList> playLists_;
         QDir outPutPath_;
-        QString script_;
+        QList< QPair<QString,QString> > scripts_;
 
 };
 

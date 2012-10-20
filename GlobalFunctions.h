@@ -9,6 +9,7 @@
 
 namespace Global {
 
+    QString scriptFunctionsHelpText(QStringList *completions);
     QString createValidFileName( const QString &filename );
     int copyFoundFiles(const QStringList &files, const QString &copyFilesToDir, bool keepFolderStructure=false, bool overWrite=true, QString* log=0) ;
     QList<QFileInfo> getDirContent(const QString& aPath, const QStringList &extensions, bool includeSubFolders=true, bool hiddenFiles=true, bool *canceled=0);

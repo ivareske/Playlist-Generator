@@ -1,5 +1,6 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource>    
-    <file>red_cross.png</file>
-</qresource>
+<RCC>
+    <qresource prefix="/">
+        <file>red_cross.png</file>
+        <file>plus.png</file>
+    </qresource>
 </RCC>

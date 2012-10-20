@@ -4,16 +4,20 @@ function printArray(arr) {
     }
 }
 
-var musicDir = '\\\\192.168.0.194/music/Ivar';
-//var musicDir = 'C:/Users/Public/Music/Sample Music';
+
+
+//var musicDir = '\\\\192.168.0.194/music/Ivar/C';
+var musicDir = 'C:/Users/Public/Music/Sample Music';
 var outPutDir = 'C:/Playlist-Generator/output_test';
 var extensions = ["*.mp3", "*.ogg", "*.ape", "*.flac", "*.wav", "*.m4a"];
 
-res = writeFile(extensions, "C:/Playlist-Generator/output_test/test.txt");
+res = writeFile(extensions, "C:/Playlist-Generator/output_test/","test.txt");
 print('writeFile result: ', res);
 
+//get files
 files = getDirContent(musicDir, extensions, true);
 var artistList = new Array();
+//store a list of songs for each artist
 for (i in files) {
     file = files[i];
     print('Processing file ', file);
@@ -29,9 +33,10 @@ for (i in files) {
         file: file,
         extinf: tag.length() + "," + artist + " - " + tag.album()
     });
-    print(file, tag.length() + "," + artist + " - " + tag.album());
+    //print(file, tag.length() + "," + artist + " - " + tag.album());
 }
 
+//write a playlist for each artist
 for (var artist in artistList) {
     m3uEntries = artistList[artist];
     var playList = new Array();
@@ -40,9 +45,9 @@ for (var artist in artistList) {
         playList.push("#EXTINF:" + m3uEntries[i].extinf);
         playList.push(m3uEntries[i].file);
     }
-    playListFile = outPutDir + "/" + artist + ".m3u";
+    playListFile = artist + ".m3u";
     print('Writing file ', playListFile);
-    ok = writeFile(playList, playListFile);
+    ok = writeFile(playList, outPutDir, playListFile);
     if (!ok) {
         print('Error printing ', playListFile);
     }

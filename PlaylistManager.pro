@@ -56,7 +56,8 @@ HEADERS = PlaylistManager.h SettingsDialog.h PlayList.h GlobalFunctions.h M3uEnt
     PMSettings.h \
     ScriptWrappers.h \
     metaTypes.h CodeEditor.h \
-    ScriptEngine.h QDebugStream.h scriptsyntaxhighlighter.h ReplaceInFileNameDialog.h
+    ScriptEngine.h QDebugStream.h scriptsyntaxhighlighter.h ReplaceInFileNameDialog.h \
+    tabwidget.h
 
 FORMS   = PlaylistManager.ui SettingsDialog.ui AddFilesDialog.ui TextViewer.ui StyleSheetEditor.ui \
     ReplaceInFileNameDialog.ui
@@ -66,7 +67,8 @@ SOURCES = main.cpp PlaylistManager.cpp  SettingsDialog.cpp PlayList.cpp GlobalFu
     SimpleTextEdit.cpp \
     PMSettings.cpp \
     ScriptWrappers.cpp CodeEditor.cpp \
-    ScriptEngine.cpp scriptsyntaxhighlighter.cpp  ReplaceInFileNameDialog.cpp
+    ScriptEngine.cpp scriptsyntaxhighlighter.cpp  ReplaceInFileNameDialog.cpp \
+    tabwidget.cpp
 
 RC_FILE = PlaylistManager.rc
 RESOURCES += PlaylistManager.qrc
