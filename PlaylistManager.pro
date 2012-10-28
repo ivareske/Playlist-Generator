@@ -5,6 +5,7 @@
 #test redirection of clog/cout. what about qDebug(), is that redirected when cout is?
 #multiple tabs for script, and one commoon script-functions tabs
 #fix findreplacedialog linking for unix
+#fix line number in error for common script
 
 #TEMPLATE = subdirs
 #SUBDIRS += ./iRes

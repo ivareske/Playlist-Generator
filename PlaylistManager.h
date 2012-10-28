@@ -36,7 +36,7 @@ class PlaylistManager : public QMainWindow, private Ui::playListGenerator {
 
 public slots:
 
-        bool runScript(const QString &script,bool guiMode=true);        
+    bool runScript(const QString &script, const QString &commonScript, const QString &scriptName="", bool guiMode=true);
     protected:
         void closeEvent(QCloseEvent* event);
 

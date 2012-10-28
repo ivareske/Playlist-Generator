@@ -239,13 +239,22 @@ void PlaylistManager::runAllScriptEditScripts(){
             return;
         }
     }
-    for(int i=0;i<n;i++){
-        runScript(tabWidget->text(i));
+    QList<QPair<QString,QString> > scripts = tabWidget->scripts();
+    QString commonScript = tabWidget->commonScript();
+    for(int i=0;i<scripts.size();i++){
+        runScript(scripts[i].second,commonScript,scripts[i].first);
     }
 }
 
-void PlaylistManager::runScriptEditScript() {
-    runScript(tabWidget->text());
+void PlaylistManager::runScriptEditScript() {    
+    QString commonScript = tabWidget->commonScript();
+    QString script=tabWidget->text();
+    //if(script==commonScript){
+    if(!tabWidget->isDeletable(tabWidget->currentIndex())){
+        QMessageBox::critical(0,"","The common script cannot be run. It will only be prepended to the other scripts when they are run.");
+        return;
+    }
+    runScript(script,commonScript,tabWidget->tabText());
 }
 
 
@@ -561,13 +570,13 @@ void PlaylistManager::initialize() {
 
     //enableOptions( false );
     tabWidget->removeAllTabs();
+    tabWidget->addTab("Common script variables");
+    tabWidget->setText(collection_.commonScript());
+    tabWidget->setIsDeletable(0,false);
     QList< QPair<QString,QString> > scripts = collection_.scripts();
     for(int i=0;i<scripts.size();i++){
-        tabWidget->addTab(scripts[i].first);
-        tabWidget->setText(scripts[i].second,i);
-    }
-    if(scripts.size()==0){
-        tabWidget->addTab();
+        int ind = tabWidget->addTab(scripts[i].first);
+        tabWidget->setText(scripts[i].second,ind);
     }
     playListTable->clear();
     QList<PlayList> playLists = collection_.playLists();
@@ -1001,6 +1010,7 @@ void PlaylistManager::updateCollection() {
 
     }
     collection_.setScripts(tabWidget->scripts());
+    collection_.setCommonScript(tabWidget->commonScript());
     collection_.setPlayLists(playLists);
 
 }
@@ -1294,7 +1304,7 @@ void PlaylistManager::initializeScriptEngine(){
 
 }
 
-bool PlaylistManager::runScript(const QString &script,bool guiMode) {
+bool PlaylistManager::runScript(const QString &script,const QString &commonScript,const QString &scriptName,bool guiMode) {
 
     console_->append("--------"+QDateTime::currentDateTime().toString("dd-MM-yyyy HH:mm:ss")+"--------");
     if( guiSettings->value("RedirectCout",false).toBool() ){
@@ -1307,15 +1317,45 @@ bool PlaylistManager::runScript(const QString &script,bool guiMode) {
     }
     QDebugStream qout3(std::clog, console_); //clog is used in the qtscript "print" function
     Q_UNUSED(qout3);
-    engine_.evaluate(script);
+    engine_.evaluate(commonScript+"\n"+script,scriptName);
+    int nCommonScriptLines = commonScript.split("\n").size()+1;
     engine_.setProcessEventsInterval(1000);
     if(engine_.hasUncaughtException()){
-        QString err = "Uncaught exception at line "
-                          + QString::number(engine_.uncaughtExceptionLineNumber()) + ": "
-                          + qPrintable(engine_.uncaughtException().toString())
-                          + "\nBacktrace: "
-                          + qPrintable(engine_.uncaughtExceptionBacktrace().join(", "));
-        qDebug()<<err;
+        QString err = "Uncaught exception ";
+        int errLine = engine_.uncaughtExceptionLineNumber();
+        qDebug()<<errLine<<nCommonScriptLines;
+        if(errLine<=nCommonScriptLines){
+            err.append("in 'common script' ");
+            errLine = errLine-2; //for some unknown reason have to subtract 3...?
+        }else{
+            errLine = errLine-nCommonScriptLines+1;
+        }
+        err += "at line " + QString::number(errLine) + ":\n"
+                + qPrintable(engine_.uncaughtException().toString())
+                + "\nBacktrace: ";
+        QStringList backtrace = engine_.uncaughtExceptionBacktrace();
+        for(int i=0;i<backtrace.size();i++){
+            qDebug()<<backtrace[i];
+            QStringList tmp = backtrace[i].split(":");
+            if(tmp.size()!=2){
+                err.append("\n"+backtrace[i]);
+                continue;
+            }
+            bool ok;
+            int num = tmp[1].toInt(&ok);
+            if(!ok){
+                err.append(backtrace[i]);
+            }else{
+                if(errLine<=nCommonScriptLines){
+                    QStringList tmp2 = tmp[0].split("@");
+                    if(tmp2.size()==2){
+                        tmp[0]=tmp2[0]+"@Common script";
+                    }
+                }
+                err.append(tmp[0]+":"+QString::number(num-2));
+            }
+        }
+        qDebug()<<err;        
         if(guiMode){
             QMessageBox::critical(0,"Error",err);
         }

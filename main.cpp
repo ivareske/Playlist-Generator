@@ -37,7 +37,7 @@ int main(int argc, char* argv[]) {
             script = f.readAll();
             f.close();
         }
-        return plm.runScript(script,false);
+        return plm.runScript(script,"","",false);
     }
     plm.show();
     return app.exec();

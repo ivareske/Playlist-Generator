@@ -12,6 +12,9 @@ PlayListCollection::PlayListCollection(const QString& name) {
         name_ = defaultCollectionName();
     }
 
+    QPair<QString,QString> p("New script","");
+    scripts_.append(p);
+
 }
 
 /*!
@@ -68,6 +71,13 @@ void PlayListCollection::setOutPutPath( const QDir &outPutPath ){
     outPutPath_ = outPutPath;
 }
 
+QString PlayListCollection::commonScript() const{
+    return commonScript_;
+}
+void PlayListCollection::setCommonScript( const QString &commonScript ){
+    commonScript_=commonScript;
+}
+
 /*!
  \brief
 
@@ -78,7 +88,8 @@ bool PlayListCollection::operator ==(const PlayListCollection& other) const {
     bool res = name_ == other.name();
     res &= playLists_ == other.playLists();
     res &= outPutPath_ == other.outPutPath();
-    res &= scripts_ == other.scripts();
+    res &= this->sortedScripts() == other.sortedScripts();
+    res &= commonScript_ == other.commonScript();
     return res;
 }
 
@@ -118,13 +129,14 @@ QDataStream& operator>>(QDataStream& in, PlayListCollection& p) {
 
     QString name;
     QList<PlayList> playLists;
-    QString outPutPath;
+    QString outPutPath,commonScript;
     QList< QPair<QString,QString> > scripts;
-    in >> name >> playLists >> outPutPath >> scripts;
+    in >> name >> playLists >> outPutPath >> scripts >> commonScript;
     p = PlayListCollection(name);
     p.setPlayLists(playLists);
     p.setOutPutPath(QDir(outPutPath));
     p.setScripts(scripts);
+    p.setCommonScript(commonScript);
     return in;
 }
 
@@ -140,7 +152,7 @@ QDataStream& operator<<(QDataStream& out, const PlayListCollection& p) {
     out << out.version();
     out << qApp->applicationVersion();
 
-    out << p.name() << p.playLists() << p.outPutPath().absolutePath() << p.scripts();
+    out << p.name() << p.playLists() << p.outPutPath().absolutePath() << p.scripts()<<p.commonScript();
     return out;
 }
 
@@ -170,3 +182,11 @@ void PlayListCollection::setScripts(const QList< QPair<QString,QString> > &scrip
 QList<QPair<QString, QString> > PlayListCollection::scripts() const{
     return scripts_;
 }
+
+QList<QPair<QString, QString> > PlayListCollection::sortedScripts() const{
+    QList<QPair<QString, QString> > tmpScripts=scripts_;
+    qSort(tmpScripts.begin(),tmpScripts.end(),Global::QPairFirstComparer());
+    return tmpScripts;
+}
+
+

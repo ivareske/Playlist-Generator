@@ -307,6 +307,8 @@ bool stringLessThanCaseInSensitive(const QString& s1, const QString& s2) {
     return naturalCompare(s1, s2, Qt::CaseInsensitive) < 0 ;
 }
 
+
+
 /*!
      \brief
 

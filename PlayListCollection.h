@@ -2,8 +2,11 @@
 #define PLAYLISTCOLLECTION_H
 
 #include <QtGui>
+#include <QPair>
 #include "PlayList.h"
 #include "GlobalFunctions.h"
+
+
 
 class PlayListCollection {
     public:
@@ -17,17 +20,22 @@ class PlayListCollection {
         static QString defaultCollectionName();
         void setOutPutPath( const QDir &outPutPath );
         QDir outPutPath() const;
+        QString commonScript() const;
+        void setCommonScript( const QString &commonScript );
         operator QVariant() const;
         bool operator==(const PlayListCollection& other) const;
         bool operator!=(const PlayListCollection& other) const;
 
-    private:
+        QList<QPair<QString, QString> > sortedScripts() const;
+private:
         QString name_;
         QList<PlayList> playLists_;
         QDir outPutPath_;
         QList< QPair<QString,QString> > scripts_;
+        QString commonScript_;
 
 };
+
 
 Q_DECLARE_METATYPE(PlayListCollection)
 

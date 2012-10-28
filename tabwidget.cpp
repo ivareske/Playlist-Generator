@@ -25,7 +25,7 @@ TabWidget::TabWidget(QWidget *parent) : QTabWidget(parent){
 
 
 void TabWidget::closeTab(int ind){
-    if(this->count()>1){
+    if(this->count()>2&&this->isDeletable(ind)){
         QTabWidget::removeTab(ind);
     }
 }
@@ -51,10 +51,10 @@ void TabWidget::contextMenu(const QPoint &p){
     contextMenu->exec(globalPos);
 }
 
-void TabWidget::addTab(const QString &label){
+int TabWidget::addTab(const QString &label){
     CodeEditor *e = new CodeEditor;
     connect(e,SIGNAL(textChanged()),this,SIGNAL(textChanged()));
-    QTabWidget::addTab(e,label);
+    int index = QTabWidget::addTab(e,label);
 
     QStringList c;
 
@@ -83,6 +83,8 @@ void TabWidget::addTab(const QString &label){
 
     e->setToolTip(tip);
     e->addCompletionWords(c);
+
+    return index;
 }
 
 void TabWidget::removeCurrentTab(){
@@ -95,9 +97,23 @@ void TabWidget::removeAllTabs(){
     }
 }
 
+QString TabWidget::commonScript() const{
+    QString text_;
+    for(int i=0;i<this->count();i++){
+        if(!isDeletable(i)){
+            text_=this->text(i);
+            break;
+        }
+    }
+    return text_;
+}
+
 QList<QPair<QString, QString> > TabWidget::scripts() const{
     QList< QPair<QString,QString> > s;
     for(int i=0;i<this->count();i++){
+        if(!isDeletable(i)){
+            continue;
+        }
         QPair<QString,QString> p;
         p.first=this->tabText(i);
         p.second=this->text(i);
@@ -137,6 +153,29 @@ void TabWidget::setText(const QString &text,int ind){
     CodeEditor *e = codeEditor(ind);
     if(e){
         e->setPlainText(text);
+    }
+}
+
+
+
+void TabWidget::setIsDeletable(int ind,bool isDeletable){
+    CodeEditor *e = this->codeEditor(ind);
+    if(e==0){
+        return;
+    }
+    e->setUserData("isDeletable",isDeletable);
+}
+
+bool TabWidget::isDeletable(int ind,bool default_) const{
+    CodeEditor *e = this->codeEditor(ind);
+    if(e==0){
+        return default_;
+    }
+    QVariant v = e->userData().value("isDeletable");
+    if(v.canConvert(QVariant::Bool)){
+        return v.toBool();
+    }else{
+        return default_;
     }
 }
 

@@ -15,11 +15,13 @@ public:
     void removeAllTabs();
     QString tabText(int ind=-1) const;
     void setText(const QString &text, int ind=-1);
-    QList< QPair<QString,QString> > scripts() const;
-
+    void setIsDeletable(int ind , bool isDeletable);
+    bool isDeletable(int ind, bool default_=true) const;
+    QList< QPair<QString,QString> > scripts() const;    
+    QString commonScript() const;
 public slots:
     void removeCurrentTab();
-    void addTab(const QString &label="New script");
+    int addTab(const QString &label="New script");
 
 signals:
     void textChanged();
@@ -99,6 +101,9 @@ protected:
     }
 private slots:
     void setCurrentTabText(const QString &text) {
+        if(this->tabText(currentIndex())=="Common script variables"){
+            return;
+        }
         setTabText(currentIndex(), text);
         emit tabTextChanged(currentIndex(), text);
     }

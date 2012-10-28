@@ -88,7 +88,9 @@ public:
     void setCompletionWords(const QStringList &words);
     QStringList completionWords() const;
     void addCompletionWords(const QStringList &words);
-
+    QHash<QString,QVariant> userData() const;
+    void setUserData( const QHash<QString,QVariant> &userData );
+    void setUserData(const QString &key, const QVariant &userData);
 public slots:
 
     void beautify();
@@ -126,6 +128,7 @@ private:
     ScriptSyntaxHighlighter *syntaxHighlighter_;
     FindDialog *findDialog_;
     FindReplaceDialog *findReplaceDialog_;
+    QHash<QString,QVariant> userData_;
 };
 
 //![codeeditordefinition]

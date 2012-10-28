@@ -118,6 +118,19 @@ void CodeEditor::addCompletionWords(const QStringList& words){
     }
 }
 
+QHash<QString,QVariant> CodeEditor::userData() const{
+    return userData_;
+}
+
+void CodeEditor::setUserData( const QHash<QString,QVariant> &userData ){
+    userData_=userData;
+}
+
+void CodeEditor::setUserData( const QString &key, const QVariant &userData ){
+    userData_[key]=userData;
+}
+
+
 void CodeEditor::setCompletionWords(const QStringList& words){
     QStringList words2=words;
     words2=words2.toSet().toList();
