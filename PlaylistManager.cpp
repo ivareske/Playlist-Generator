@@ -24,6 +24,8 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
         folderFrame->setLayout(new QGridLayout);
     }
 
+    debugger = new QScriptEngineDebugger();
+    debugger->attachTo(&engine_);
 
     console_ = new QTextEdit(ConsoleFrame);
     console_->setMinimumHeight(50);
@@ -1317,22 +1319,47 @@ bool PlaylistManager::runScript(const QString &script,const QString &commonScrip
     }
     QDebugStream qout3(std::clog, console_); //clog is used in the qtscript "print" function
     Q_UNUSED(qout3);
-    engine_.evaluate(commonScript+"\n"+script,scriptName);
-    int nCommonScriptLines = commonScript.split("\n").size()+1;
+
+
+    dmw = debugger->standardWindow();
+    dmw->setWindowModality(Qt::ApplicationModal);
+    bool alwaysShowDebugger = guiSettings->value("debugScript",false).toBool();
+    qDebug()<<"alwaysShowDebugger"<<alwaysShowDebugger;
+    debugger->setAutoShowStandardWindow(alwaysShowDebugger);
+    if(alwaysShowDebugger){
+        debugger->attachTo(&engine_);
+        debugger->action(QScriptEngineDebugger::InterruptAction)->trigger();
+    }else{
+        debugger->detach();
+    }
+    int nCommonScriptLines = commonScript.split("\n").size();
+    QString tmpscript = commonScript+"\n"+script;
+    int nlines = tmpscript.split("\n").size();
+    engine_.clearExceptions();
+    engine_.evaluate(tmpscript,scriptName);
+
+    if(debugger && debugger->state()==QScriptEngineDebugger::RunningState){
+        if(dmw){
+            dmw->close();
+        }
+        qApp->processEvents();
+    }
+
     engine_.setProcessEventsInterval(1000);
     if(engine_.hasUncaughtException()){
-        QString err = "Uncaught exception ";
+        //QString err = "Uncaught exception ";
         int errLine = engine_.uncaughtExceptionLineNumber();
-        qDebug()<<errLine<<nCommonScriptLines;
+        qDebug()<<errLine<<nCommonScriptLines<<nlines;
         if(errLine<=nCommonScriptLines){
-            err.append("in 'common script' ");
+            //err.append("in 'common script' ");
             errLine = errLine-2; //for some unknown reason have to subtract 3...?
         }else{
-            errLine = errLine-nCommonScriptLines+1;
+            errLine = errLine-nCommonScriptLines;
         }
-        err += "at line " + QString::number(errLine) + ":\n"
-                + qPrintable(engine_.uncaughtException().toString())
-                + "\nBacktrace: ";
+
+        //err += "at line " + QString::number(errLine) + ":\n"
+                QString err = engine_.uncaughtException().toString();
+                err += "\nBacktrace: ";
         QStringList backtrace = engine_.uncaughtExceptionBacktrace();
         for(int i=0;i<backtrace.size();i++){
             qDebug()<<backtrace[i];
@@ -1351,14 +1378,20 @@ bool PlaylistManager::runScript(const QString &script,const QString &commonScrip
                     if(tmp2.size()==2){
                         tmp[0]=tmp2[0]+"@Common script";
                     }
+                    num=num-2;
+                }else{
+                    num=num-nCommonScriptLines;
                 }
-                err.append(tmp[0]+":"+QString::number(num-2));
+                err.append(tmp[0]+":"+QString::number(num));
             }
         }
-        qDebug()<<err;        
+
+        qDebug()<<err;
+        qDebug()<<tmpscript;
         if(guiMode){
             QMessageBox::critical(0,"Error",err);
         }
+        engine_.clearExceptions();
         return false;
     }
     engine_.setProcessEventsInterval(-1);

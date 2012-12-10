@@ -3,6 +3,22 @@
 
 namespace Global {
 
+QString newLine(){
+
+    QString myNewLine = "\n";
+    #ifdef linux
+        myNewLine = "\n";
+    #endif
+    #ifdef WIN32
+        myNewLine = "\n\r";
+    #endif
+    #ifdef __APPLE__
+        myNewLine = "\n";
+    #endif
+    return myNewLine;
+
+}
+
 QString scriptFunctionsHelpText( QStringList *completions  ){
 
     QStringList c;

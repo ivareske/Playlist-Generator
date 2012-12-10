@@ -9,6 +9,7 @@
 
 namespace Global {
 
+    QString newLine();
     QString scriptFunctionsHelpText(QStringList *completions);
     QString createValidFileName( const QString &filename );
     int copyFoundFiles(const QStringList &files, const QString &copyFilesToDir, bool keepFolderStructure=false, bool overWrite=true, QString* log=0) ;

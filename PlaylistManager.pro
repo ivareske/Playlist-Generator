@@ -1,11 +1,12 @@
 #generate other playlist formats?
 #sjekk at frames/items leses rett
 #lag noe hjelpetekst for scripting og evt. annet
-#add content of script.txt to scriptsyntaxhighlighter. Temporarily removed
 #test redirection of clog/cout. what about qDebug(), is that redirected when cout is?
-#multiple tabs for script, and one commoon script-functions tabs
-#fix findreplacedialog linking for unix
 #fix line number in error for common script
+#replace all usage of \n with Global::newLine()
+#fix findreplacedialog linking for unix? use subdirs template to build qtfindreplacedialog?
+#go through all qDebug usage, remove unecessary ones
+#make installer for msvc
 
 #TEMPLATE = subdirs
 #SUBDIRS += ./iRes

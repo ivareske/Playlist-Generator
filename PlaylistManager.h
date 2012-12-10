@@ -102,6 +102,8 @@ public slots:
         QTextEdit *console_;        
         QTimer checkIfCollectionChangedTimer_;
         TabWidget *tabWidget;
+        QScriptEngineDebugger *debugger;
+        QMainWindow *dmw;
 
 };
 
