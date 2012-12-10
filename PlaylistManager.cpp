@@ -53,6 +53,7 @@ PlaylistManager::PlaylistManager(QWidget* parent) : QMainWindow(parent) {
     QString functionTips = Global::scriptFunctionsHelpText(&completions);
     tip.append(functionTips);
     tip += "\n\nNote: If you create a string variable named \"EXTINF\" in the script, this will be used as EXTINF in the playlist.";
+    tip += "\nIf you create a string variable named \"SORTBY\" in the script, the resulting playlist will be sorted by this variable.";
     RuleScript->setToolTip(tip);
     completions<<"FILENAME"<<"FILEPATH"<<"ARTIST"<<"ALBUM"<<"TITLE"<<"GENRE"<<"COMMENT"<<\
                                          "YEAR"<<"TRACK"<<"LENGTH"<<"BITRATE"<<"SAMPLERATE"<<"CHANNELS"<<"ID3V2"<<"ASF"\

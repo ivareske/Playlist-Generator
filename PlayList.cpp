@@ -363,10 +363,7 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
         p.setValue(n);
 
 
-    }
-    if (randomize_) {
-        std::random_shuffle(plist.begin(), plist.end());
-    }
+    }    
 
 
     if (makeUnique_) {
@@ -375,6 +372,12 @@ QList<M3uEntry> PlayList::findFiles(bool* canceled, QString* log, QHash<QString,
         if (plist.size() != size) {
             log->append("\nRemoved " + QString::number(size - plist.size()) + " duplicate files\n");
         }
+    }
+
+    if (randomize_) {
+        std::random_shuffle(plist.begin(), plist.end());
+    }else{
+        qSort( plist.begin(),plist.end(), m3uEntryLessThan );
     }
 
     return plist;
@@ -446,8 +449,9 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool keepTags,
 
     //process script
     QString extInf;
+    QString sortBy;
     QString errorLog;
-    bool scriptOk = evaluateScript( tag, fileInfo, &errorLog, &extInf );
+    bool include = evaluateScript( tag, fileInfo, &errorLog, &extInf, &sortBy );
     if( !errorLog.isEmpty() ){
         //Cancel generation if an error is found in the script
         *wasCanceled = true;
@@ -457,7 +461,7 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool keepTags,
 
     //decide to include or not
     M3uEntry e;
-    if ( scriptOk ) {
+    if ( include ) {
         //extinf info for m3u
         if (includeExtInf_) {
             if(!extInf.isEmpty()){
@@ -466,6 +470,7 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool keepTags,
                 e.setExtInf(createExtInfString(tag, file, format));
             }
         }
+        e.setSortBy(sortBy);
         e.setOriginalFile(fileInfo);
         list.append(e);
     }
@@ -487,7 +492,7 @@ QList<M3uEntry>  PlayList::processFile(const QFileInfo& fileInfo, bool keepTags,
  \param log
  \return bool
 */
-bool PlayList::evaluateScript( Tag* tag, const QFileInfo& fileInfo, QString *log, QString *extInf ) const {
+bool PlayList::evaluateScript( Tag* tag, const QFileInfo& fileInfo, QString *log, QString *extInf, QString *sortBy ) const {
 
     if(script_.isEmpty()){
         return true;
@@ -543,6 +548,11 @@ bool PlayList::evaluateScript( Tag* tag, const QFileInfo& fileInfo, QString *log
     QScriptValue result = engine.evaluate( script_ );
 
     *extInf = engine.globalObject().property("EXTINF").toString();
+    *sortBy = "";
+    QScriptValue sortByValue = engine.globalObject().property("SORTBY");
+    if( sortByValue.isValid() ){
+        *sortBy = sortByValue.toString();
+    }
 
     if( engine.hasUncaughtException() ){
         QString err = engine.uncaughtExceptionBacktrace().join("\n");

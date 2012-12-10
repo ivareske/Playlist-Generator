@@ -62,7 +62,7 @@ class PlayList : public QListWidgetItem {
         bool writeM3U(const QString& path, const QString &name, const QList<M3uEntry> &songs, QString* log = 0) const;
         QList<M3uEntry> processFile(const QFileInfo& fileInfo, bool keepTags, const QString &format, QString* log, QHash<QString, Tag*> *tags, QHash<QString, Tag*> *tagsCopy, bool *wasCanceled) const;
         QString createExtInfString( Tag* tag, const QString& file, const QString& format_) const;        
-        bool evaluateScript( Tag *tag, const QFileInfo& fileInfo, QString *log, QString *extInf ) const;
+        bool evaluateScript(Tag *tag, const QFileInfo& fileInfo, QString *log, QString *extInf , QString *sortBy) const;
 
         //QString name_;
         QList<QDir> folders_;

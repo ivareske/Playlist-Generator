@@ -3,9 +3,10 @@
 #lag noe hjelpetekst for scripting og evt. annet
 #test redirection of clog/cout. what about qDebug(), is that redirected when cout is?
 #fix line number in error for common script
-#replace all usage of \n with Global::newLine()
+#replace all usage of \n with Global::newLine()?
 #fix findreplacedialog linking for unix? use subdirs template to build qtfindreplacedialog?
 #go through all qDebug usage, remove unecessary ones
+#add sorting of playlist
 #make installer for msvc
 
 #TEMPLATE = subdirs

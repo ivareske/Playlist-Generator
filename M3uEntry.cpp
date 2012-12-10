@@ -59,6 +59,14 @@ void M3uEntry::setOriginalFile(const QFileInfo& originalFile) {
     originalFile_ = originalFile;
 }
 
+void M3uEntry::setSortBy(const QString &sortBy){
+    sortBy_=sortBy;
+}
+
+QString M3uEntry::sortBy() const{
+    return sortBy_;
+}
+
 /*!
  \brief
 
@@ -69,4 +77,8 @@ uint qHash(const M3uEntry& key) {
     //QString tmp = key.file;
     uint val = qHash(key.originalFile().absoluteFilePath());
     return val;
+}
+
+bool m3uEntryLessThan(const M3uEntry& s1, const M3uEntry& s2) {
+    return Global::naturalCompare(s1.sortBy(), s2.sortBy(), Qt::CaseSensitive) < 0 ;
 }
